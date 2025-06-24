@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Acara & Festival Fiksi - Hanzercopy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fallback font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Mencegah scroll horizontal */
+        }
+        /* Comic-like font */
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Share+Tech+Mono&display=swap');
+        .comic-font {
+            font-family: 'Comic Neue', cursive;
+        }
+        .mono-font {
+            font-family: 'Share Tech Mono', monospace; /* Font ala mesin tik/komputer */
+        }
+        /* Default font for inputs and general readability */
+        .default-font {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Gaya khusus untuk tombol komik */
+        .comic-button {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px black;
+            transition: all 0.2s ease-in-out;
+        }
+        .comic-button:hover {
+            box-shadow: 2px 2px 0px black;
+            transform: translate(4px, 4px);
+        }
+
+        /* Loader spinner */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Full-screen loading overlay */
+        .loading-overlay-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Overlay semi-transparan gelap */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Pastikan di atas semua elemen */
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Izinkan klik untuk melewati saat tidak aktif */
+        }
+        .loading-overlay-full.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 4px solid black;
+            box-shadow: 8px 8px 0px black;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-family: 'Comic Neue', cursive;
+        }
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        /* Styling for the output sections */
+        .output-card {
+            background-color: #e0e0e0; /* Light gray background */
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .output-card h3 {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-family: 'Comic Neue', cursive;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+        }
+        .output-card p {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .output-card .detail-section {
+            margin-top: 15px;
+        }
+        .output-card .detail-section strong {
+            font-family: 'Comic Neue', cursive;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body class="bg-black text-white flex flex-col items-center p-4 min-h-screen">
+    <div class="text-center space-y-6 max-w-4xl w-full p-6 bg-white text-black rounded-lg shadow-xl border-4 border-black mb-6">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold comic-font leading-tight">
+            Generator Acara & Festival Fiksi
+        </h1>
+        <p class="text-lg sm:text-xl default-font">
+            Rancang perayaan, ritual, atau kompetisi untuk dunia cerita Anda!
+        </p>
+
+        <!-- API Key Input Section - Always visible initially -->
+        <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
+            <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Generator Acara/Festival:</label>
+            <input type="text" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
+                Simpan API Key
+            </button>
+        </div>
+
+        <!-- Main Content Area - Hidden until API Key is set -->
+        <div id="main-content" class="hidden w-full space-y-6">
+            <div class="w-full flex flex-col sm:flex-row gap-4 items-start justify-center">
+                <!-- Left Column for Selects -->
+                <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-2/5 lg:w-1/3">
+                    <div class="flex flex-col gap-2 w-full">
+                        <label for="event-concept-input" class="comic-font text-gray-800 text-base shrink-0">Konsep Acara/Festival:</label>
+                        <textarea id="event-concept-input" placeholder="Misal: 'Festival panen bulan di desa pegunungan', 'Upacara pemanggilan arwah kuno di kuil yang hancur', 'Kompetisi gladiator teknologi tinggi di kota masa depan'" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+                        <button id="random-concept-btn" class="comic-button bg-purple-500 text-white px-4 py-2 rounded-full text-base font-bold mt-2 w-full">
+                            <span id="random-concept-button-text">Acak Konsep!</span>
+                            <div id="random-concept-loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-4 w-4 ml-2 hidden"></div>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full">
+                        <label for="event-theme-select" class="comic-font text-gray-800 text-base shrink-0">Tema Acara:</label>
+                        <select id="event-theme-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                            <option value="Perayaan">Perayaan</option>
+                            <option value="Peringatan">Peringatan</option>
+                            <option value="Panen">Panen</option>
+                            <option value="Ritual/Spiritual">Ritual/Spiritual</option>
+                            <option value="Kompetisi/Permainan">Kompetisi/Permainan</option>
+                            <option value="Pasar/Perdagangan">Pasar/Perdagangan</option>
+                            <option value="Pengorbanan">Pengorbanan</option>
+                            <option value="Festival Musiman">Festival Musiman</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 w-full">
+                        <label for="event-vibe-select" class="comic-font text-gray-800 text-base shrink-0">Suasana Acara:</label>
+                        <select id="event-vibe-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                            <option value="Ceria/Penuh Kegembiraan" selected>Ceria/Penuh Kegembiraan</option>
+                            <option value="Solem/Khidmat">Solem/Khidmat</option>
+                            <option value="Misterius/Menakutkan">Misterius/Menakutkan</option>
+                            <option value="Kacau/Penuh Adrenalin">Kacau/Penuh Adrenalin</option>
+                            <option value="Mewah/Megah">Mewah/Megah</option>
+                            <option value="Pedalam/Intim">Pribadi/Intim</option>
+                            <option value="Suram/Berkabung">Suram/Berkabung</option>
+                            <option value="Dinamis/Ramai">Dinamis/Ramai</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Right Column for Context and Generate Button -->
+                <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-3/5 lg:w-2/3">
+                    <textarea id="event-location-context-input" placeholder="Tambahkan konteks lokasi atau era (Opsional: Misal: 'Terjadi di ibukota kerajaan Aethelgard', 'Di era pasca-apokaliptik', 'Di bawah bayangan gunung berapi aktif')." class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+                    
+                    <button id="generate-event-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full flex items-center justify-center">
+                        <span id="button-text">Buat Acara/Festival!</span>
+                        <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+                    </button>
+                </div>
+            </div>
+
+            <div id="event-output-section" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 mono-font overflow-y-auto mt-6">
+                <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                    Jelaskan konsep acara Anda, pilih tema & suasana, lalu klik "Buat Acara/Festival!"
+                </p>
+                <!-- Generated event details will appear here -->
+                <div id="event-description" class="mb-4 text-base leading-relaxed"></div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+                <button id="copy-event-desc-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold default-font hidden">
+                    Salin Deskripsi Acara
+                </button>
+                <button id="clear-output-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold default-font hidden">
+                    Bersihkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full-screen loading overlay -->
+    <div id="full-loading-overlay" class="loading-overlay-full">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-white h-20 w-20 mb-4"></div>
+        <span id="overlay-message" class="comic-font">Menyusun detail acara...</span>
+    </div>
+
+    <!-- Custom Alert/Confirm Modal -->
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" class="comic-font"></h3>
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button id="modal-confirm-btn" class="comic-button bg-blue-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">OK</button>
+                <button id="modal-cancel-btn" class="comic-button bg-red-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Key will be loaded from localStorage, default is blank.
+        let API_KEY = localStorage.getItem('geminiApiKeyFestival') || ""; 
+
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const apiKeySection = document.getElementById('api-key-section');
+        const mainContent = document.getElementById('main-content'); // Main content container
+
+        const eventConceptInput = document.getElementById('event-concept-input');
+        const randomConceptBtn = document.getElementById('random-concept-btn');
+        const randomConceptButtonText = document.getElementById('random-concept-button-text');
+        const randomConceptLoadingSpinner = document.getElementById('random-concept-loading-spinner');
+
+        const eventThemeSelect = document.getElementById('event-theme-select');
+        const eventVibeSelect = document.getElementById('event-vibe-select');
+        const eventLocationContextInput = document.getElementById('event-location-context-input');
+        const generateEventBtn = document.getElementById('generate-event-btn');
+        const copyEventDescBtn = document.getElementById('copy-event-desc-btn');
+        const clearOutputBtn = document.getElementById('clear-output-btn');
+        
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const eventOutputSection = document.getElementById('event-output-section');
+        const initialMessage = document.getElementById('initial-message');
+        const eventDescriptionDiv = document.getElementById('event-description');
+        const fullLoadingOverlay = document.getElementById('full-loading-overlay');
+        const overlayMessage = document.getElementById('overlay-message');
+
+        // Modal elements
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+        const loadingMessages = [
+            "Menciptakan tradisi...",
+            "Menuliskan lagu festival...",
+            "Meracik hidangan khas...",
+            "Membayangkan konflik...",
+            "Menyiapkan panggung acara...",
+            "Menggali sejarah perayaan..."
+        ];
+
+        const randomConceptLoadingMessages = [
+            "Mencari ide acara...",
+            "Mengacak perayaan...",
+            "Menjelajahi tema festival..."
+        ];
+
+        // --- Custom Modal Functions (replaces alert/confirm) ---
+        function showModal(title, message, type = 'alert') {
+            return new Promise((resolve) => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                customModal.classList.add('active');
+
+                modalConfirmBtn.classList.remove('hidden');
+                modalConfirmBtn.onclick = () => {
+                    customModal.classList.remove('active');
+                    resolve(true);
+                };
+
+                if (type === 'confirm') {
+                    modalCancelBtn.classList.remove('hidden');
+                    modalCancelBtn.onclick = () => {
+                        customModal.classList.remove('active');
+                        resolve(false);
+                    };
+                } else {
+                    modalCancelBtn.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- API Key Handling & Validation ---
+        async function validateAndLoadApiKey(key) {
+            if (!key) {
+                await showModal('Peringatan!', 'API Key tidak boleh kosong.');
+                return false;
+            }
+
+            console.log("DEBUG: Validating API Key for Festival Generator:", key.substring(0, 5) + "...");
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: "Hello" }] }]; // Minimal prompt
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json(); 
+                    const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                    await showModal('Validasi Gagal!', `API Key tidak valid: ${errorMessage}.`);
+                    console.error("API Key validation failed for Festival Generator:", response.status, errorBody);
+                    return false;
+                }
+                const result = await response.json();
+                if (!result.candidates || result.candidates.length === 0) {
+                     await showModal('Validasi Gagal!', 'API Key valid namun respons tidak sesuai. Coba lagi atau periksa key Anda.');
+                     console.error("API Key valid but unexpected response for Festival Generator:", result);
+                     return false;
+                }
+                console.log("DEBUG: API Key for Festival Generator validated successfully.");
+                return true;
+            } catch (error) {
+                await showModal('Validasi Gagal!', `Terjadi kesalahan koneksi saat validasi API Key: ${error.message}.`);
+                console.error("Error during API Key validation for Festival Generator:", error);
+                return false;
+            }
+        }
+
+        async function loadAndDisplayApiKey() {
+            const storedKey = localStorage.getItem('geminiApiKeyFestival');
+            if (storedKey) {
+                API_KEY = storedKey;
+                apiKeyInput.value = storedKey; // Display the full key
+                const isValid = await validateAndLoadApiKey(API_KEY);
+                if (isValid) {
+                    apiKeySection.classList.add('hidden'); 
+                    mainContent.classList.remove('hidden'); 
+                    console.log("DEBUG: API Key for Festival Generator loaded from localStorage and is valid.");
+                } else {
+                    apiKeySection.classList.remove('hidden'); 
+                    mainContent.classList.add('hidden'); 
+                    console.log("DEBUG: Stored API Key for Festival Generator is invalid. Please re-enter.");
+                }
+            } else {
+                apiKeyInput.value = ""; // Ensure input is empty if no key
+                apiKeySection.classList.remove('hidden'); // Ensure API key input is visible
+                mainContent.classList.add('hidden'); // Ensure main content is hidden
+                console.log("DEBUG: No API Key found in localStorage for Festival Generator. Please enter it.");
+            }
+        }
+
+        saveApiKeyBtn.addEventListener('click', async () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                const isValid = await validateAndLoadApiKey(key);
+                if (isValid) {
+                    localStorage.setItem('geminiApiKeyFestival', key);
+                    API_KEY = key;
+                    await showModal('Berhasil!', 'API Key berhasil disimpan dan diverifikasi!');
+                    apiKeySection.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                } else {
+                    // validateAndLoadApiKey already showed a modal for invalid key
+                }
+            } else {
+                await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
+            }
+        });
+
+        // Function to show loading state for main generation
+        function showLoading() {
+            overlayMessage.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            fullLoadingOverlay.classList.add('active');
+            generateEventBtn.disabled = true;
+            randomConceptBtn.disabled = true;
+            eventConceptInput.disabled = true;
+            eventThemeSelect.disabled = true;
+            eventVibeSelect.disabled = true;
+            eventLocationContextInput.disabled = true;
+            copyEventDescBtn.classList.add('hidden');
+            clearOutputBtn.classList.add('hidden');
+            buttonText.textContent = "Membuat...";
+            loadingSpinner.classList.remove('hidden');
+            eventDescriptionDiv.innerHTML = '';
+            initialMessage.classList.add('hidden');
+        }
+
+        // Function to hide loading state for main generation
+        function hideLoading() {
+            fullLoadingOverlay.classList.remove('active');
+            generateEventBtn.disabled = false;
+            randomConceptBtn.disabled = false;
+            eventConceptInput.disabled = false;
+            eventThemeSelect.disabled = false;
+            eventVibeSelect.disabled = false;
+            eventLocationContextInput.disabled = false;
+            copyEventDescBtn.classList.remove('hidden');
+            clearOutputBtn.classList.remove('hidden');
+            buttonText.textContent = "Buat Acara/Festival!";
+            loadingSpinner.classList.add('hidden');
+        }
+
+        // Function to show loading state for random concept generation
+        function showRandomConceptLoading() {
+            randomConceptButtonText.textContent = "Mengacak...";
+            randomConceptLoadingSpinner.classList.remove('hidden');
+            randomConceptBtn.disabled = true;
+            generateEventBtn.disabled = true;
+            eventConceptInput.disabled = true;
+        }
+
+        // Function to hide loading state for random concept generation
+        function hideRandomConceptLoading() {
+            randomConceptButtonText.textContent = "Acak Konsep!";
+            randomConceptLoadingSpinner.classList.add('hidden');
+            randomConceptBtn.disabled = false;
+            generateEventBtn.disabled = false;
+            eventConceptInput.disabled = false;
+        }
+
+        // Function to copy text to clipboard
+        async function copyToClipboard(text, alertMessage = 'Teks berhasil disalin ke clipboard!') {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.top = 0;
+            textarea.style.left = 0;
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.opacity = 0;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                await showModal('Berhasil!', alertMessage);
+            } catch (err) {
+                console.error('Gagal menyalin teks: ', err);
+                await showModal('Gagal!', 'Gagal menyalin. Silakan salin manual.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // Function to render the event output from JSON
+        function renderEventDetails(eventData) {
+            let htmlContent = '';
+            if (eventData.name) {
+                htmlContent += `<h3 class="text-2xl font-bold mb-4 text-center comic-font">${eventData.name}</h3>`;
+            }
+            if (eventData.purpose) {
+                htmlContent += `<div class="detail-section"><strong>Tujuan:</strong><p class="default-font">${eventData.purpose}</p></div>`;
+            }
+            if (eventData.traditions) {
+                htmlContent += `<div class="detail-section"><strong>Tradisi Utama:</strong><p class="default-font">${eventData.traditions}</p></div>`;
+            }
+            if (eventData.activities) {
+                htmlContent += `<div class="detail-section"><strong>Aktivitas Khas:</strong><p class="default-font">${eventData.activities}</p></div>`;
+            }
+            if (eventData.foodDrinks) {
+                htmlContent += `<div class="detail-section"><strong>Makanan/Minuman Khas:</strong><p class="default-font">${eventData.foodDrinks}</p></div>`;
+            }
+            if (eventData.plotHooks && eventData.plotHooks.length > 0) {
+                htmlContent += `<div class="detail-section"><strong>Potensi Plot Hooks:</strong><ul>`;
+                eventData.plotHooks.forEach(hook => {
+                    htmlContent += `<li class="default-font">${hook}</li>`;
+                });
+                htmlContent += `</ul></div>`;
+            }
+            
+            eventDescriptionDiv.innerHTML = htmlContent;
+        }
+
+        // Function to get raw text for copying
+        function getRawEventContent(eventData) {
+            let rawText = '';
+            if (eventData.name) rawText += `Nama Acara: ${eventData.name}\n\n`;
+            if (eventData.purpose) rawText += `Tujuan:\n${eventData.purpose}\n\n`;
+            if (eventData.traditions) rawText += `Tradisi Utama:\n${eventData.traditions}\n\n`;
+            if (eventData.activities) rawText += `Aktivitas Khas:\n${eventData.activities}\n\n`;
+            if (eventData.foodDrinks) rawText += `Makanan/Minuman Khas:\n${eventData.foodDrinks}\n\n`;
+            if (eventData.plotHooks && eventData.plotHooks.length > 0) {
+                rawText += `Potensi Plot Hooks:\n`;
+                eventData.plotHooks.forEach((hook, index) => {
+                    rawText += `${index + 1}. ${hook}\n`;
+                });
+                rawText += `\n`;
+            }
+            return rawText.trim();
+        }
+
+        // Core Function: Generate Event
+        async function generateEvent() {
+            if (!API_KEY) {
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden');
+                mainContent.classList.add('hidden');
+                return;
+            }
+
+            const eventConcept = eventConceptInput.value.trim();
+            const eventTheme = eventThemeSelect.value;
+            const eventVibe = eventVibeSelect.value;
+            const eventLocationContext = eventLocationContextInput.value.trim();
+
+            if (!eventConcept) {
+                await showModal('Peringatan!', 'Silakan jelaskan konsep acara/festival Anda, atau klik "Acak Konsep!" untuk ide.');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                let prompt = `Sebagai seorang perancang dunia fiksi, buatkan deskripsi mendalam untuk acara atau festival berdasarkan konsep berikut: "${eventConcept}".
+                
+                Tema Acara: ${eventTheme}
+                Suasana Acara: ${eventVibe}
+                ${eventLocationContext ? `Konteks Lokasi/Era: ${eventLocationContext}` : 'Konteks Lokasi/Era: (Asumsikan relevan dengan konsep acara)'}
+
+                Detail yang diminta:
+                -   Nama Acara: Sebuah nama yang menarik dan relevan.
+                -   Tujuan/Makna: Mengapa acara ini diadakan dan apa signifikansinya bagi masyarakat?
+                -   Tradisi Utama: Ritual, upacara, atau kebiasaan penting yang dilakukan selama acara.
+                -   Aktivitas Khas: Permainan, kompetisi, pertunjukan, atau kegiatan lain yang biasa terjadi.
+                -   Makanan/Minuman Khas: Hidangan atau minuman unik yang disajikan.
+                -   Potensi Plot Hooks: 1-2 ide konflik, misteri, atau kesempatan cerita yang bisa terjadi selama acara ini.
+
+                Format respons Anda sebagai JSON object tunggal dengan properti berikut, semua dalam Bahasa Indonesia:
+                {
+                  "name": "STRING",
+                  "purpose": "STRING",
+                  "traditions": "STRING",
+                  "activities": "STRING",
+                  "foodDrinks": "STRING",
+                  "plotHooks": ["STRING", "STRING"] // Array of strings for plot hooks
+                }
+                `;
+                console.log("DEBUG: generateEvent prompt:", prompt);
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { 
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "name": { "type": "STRING" },
+                                "purpose": { "type": "STRING" },
+                                "traditions": { "type": "STRING" },
+                                "activities": { "type": "STRING" },
+                                "foodDrinks": { "type": "STRING" },
+                                "plotHooks": {
+                                    "type": "ARRAY",
+                                    "items": { "type": "STRING" }
+                                }
+                            },
+                            "required": ["name", "purpose", "traditions", "activities", "plotHooks"]
+                        }
+                    }
+                };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Response not OK for Event Generation:", response.status, errorBody);
+                    try {
+                        const errorData = typeof errorBody === 'string' ? JSON.parse(errorBody) : errorBody;
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorData.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                    } catch (parseError) {
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${JSON.stringify(errorBody).substring(0, 100)}...`);
+                    }
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${JSON.stringify(errorBody)}`);
+                }
+
+                const result = await response.json();
+                console.log("DEBUG: Event Raw Result:", result);
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const eventData = JSON.parse(result.candidates[0].content.parts[0].text);
+                    console.log("DEBUG: Parsed Event Data:", eventData);
+                    renderEventDetails(eventData);
+                    eventOutputSection.currentEventData = eventData; // Store for copying
+
+                } else {
+                    eventOutputSection.innerHTML = `
+                        <p class="text-center text-red-700 comic-font text-lg pt-10">
+                            Maaf, AI gagal membuat detail acara. Pastikan konsep Anda jelas dan spesifik.
+                        </p>
+                    `;
+                    console.error("AI failed to generate event (missing candidates/content). Result:", result);
+                }
+            } catch (error) {
+                eventOutputSection.innerHTML = `
+                    <p class="text-center text-red-700 comic-font text-lg pt-10">
+                        Terjadi kesalahan saat memuat detail acara. Periksa koneksi Anda atau API Key Anda.
+                    </p>
+                `;
+                console.error("ERROR fetching event data:", error);
+                if (!document.getElementById('custom-modal').classList.contains('active')) {
+                    await showModal('Kesalahan!', `Terjadi kesalahan saat membuat acara: ${error.message}. Pastikan API Key Anda valid.`);
+                }
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // New Function: Generate Random Concept for Event
+        async function generateRandomConcept() {
+            if (!API_KEY) {
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); 
+                mainContent.classList.add('hidden'); 
+                return;
+            }
+
+            showRandomConceptLoading();
+
+            try {
+                const prompt = `Berikan SATU ide konsep acara atau festival fiksi yang singkat, menarik, dan unik dalam MAKSIMAL dua kalimat. Fokus pada inti premisnya. Berikan hanya konsepnya sebagai teks biasa, tanpa awalan atau contoh, dan tanpa daftar bernomor atau bullet point.`;
+                
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Response not OK for Random Concept Generation:", response.status, errorBody);
+                    try {
+                        const errorData = typeof errorBody === 'string' ? JSON.parse(errorBody) : errorBody;
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorData.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                    } catch (parseError) {
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${JSON.stringify(errorBody).substring(0, 100)}...`);
+                    }
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${JSON.stringify(errorBody)}`);
+                }
+
+                const result = await response.json();
+                console.log("DEBUG: Random Concept Raw Result:", result);
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const generatedConcept = result.candidates[0].content.parts[0].text.trim();
+                    eventConceptInput.value = generatedConcept;
+                } else {
+                    await showModal('Gagal!', 'AI gagal menghasilkan konsep acak. Coba lagi.');
+                    console.error("AI failed to generate random concept (missing candidates/content). Result:", result);
+                }
+
+            } catch (error) {
+                await showModal('Kesalahan!', `Terjadi kesalahan saat mengacak konsep: ${error.message}.`);
+                console.error("ERROR generating random concept:", error);
+            } finally {
+                hideRandomConceptLoading();
+            }
+        }
+
+        // --- Event Listeners ---
+        generateEventBtn.addEventListener('click', generateEvent);
+        randomConceptBtn.addEventListener('click', generateRandomConcept);
+
+        copyEventDescBtn.addEventListener('click', async () => {
+            if (eventOutputSection.currentEventData) {
+                const rawText = getRawEventContent(eventOutputSection.currentEventData);
+                await copyToClipboard(rawText, 'Deskripsi acara berhasil disalin!');
+            } else {
+                await showModal('Peringatan!', 'Tidak ada deskripsi acara untuk disalin.');
+            }
+        });
+
+        clearOutputBtn.addEventListener('click', async () => {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus detail acara yang ditampilkan dan input?', 'confirm');
+            if (confirmed) {
+                eventConceptInput.value = '';
+                eventThemeSelect.value = 'Perayaan';
+                eventVibeSelect.value = 'Ceria/Penuh Kegembiraan';
+                eventLocationContextInput.value = '';
+                eventDescriptionDiv.innerHTML = '';
+                initialMessage.classList.remove('hidden');
+                copyEventDescBtn.classList.add('hidden');
+                clearOutputBtn.classList.add('hidden');
+                eventOutputSection.currentEventData = null;
+            }
+        });
+
+        // Initial setup on page load
+        window.onload = loadAndDisplayApiKey;
+    </script>
+</body>
+</html>

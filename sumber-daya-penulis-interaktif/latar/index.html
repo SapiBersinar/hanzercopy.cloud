@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Latar Belakang Dunia Fiksi - Hanzercopy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fallback font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Mencegah scroll horizontal */
+        }
+        /* Comic-like font */
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Share+Tech+Mono&display=swap');
+        .comic-font {
+            font-family: 'Comic Neue', cursive;
+        }
+        .mono-font {
+            font-family: 'Share Tech Mono', monospace; /* Font ala mesin tik/komputer */
+        }
+        /* Default font for inputs and general readability */
+        .default-font {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Gaya khusus untuk tombol komik */
+        .comic-button {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px black;
+            transition: all 0.2s ease-in-out;
+        }
+        .comic-button:hover {
+            box-shadow: 2px 2px 0px black;
+            transform: translate(4px, 4px);
+        }
+
+        /* Loader spinner */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Full-screen loading overlay */
+        .loading-overlay-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Overlay semi-transparan gelap */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Pastikan di atas semua elemen */
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Izinkan klik untuk melewati saat tidak aktif */
+        }
+        .loading-overlay-full.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 4px solid black;
+            box-shadow: 8px 8px 0px black;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-family: 'Comic Neue', cursive;
+        }
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        /* Styling for the output sections */
+        .output-card {
+            background-color: #e0e0e0; /* Light gray background */
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .output-card h3 {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-family: 'Comic Neue', cursive;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+        }
+        .output-card p {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .output-card .detail-section {
+            margin-top: 15px;
+        }
+        .output-card .detail-section strong {
+            font-family: 'Comic Neue', cursive;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body class="bg-black text-white flex flex-col items-center p-4 min-h-screen">
+    <div class="text-center space-y-6 max-w-4xl w-full p-6 bg-white text-black rounded-lg shadow-xl border-4 border-black mb-6">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold comic-font leading-tight">
+            Generator Latar Belakang Dunia Fiksi
+        </h1>
+        <p class="text-lg sm:text-xl default-font">
+            Bangun detail mendalam untuk dunia cerita Anda: politik, budaya, sejarah, dan lainnya!
+        </p>
+
+        <!-- API Key Input Section - Always visible initially -->
+        <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
+            <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Generator Latar Belakang Dunia:</label>
+            <input type="text" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
+                Simpan API Key
+            </button>
+        </div>
+
+        <!-- Main Content Area - Hidden until API Key is set -->
+        <div id="main-content" class="hidden w-full space-y-6">
+            <div class="w-full flex flex-col sm:flex-row gap-4 items-start justify-center">
+                <!-- Left Column for Selects -->
+                <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-2/5 lg:w-1/3">
+                    <div class="flex flex-col gap-2 w-full">
+                        <label for="world-concept-input" class="comic-font text-gray-800 text-base shrink-0">Konsep Dunia Dasar:</label>
+                        <textarea id="world-concept-input" placeholder="Misal: 'Dunia fantasi abad pertengahan dengan sihir berbasis kristal', 'Koloni manusia di planet alien yang tandus', 'Kota bawah laut pasca-apokaliptik'" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+                        <button id="random-concept-btn" class="comic-button bg-purple-500 text-white px-4 py-2 rounded-full text-base font-bold mt-2 w-full">
+                            <span id="random-concept-button-text">Acak Konsep!</span>
+                            <div id="random-concept-loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-4 w-4 ml-2 hidden"></div>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full">
+                        <label for="detail-focus-select" class="comic-font text-gray-800 text-base shrink-0">Fokus Detail:</label>
+                        <select id="detail-focus-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                            <option value="Semuanya">Semuanya</option>
+                            <option value="Sistem Politik & Pemerintahan">Politik & Pemerintahan</option>
+                            <option value="Sistem Ekonomi & Perdagangan">Ekonomi & Perdagangan</option>
+                            <option value="Budaya & Tradisi">Budaya & Tradisi</option>
+                            <option value="Agama & Kepercayaan">Agama & Kepercayaan</option>
+                            <option value="Spesies & Faksi Utama">Spesies & Faksi Utama</option>
+                            <option value="Sejarah Singkat">Sejarah Singkat</option>
+                            <option value="Sistem Teknologi & Sihir">Teknologi & Sihir</option>
+                            <option value="Elemen Unik & Fenomena">Elemen Unik & Fenomena</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 w-full">
+                        <label for="depth-level-select" class="comic-font text-gray-800 text-base shrink-0">Tingkat Kedalaman:</label>
+                        <select id="depth-level-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                            <option value="Ringkas">Ringkas</option>
+                            <option value="Sedang" selected>Sedang</option>
+                            <option value="Mendetail">Mendetail</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Right Column for Context and Generate Button -->
+                <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-3/5 lg:w-2/3">
+                    <textarea id="additional-context-input" placeholder="Tambahkan konteks/detail lain yang spesifik (Opsional: Misal: 'Konflik utama antar faksi', 'Bentuk pemerintahan unik', 'Ritual penting')." class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+                    
+                    <button id="generate-background-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full flex items-center justify-center">
+                        <span id="button-text">Buat Latar Belakang!</span>
+                        <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+                    </button>
+                </div>
+            </div>
+
+            <div id="background-output-section" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 mono-font overflow-y-auto mt-6">
+                <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                    Jelaskan konsep dunia Anda, pilih fokus detail, lalu klik "Buat Latar Belakang!"
+                </p>
+                <!-- Generated background details and image prompt will appear here -->
+                <div id="world-background-description" class="mb-4 text-base leading-relaxed"></div>
+                <div id="image-prompt-display" class="border-t-2 border-dashed border-gray-400 pt-4 mt-4 hidden">
+                    <h3 class="text-xl font-bold mb-2 comic-font">Prompt Gambar AI (Overview Dunia):</h3>
+                    <p class="text-sm italic" id="generated-image-prompt"></p>
+                    <button id="copy-image-prompt-btn" class="comic-button bg-blue-500 text-white text-sm px-3 py-1 rounded-full font-bold mt-2">
+                        Salin Prompt Gambar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+                <button id="copy-background-desc-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold default-font hidden">
+                    Salin Deskripsi Latar Belakang
+                </button>
+                <button id="clear-output-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold default-font hidden">
+                    Bersihkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full-screen loading overlay -->
+    <div id="full-loading-overlay" class="loading-overlay-full">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-white h-20 w-20 mb-4"></div>
+        <span id="overlay-message" class="comic-font">Menyusun latar belakang dunia...</span>
+    </div>
+
+    <!-- Custom Alert/Confirm Modal -->
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" class="comic-font"></h3>
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button id="modal-confirm-btn" class="comic-button bg-blue-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">OK</button>
+                <button id="modal-cancel-btn" class="comic-button bg-red-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Key will be loaded from localStorage, default is blank.
+        let API_KEY = localStorage.getItem('geminiApiKeyWorldLore') || ""; 
+
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const apiKeySection = document.getElementById('api-key-section');
+        const mainContent = document.getElementById('main-content'); // Main content container
+
+        const worldConceptInput = document.getElementById('world-concept-input');
+        const randomConceptBtn = document.getElementById('random-concept-btn'); // New button for random concept
+        const randomConceptButtonText = document.getElementById('random-concept-button-text');
+        const randomConceptLoadingSpinner = document.getElementById('random-concept-loading-spinner');
+
+        const detailFocusSelect = document.getElementById('detail-focus-select');
+        const depthLevelSelect = document.getElementById('depth-level-select');
+        const additionalContextInput = document.getElementById('additional-context-input');
+        const generateBackgroundBtn = document.getElementById('generate-background-btn');
+        const copyBackgroundDescBtn = document.getElementById('copy-background-desc-btn');
+        const copyImagePromptBtn = document.getElementById('copy-image-prompt-btn');
+        const clearOutputBtn = document.getElementById('clear-output-btn');
+        
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const backgroundOutputSection = document.getElementById('background-output-section');
+        const initialMessage = document.getElementById('initial-message');
+        const worldBackgroundDescriptionDiv = document.getElementById('world-background-description');
+        const imagePromptDisplayDiv = document.getElementById('image-prompt-display');
+        const generatedImagePromptSpan = document.getElementById('generated-image-prompt');
+        const fullLoadingOverlay = document.getElementById('full-loading-overlay');
+        const overlayMessage = document.getElementById('overlay-message');
+
+        // Modal elements
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+        const loadingMessages = [
+            "Membangun pilar politik...",
+            "Menenun jaring ekonomi...",
+            "Menuliskan simfoni budaya...",
+            "Mengukir prasasti keyakinan...",
+            "Menciptakan spesies baru...",
+            "Menyelami kronik sejarah...",
+            "Menguraikan sistem sihir...",
+            "Menemukan elemen unik...",
+            "Menganalisis konsep dunia...",
+            "Menyusun prompt visualisasi..."
+        ];
+
+        const randomConceptLoadingMessages = [
+            "Mencari ide-ide dunia...",
+            "Mengacak konsep-konsep...",
+            "Menjelajahi dimensi baru...",
+            "Membangkitkan inspirasi..."
+        ];
+
+        // --- Custom Modal Functions (replaces alert/confirm) ---
+        function showModal(title, message, type = 'alert') {
+            return new Promise((resolve) => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                customModal.classList.add('active');
+
+                modalConfirmBtn.classList.remove('hidden');
+                modalConfirmBtn.onclick = () => {
+                    customModal.classList.remove('active');
+                    resolve(true);
+                };
+
+                if (type === 'confirm') {
+                    modalCancelBtn.classList.remove('hidden');
+                    modalCancelBtn.onclick = () => {
+                        customModal.classList.remove('active');
+                        resolve(false);
+                    };
+                } else {
+                    modalCancelBtn.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- API Key Handling & Validation ---
+        async function validateAndLoadApiKey(key) {
+            if (!key) {
+                await showModal('Peringatan!', 'API Key tidak boleh kosong.');
+                return false;
+            }
+
+            console.log("DEBUG: Validating API Key for World Lore Generator:", key.substring(0, 5) + "...");
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: "Hello" }] }]; // Minimal prompt
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json(); 
+                    const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                    await showModal('Validasi Gagal!', `API Key tidak valid: ${errorMessage}.`);
+                    console.error("API Key validation failed for World Lore Generator:", response.status, errorBody);
+                    return false;
+                }
+                const result = await response.json();
+                if (!result.candidates || result.candidates.length === 0) {
+                     await showModal('Validasi Gagal!', 'API Key valid namun respons tidak sesuai. Coba lagi atau periksa key Anda.');
+                     console.error("API Key valid but unexpected response for World Lore Generator:", result);
+                     return false;
+                }
+                console.log("DEBUG: API Key for World Lore Generator validated successfully.");
+                return true;
+            } catch (error) {
+                await showModal('Validasi Gagal!', `Terjadi kesalahan koneksi saat validasi API Key: ${error.message}.`);
+                console.error("Error during API Key validation for World Lore Generator:", error);
+                return false;
+            }
+        }
+
+        async function loadAndDisplayApiKey() {
+            const storedKey = localStorage.getItem('geminiApiKeyWorldLore');
+            if (storedKey) {
+                API_KEY = storedKey;
+                apiKeyInput.value = storedKey; // Display the full key
+                const isValid = await validateAndLoadApiKey(API_KEY);
+                if (isValid) {
+                    apiKeySection.classList.add('hidden'); 
+                    mainContent.classList.remove('hidden'); 
+                    console.log("DEBUG: API Key for World Lore Generator loaded from localStorage and is valid.");
+                } else {
+                    // If stored key is invalid, keep API section visible and main content hidden
+                    apiKeySection.classList.remove('hidden'); 
+                    mainContent.classList.add('hidden'); 
+                    console.log("DEBUG: Stored API Key for World Lore Generator is invalid. Please re-enter.");
+                    // The validateAndLoadApiKey function already shows a modal for invalid keys
+                }
+            } else {
+                apiKeyInput.value = ""; // Ensure input is empty if no key
+                apiKeySection.classList.remove('hidden'); // Ensure API key input is visible
+                mainContent.classList.add('hidden'); // Ensure main content is hidden
+                console.log("DEBUG: No API Key found in localStorage for World Lore Generator. Please enter it.");
+            }
+        }
+
+        saveApiKeyBtn.addEventListener('click', async () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                const isValid = await validateAndLoadApiKey(key);
+                if (isValid) {
+                    localStorage.setItem('geminiApiKeyWorldLore', key);
+                    API_KEY = key;
+                    await showModal('Berhasil!', 'API Key berhasil disimpan dan diverifikasi!');
+                    apiKeySection.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                } else {
+                    // validateAndLoadApiKey already showed a modal for invalid key
+                    // Keep API section visible
+                }
+            } else {
+                await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
+            }
+        });
+
+        // Function to show loading state for main generation
+        function showLoading() {
+            overlayMessage.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            fullLoadingOverlay.classList.add('active');
+            generateBackgroundBtn.disabled = true;
+            randomConceptBtn.disabled = true; // Disable random concept button during main gen
+            worldConceptInput.disabled = true;
+            detailFocusSelect.disabled = true;
+            depthLevelSelect.disabled = true;
+            additionalContextInput.disabled = true;
+            copyBackgroundDescBtn.classList.add('hidden');
+            copyImagePromptBtn.classList.add('hidden');
+            clearOutputBtn.classList.add('hidden');
+            buttonText.textContent = "Membuat...";
+            loadingSpinner.classList.remove('hidden');
+            worldBackgroundDescriptionDiv.innerHTML = ''; // Clear previous content
+            generatedImagePromptSpan.textContent = '';
+            imagePromptDisplayDiv.classList.add('hidden');
+            initialMessage.classList.add('hidden'); // Hide initial message
+        }
+
+        // Function to hide loading state for main generation
+        function hideLoading() {
+            fullLoadingOverlay.classList.remove('active');
+            generateBackgroundBtn.disabled = false;
+            randomConceptBtn.disabled = false; // Enable random concept button after main gen
+            worldConceptInput.disabled = false;
+            detailFocusSelect.disabled = false;
+            depthLevelSelect.disabled = false;
+            additionalContextInput.disabled = false;
+            copyBackgroundDescBtn.classList.remove('hidden');
+            clearOutputBtn.classList.remove('hidden');
+            // Show image prompt section and button if there's a prompt
+            if (generatedImagePromptSpan.textContent) {
+                imagePromptDisplayDiv.classList.remove('hidden');
+                copyImagePromptBtn.classList.remove('hidden');
+            }
+            buttonText.textContent = "Buat Latar Belakang!";
+            loadingSpinner.classList.add('hidden');
+        }
+
+        // Function to show loading state for random concept generation
+        function showRandomConceptLoading() {
+            randomConceptButtonText.textContent = "Mengacak...";
+            randomConceptLoadingSpinner.classList.remove('hidden');
+            randomConceptBtn.disabled = true;
+            generateBackgroundBtn.disabled = true; // Disable main generate button
+            worldConceptInput.disabled = true; // Disable input
+        }
+
+        // Function to hide loading state for random concept generation
+        function hideRandomConceptLoading() {
+            randomConceptButtonText.textContent = "Acak Konsep!";
+            randomConceptLoadingSpinner.classList.add('hidden');
+            randomConceptBtn.disabled = false;
+            generateBackgroundBtn.disabled = false; // Enable main generate button
+            worldConceptInput.disabled = false; // Enable input
+        }
+
+        // Function to copy text to clipboard
+        async function copyToClipboard(text, alertMessage = 'Teks berhasil disalin ke clipboard!') {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.top = 0;
+            textarea.style.left = 0;
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.opacity = 0;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                await showModal('Berhasil!', alertMessage);
+            } catch (err) {
+                console.error('Gagal menyalin teks: ', err);
+                await showModal('Gagal!', 'Gagal menyalin. Silakan salin manual.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // Function to render the world background output from JSON
+        function renderWorldBackground(backgroundData) {
+            let htmlContent = '';
+            if (backgroundData.worldName) {
+                htmlContent += `<h3 class="text-2xl font-bold mb-4 text-center comic-font">${backgroundData.worldName}</h3>`;
+            }
+            if (backgroundData.conceptSummary) {
+                htmlContent += `<p class="default-font mb-4">${backgroundData.conceptSummary}</p>`;
+            }
+
+            // Dynamically add sections based on data received
+            const sections = [
+                { key: 'politicalSystem', title: 'Sistem Politik & Pemerintahan' },
+                { key: 'economicSystem', title: 'Sistem Ekonomi & Perdagangan' },
+                { key: 'cultureTraditions', title: 'Budaya & Tradisi' },
+                { key: 'religionBeliefs', title: 'Agama & Kepercayaan' },
+                { key: 'mainFactionsSpecies', title: 'Spesies & Faksi Utama' },
+                { key: 'briefHistory', title: 'Sejarah Singkat' },
+                { key: 'technologyMagicSystem', title: 'Sistem Teknologi & Sihir' },
+                { key: 'uniqueElements', title: 'Elemen Unik & Fenomena' }
+            ];
+
+            sections.forEach(section => {
+                if (backgroundData[section.key] && backgroundData[section.key] !== "Tidak relevan untuk fokus ini.") {
+                    htmlContent += `<div class="detail-section"><strong>${section.title}:</strong><p class="default-font">${backgroundData[section.key]}</p></div>`;
+                }
+            });
+            
+            worldBackgroundDescriptionDiv.innerHTML = htmlContent;
+
+            // Set the image prompt
+            if (backgroundData.imagePrompt) {
+                generatedImagePromptSpan.textContent = backgroundData.imagePrompt;
+                imagePromptDisplayDiv.classList.remove('hidden');
+                copyImagePromptBtn.classList.remove('hidden'); // Show copy button
+            } else {
+                imagePromptDisplayDiv.classList.add('hidden');
+                copyImagePromptBtn.classList.add('hidden'); // Hide copy button
+            }
+        }
+
+        // Function to get raw text for copying
+        function getRawBackgroundContent(backgroundData) {
+            let rawText = '';
+            if (backgroundData.worldName) rawText += `Nama Dunia: ${backgroundData.worldName}\n\n`;
+            if (backgroundData.conceptSummary) rawText += `Ringkasan Konsep: ${backgroundData.conceptSummary}\n\n`;
+
+            const sections = [
+                { key: 'politicalSystem', title: 'Sistem Politik & Pemerintahan' },
+                { key: 'economicSystem', title: 'Sistem Ekonomi & Perdagangan' },
+                { key: 'cultureTraditions', title: 'Budaya & Tradisi' },
+                { key: 'religionBeliefs', title: 'Agama & Kepercayaan' },
+                { key: 'mainFactionsSpecies', title: 'Spesies & Faksi Utama' },
+                { key: 'briefHistory', title: 'Sejarah Singkat' },
+                { key: 'technologyMagicSystem', title: 'Sistem Teknologi & Sihir' },
+                { key: 'uniqueElements', title: 'Elemen Unik & Fenomena' }
+            ];
+
+            sections.forEach(section => {
+                if (backgroundData[section.key] && backgroundData[section.key] !== "Tidak relevan untuk fokus ini.") {
+                    rawText += `${section.title}:\n${backgroundData[section.key]}\n\n`;
+                }
+            });
+
+            if (backgroundData.imagePrompt) rawText += `Prompt Gambar AI: ${backgroundData.imagePrompt}\n\n`; 
+            return rawText.trim();
+        }
+
+        // Core Function: Generate World Background
+        async function generateWorldBackground() {
+            if (!API_KEY) {
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                mainContent.classList.add('hidden'); // Hide main content
+                return;
+            }
+
+            const worldConcept = worldConceptInput.value.trim();
+            const detailFocus = detailFocusSelect.value;
+            const depthLevel = depthLevelSelect.value;
+            const additionalContext = additionalContextInput.value.trim();
+
+            if (!worldConcept) {
+                await showModal('Peringatan!', 'Silakan jelaskan konsep dasar dunia Anda, atau klik "Acak Konsep!" untuk ide.');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                let prompt = `Sebagai seorang pencipta dunia fiksi, buatkan latar belakang mendalam untuk dunia berdasarkan konsep berikut: "${worldConcept}".
+                
+                Fokus Detail: ${detailFocus}
+                Tingkat Kedalaman: ${depthLevel}
+                ${additionalContext ? `Konteks Tambahan: ${additionalContext}` : ''}
+                
+                Detail yang diminta:`;
+
+                if (detailFocus === "Semuanya") {
+                    prompt += `
+                    -   Nama Umum Dunia (jika tidak ada di konsep): Sebuah nama singkat yang menarik.
+                    -   Ringkasan Konsep: Penjelasan singkat dan menarik tentang premis dunia ini.
+                    -   Sistem Politik & Pemerintahan: Jelaskan struktur kekuasaan dan bagaimana dunia diatur.
+                    -   Sistem Ekonomi & Perdagangan: Jelaskan bagaimana sumber daya didistribusikan dan diperdagangkan.
+                    -   Budaya & Tradisi: Deskripsikan kebiasaan, nilai-nilai, seni, dan gaya hidup masyarakatnya.
+                    -   Agama & Kepercayaan: Jelaskan sistem kepercayaan, entitas, ritual, atau filosofi spiritual. Hindari penggunaan kata 'dewa'.
+                    -   Spesies & Faksi Utama: Kenalkan ras, spesies, atau kelompok berpengaruh yang menghuni dunia ini.
+                    -   Sejarah Singkat: Berikan garis besar peristiwa kunci yang membentuk dunia ini (dari asal-usul hingga saat ini).
+                    -   Sistem Teknologi & Sihir: Jelaskan tingkat teknologi yang ada atau bagaimana sihir/kekuatan super bekerja dan memengaruhi dunia.
+                    -   Elemen Unik & Fenomena: Fakta-fakta menarik, misteri, atau keajaiban yang ada di dunia ini.
+                    `;
+                } else {
+                    prompt += `
+                    -   Nama Umum Dunia: (Opsional, jika relevan, berikan nama singkat).
+                    -   Ringkasan Konsep: Penjelasan singkat tentang dunia ini.
+                    -   ${detailFocus}: Berikan detail yang sangat mendalam dan komprehensif tentang aspek ini, sesuai dengan tingkat kedalaman "${depthLevel}". Jika ${detailFocus} adalah "Agama & Kepercayaan", gunakan kata 'entitas' dan hindari penggunaan kata 'dewa', 'entitas ilahi', 'kekuatan spiritual', atau 'figur suci'. Pastikan detail ini mencakup aspek-aspek terkait seperti praktik, ritual, hierarki spiritual, pengaruh terhadap masyarakat, atau mitologi dasar.
+                    
+                    Untuk semua properti JSON lain yang tidak terkait langsung dengan "${detailFocus}" (yaitu, politicalSystem, economicSystem, cultureTraditions, religionBeliefs, mainFactionsSpecies, briefHistory, technologyMagicSystem, uniqueElements, kecuali yang sedang menjadi fokus), isi nilainya dengan string "Tidak relevan untuk fokus ini."
+                    `;
+                }
+                
+                prompt += `
+                Di akhir deskripsi, berikan juga sebuah prompt yang sangat detail dan spesifik untuk AI Image Generator (seperti Imagen) untuk membuat gambar overview dunia ini yang mencerminkan keseluruhan konsep dan detail pentingnya. Prompt gambar ini harus fokus pada gaya visual concept art atau ilustrasi fantasi/sci-fi yang mendetail.
+
+                Format respons Anda sebagai JSON object tunggal dengan properti berikut, semua dalam Bahasa Indonesia kecuali prompt gambar AI:
+                {
+                  "worldName": "STRING", // Opsional: AI bisa menghasilkan jika tidak ada
+                  "conceptSummary": "STRING",
+                  "politicalSystem": "STRING",
+                  "economicSystem": "STRING",
+                  "cultureTraditions": "STRING",
+                  "religionBeliefs": "STRING",
+                  "mainFactionsSpecies": "STRING",
+                  "briefHistory": "STRING",
+                  "technologyMagicSystem": "STRING",
+                  "uniqueElements": "STRING",
+                  "imagePrompt": "STRING" // Prompt gambar AI dalam Bahasa Inggris
+                }
+
+                Pastikan setiap properti yang tidak terisi secara relevan berisi string "Tidak relevan untuk fokus ini."
+                `;
+                console.log("DEBUG: generateWorldBackground prompt:", prompt);
+                console.log("DEBUG: generateWorldBackground API_KEY (first 5 chars):", API_KEY ? API_KEY.substring(0, 5) + "..." : "EMPTY");
+
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { 
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "worldName": { "type": "STRING" },
+                                "conceptSummary": { "type": "STRING" },
+                                "politicalSystem": { "type": "STRING" },
+                                "economicSystem": { "type": "STRING" },
+                                "cultureTraditions": { "type": "STRING" },
+                                "religionBeliefs": { "type": "STRING" },
+                                "mainFactionsSpecies": { "type": "STRING" },
+                                "briefHistory": { "type": "STRING" },
+                                "technologyMagicSystem": { "type": "STRING" },
+                                "uniqueElements": { "type": "STRING" },
+                                "imagePrompt": { "type": "STRING" }
+                            },
+                            "required": ["conceptSummary", "imagePrompt"] // Basic required fields
+                        }
+                    }
+                };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                console.log("DEBUG: generateWorldBackground API URL:", apiUrl);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Response not OK for World Background Generation:", response.status, errorBody);
+                    try {
+                        // Attempt to parse JSON error, if it's not already an object
+                        const errorData = typeof errorBody === 'string' ? JSON.parse(errorBody) : errorBody;
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorData.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                    } catch (parseError) {
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${JSON.stringify(errorBody).substring(0, 100)}...`);
+                    }
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${JSON.stringify(errorBody)}`);
+                }
+
+                const result = await response.json();
+                console.log("DEBUG: World Background Raw Result:", result);
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const backgroundData = JSON.parse(result.candidates[0].content.parts[0].text);
+                    console.log("DEBUG: Parsed World Background Data:", backgroundData);
+                    renderWorldBackground(backgroundData);
+                    backgroundOutputSection.currentBackgroundData = backgroundData; // Store for copying
+
+                } else {
+                    backgroundOutputSection.innerHTML = `
+                        <p class="text-center text-red-700 comic-font text-lg pt-10">
+                            Maaf, AI gagal membuat latar belakang dunia. Pastikan konsep Anda jelas dan spesifik.
+                        </p>
+                    `;
+                    console.error("AI failed to generate world background (missing candidates/content). Result:", result);
+                }
+            } catch (error) {
+                backgroundOutputSection.innerHTML = `
+                    <p class="text-center text-red-700 comic-font text-lg pt-10">
+                        Terjadi kesalahan saat memuat latar belakang dunia. Periksa koneksi Anda atau API Key Anda.
+                    </p>
+                `;
+                console.error("ERROR fetching world background data:", error);
+                if (!document.getElementById('custom-modal').classList.contains('active')) {
+                    await showModal('Kesalahan!', `Terjadi kesalahan saat membuat latar belakang dunia: ${error.message}. Pastikan API Key Anda valid.`);
+                }
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // New Function: Generate Random Concept
+        async function generateRandomConcept() {
+            if (!API_KEY) {
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); 
+                mainContent.classList.add('hidden'); 
+                return;
+            }
+
+            showRandomConceptLoading();
+
+            try {
+                // Prompt diperbarui untuk menghasilkan hanya SATU konsep dalam teks biasa, tanpa bullet/list, dan hanya menggunakan 'entitas' jika relevan.
+                const prompt = `Berikan SATU ide konsep dunia fiksi yang singkat, menarik, dan unik dalam MAKSIMAL dua kalimat. Fokus pada inti premisnya. Jika konsep tersebut melibatkan kekuatan supranatural atau spiritual, gunakan kata 'entitas' (seperti: makhluk, kekuatan, atau manifestasi) alih-alih 'dewa', 'entitas ilahi', 'kekuatan spiritual', atau 'figur suci'. Berikan hanya konsepnya sebagai teks biasa, tanpa awalan atau contoh, dan tanpa daftar bernomor atau bullet point.`;
+                
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Response not OK for Random Concept Generation:", response.status, errorBody);
+                    try {
+                        const errorData = typeof errorBody === 'string' ? JSON.parse(errorBody) : errorBody;
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorData.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                    } catch (parseError) {
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${JSON.stringify(errorBody).substring(0, 100)}...`);
+                    }
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${JSON.stringify(errorBody)}`);
+                }
+
+                const result = await response.json();
+                console.log("DEBUG: Random Concept Raw Result:", result);
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const generatedConcept = result.candidates[0].content.parts[0].text.trim();
+                    worldConceptInput.value = generatedConcept;
+                } else {
+                    await showModal('Gagal!', 'AI gagal menghasilkan konsep acak. Coba lagi.');
+                    console.error("AI failed to generate random concept (missing candidates/content). Result:", result);
+                }
+
+            } catch (error) {
+                await showModal('Kesalahan!', `Terjadi kesalahan saat mengacak konsep: ${error.message}.`);
+                console.error("ERROR generating random concept:", error);
+            } finally {
+                hideRandomConceptLoading();
+            }
+        }
+
+        // --- Event Listeners ---
+        generateBackgroundBtn.addEventListener('click', generateWorldBackground);
+        randomConceptBtn.addEventListener('click', generateRandomConcept); // New event listener
+
+        copyBackgroundDescBtn.addEventListener('click', async () => {
+            if (backgroundOutputSection.currentBackgroundData) {
+                const rawText = getRawBackgroundContent(backgroundOutputSection.currentBackgroundData);
+                await copyToClipboard(rawText, 'Deskripsi latar belakang dunia berhasil disalin!');
+            } else {
+                await showModal('Peringatan!', 'Tidak ada deskripsi latar belakang dunia untuk disalin.');
+            }
+        });
+
+        copyImagePromptBtn.addEventListener('click', async () => {
+            const textToCopy = generatedImagePromptSpan.textContent;
+            if (textToCopy) {
+                await copyToClipboard(textToCopy, 'Prompt gambar AI berhasil disalin!');
+            } else {
+                await showModal('Peringatan!', 'Tidak ada prompt gambar untuk disalin.');
+            }
+        });
+
+        clearOutputBtn.addEventListener('click', async () => {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus deskripsi latar belakang dunia dan prompt yang ditampilkan?', 'confirm');
+            if (confirmed) {
+                worldConceptInput.value = '';
+                detailFocusSelect.value = 'Semuanya'; // Reset to default
+                depthLevelSelect.value = 'Sedang'; // Reset to default
+                additionalContextInput.value = '';
+                worldBackgroundDescriptionDiv.innerHTML = '';
+                generatedImagePromptSpan.textContent = '';
+                imagePromptDisplayDiv.classList.add('hidden');
+                initialMessage.classList.remove('hidden');
+                copyBackgroundDescBtn.classList.add('hidden');
+                clearOutputBtn.classList.add('hidden');
+                backgroundOutputSection.currentBackgroundData = null; // Clear stored data
+            }
+        });
+
+        // Initial setup on page load
+        window.onload = loadAndDisplayApiKey;
+    </script>
+</body>
+</html>
+

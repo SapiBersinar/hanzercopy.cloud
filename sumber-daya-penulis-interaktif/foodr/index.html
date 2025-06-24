@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Makanan & Minuman Fiksi - Hanzercopy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Fallback font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Mencegah scroll horizontal */
+        }
+        /* Comic-like font */
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Share+Tech+Mono&display=swap');
+        .comic-font {
+            font-family: 'Comic Neue', cursive;
+        }
+        .mono-font {
+            font-family: 'Share Tech Mono', monospace; /* Font ala mesin tik/komputer */
+        }
+        /* Default font for inputs and general readability */
+        .default-font {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Gaya khusus untuk tombol komik */
+        .comic-button {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px black;
+            transition: all 0.2s ease-in-out;
+        }
+        .comic-button:hover {
+            box-shadow: 2px 2px 0px black;
+            transform: translate(4px, 4px);
+        }
+
+        /* Loader spinner */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Full-screen loading overlay */
+        .loading-overlay-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Overlay semi-transparan gelap */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Pastikan di atas semua elemen */
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Izinkan klik untuk melewati saat tidak aktif */
+        }
+        .loading-overlay-full.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            color: black;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 4px solid black;
+            box-shadow: 8px 8px 0px black;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+        .modal.active .modal-content {
+            transform: translateY(0);
+        }
+        .modal-content h3 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            font-family: 'Comic Neue', cursive;
+        }
+        .modal-content p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        /* Styling for the output sections */
+        .output-card {
+            background-color: #e0e0e0; /* Light gray background */
+            color: black;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #000;
+            box-shadow: 4px 4px 0px #000;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .output-card h3 {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-family: 'Comic Neue', cursive;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+        }
+        .output-card p {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        .output-card .detail-section {
+            margin-top: 15px;
+        }
+        .output-card .detail-section strong {
+            font-family: 'Comic Neue', cursive;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body class="bg-black text-white flex flex-col items-center p-4 min-h-screen">
+    <div class="text-center space-y-6 max-w-4xl w-full p-6 bg-white text-black rounded-lg shadow-xl border-4 border-black mb-6">
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold comic-font leading-tight">
+            Generator Makanan & Minuman Fiksi
+        </h1>
+        <p class="text-lg sm:text-xl default-font">
+            Ciptakan hidangan dan minuman unik dengan efek khusus untuk dunia cerita Anda!
+        </p>
+
+        <!-- API Key Input Section - Always visible initially -->
+        <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
+            <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda untuk Generator Makanan/Minuman:</label>
+            <input type="text" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="save-api-key-btn" class="comic-button bg-gray-600 text-white px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
+                Simpan API Key
+            </button>
+        </div>
+
+        <!-- Main Content Area - Hidden until API Key is set -->
+        <div id="main-content" class="hidden w-full space-y-6">
+            <div class="w-full flex flex-col sm:flex-row gap-4 items-start justify-center">
+                <!-- Left Column for Selects -->
+                <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-2/5 lg:w-1/3">
+                    <div class="flex flex-col gap-2 w-full">
+                        <label for="food-concept-input" class="comic-font text-gray-800 text-base shrink-0">Konsep Makanan/Minuman:</label>
+                        <textarea id="food-concept-input" placeholder="Misal: 'Sup yang membuat peminumnya bisa melihat masa depan', 'Buah beri yang tumbuh di bawah tanah, rasanya seperti permen', 'Minuman yang memberikan kekuatan super sementara'" class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+                        <button id="random-concept-btn" class="comic-button bg-purple-500 text-white px-4 py-2 rounded-full text-base font-bold mt-2 w-full">
+                            <span id="random-concept-button-text">Acak Konsep!</span>
+                            <div id="random-concept-loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-4 w-4 ml-2 hidden"></div>
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2 w-full">
+                        <label for="food-type-select" class="comic-font text-gray-800 text-base shrink-0">Jenis:</label>
+                        <select id="food-type-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                            <option value="Makanan Padat">Makanan Padat</option>
+                            <option value="Minuman">Minuman</option>
+                            <option value="Buah/Sayuran">Buah/Sayuran</option>
+                            <option value="Kue/Manisan">Kue/Manisan</option>
+                            <option value="Ramuan">Ramuan</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2 w-full">
+                        <label for="effect-type-select" class="comic-font text-gray-800 text-base shrink-0">Efek Khusus:</label>
+                        <select id="effect-type-select" class="p-2 border-4 border-black rounded-lg text-black default-font text-base focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow">
+                            <option value="Tidak Ada">Tidak Ada</option>
+                            <option value="Penyembuhan">Penyembuhan</option>
+                            <option value="Peningkatan Stat">Peningkatan Stat (Buff)</option>
+                            <option value="Detrimental/Racun">Detrimental/Racun</option>
+                            <option value="Ilusi/Persepsi">Ilusi/Persepsi</option>
+                            <option value="Teleportasi/Perpindahan">Teleportasi/Perpindahan</option>
+                            <option value="Mengubah Penampilan">Mengubah Penampilan</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Right Column for Context and Generate Button -->
+                <div class="flex flex-col gap-4 w-full sm:w-1/2 md:w-3/5 lg:w-2/3">
+                    <textarea id="additional-context-input" placeholder="Tambahkan konteks/detail lain yang spesifik (Opsional: Misal: 'Asal dari suku pegunungan', 'Resep kuno yang hilang', 'Hanya bisa dimakan di bawah bulan purnama')." class="flex-grow p-3 border-4 border-black rounded-lg text-black default-font text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"></textarea>
+                    
+                    <button id="generate-food-btn" class="comic-button bg-black text-white px-8 py-3 rounded-full text-lg font-bold w-full flex items-center justify-center">
+                        <span id="button-text">Buat Makanan/Minuman!</span>
+                        <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
+                    </button>
+                </div>
+            </div>
+
+            <div id="food-output-section" class="relative p-6 border-4 border-black rounded-lg bg-gray-100 min-h-[400px] text-left text-gray-800 mono-font overflow-y-auto mt-6">
+                <p class="text-center text-gray-600 comic-font text-lg pt-20" id="initial-message">
+                    Jelaskan konsep makanan/minuman Anda, pilih jenis & efek, lalu klik "Buat Makanan/Minuman!"
+                </p>
+                <!-- Generated food details and image prompt will appear here -->
+                <div id="food-description-output" class="mb-4 text-base leading-relaxed"></div>
+                <div id="image-prompt-display" class="border-t-2 border-dashed border-gray-400 pt-4 mt-4 hidden">
+                    <h3 class="text-xl font-bold mb-2 comic-font">Prompt Gambar AI:</h3>
+                    <p class="text-sm italic" id="generated-image-prompt"></p>
+                    <button id="copy-image-prompt-btn" class="comic-button bg-blue-500 text-white text-sm px-3 py-1 rounded-full font-bold mt-2">
+                        Salin Prompt Gambar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center mt-4">
+                <button id="copy-food-desc-btn" class="comic-button bg-blue-500 text-white px-8 py-3 rounded-full text-lg font-bold default-font hidden">
+                    Salin Deskripsi
+                </button>
+                <button id="clear-output-btn" class="comic-button bg-red-500 text-white px-8 py-3 rounded-full text-lg font-bold default-font hidden">
+                    Bersihkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full-screen loading overlay -->
+    <div id="full-loading-overlay" class="loading-overlay-full">
+        <div class="loader ease-linear rounded-full border-8 border-t-8 border-white h-20 w-20 mb-4"></div>
+        <span id="overlay-message" class="comic-font">Meracik resep rahasia...</span>
+    </div>
+
+    <!-- Custom Alert/Confirm Modal -->
+    <div id="custom-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" class="comic-font"></h3>
+            <p id="modal-message"></p>
+            <div class="modal-buttons">
+                <button id="modal-confirm-btn" class="comic-button bg-blue-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">OK</button>
+                <button id="modal-cancel-btn" class="comic-button bg-red-500 text-white px-6 py-2 rounded-full text-lg font-bold hidden">Batal</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API Key will be loaded from localStorage, default is blank.
+        let API_KEY = localStorage.getItem('geminiApiKeyFoodDrink') || ""; 
+
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const apiKeySection = document.getElementById('api-key-section');
+        const mainContent = document.getElementById('main-content'); // Main content container
+
+        const foodConceptInput = document.getElementById('food-concept-input');
+        const randomConceptBtn = document.getElementById('random-concept-btn');
+        const randomConceptButtonText = document.getElementById('random-concept-button-text');
+        const randomConceptLoadingSpinner = document.getElementById('random-concept-loading-spinner');
+
+        const foodTypeSelect = document.getElementById('food-type-select');
+        const effectTypeSelect = document.getElementById('effect-type-select');
+        const additionalContextInput = document.getElementById('additional-context-input');
+        const generateFoodBtn = document.getElementById('generate-food-btn');
+        const copyFoodDescBtn = document.getElementById('copy-food-desc-btn');
+        const copyImagePromptBtn = document.getElementById('copy-image-prompt-btn');
+        const clearOutputBtn = document.getElementById('clear-output-btn');
+        
+        const buttonText = document.getElementById('button-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const foodOutputSection = document.getElementById('food-output-section');
+        const initialMessage = document.getElementById('initial-message');
+        const foodDescriptionOutputDiv = document.getElementById('food-description-output');
+        const imagePromptDisplayDiv = document.getElementById('image-prompt-display');
+        const generatedImagePromptSpan = document.getElementById('generated-image-prompt');
+        const fullLoadingOverlay = document.getElementById('full-loading-overlay');
+        const overlayMessage = document.getElementById('overlay-message');
+
+        // Modal elements
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+        const loadingMessages = [
+            "Meracik resep rahasia...",
+            "Menggali bahan-bahan langka...",
+            "Menganalisis profil rasa...",
+            "Menyelidiki efek samping...",
+            "Menciptakan prompt visualisasi hidangan..."
+        ];
+
+        const randomConceptLoadingMessages = [
+            "Mencari ide hidangan...",
+            "Mengacak minuman spesial...",
+            "Menjelajahi dapur fantasi..."
+        ];
+
+        // --- Custom Modal Functions (replaces alert/confirm) ---
+        function showModal(title, message, type = 'alert') {
+            return new Promise((resolve) => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                customModal.classList.add('active');
+
+                modalConfirmBtn.classList.remove('hidden');
+                modalConfirmBtn.onclick = () => {
+                    customModal.classList.remove('active');
+                    resolve(true);
+                };
+
+                if (type === 'confirm') {
+                    modalCancelBtn.classList.remove('hidden');
+                    modalCancelBtn.onclick = () => {
+                        customModal.classList.remove('active');
+                        resolve(false);
+                    };
+                } else {
+                    modalCancelBtn.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- API Key Handling & Validation ---
+        async function validateAndLoadApiKey(key) {
+            if (!key) {
+                await showModal('Peringatan!', 'API Key tidak boleh kosong.');
+                return false;
+            }
+
+            console.log("DEBUG: Validating API Key for Food/Drink Generator:", key.substring(0, 5) + "...");
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: "Hello" }] }]; // Minimal prompt
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json(); 
+                    const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                    await showModal('Validasi Gagal!', `API Key tidak valid: ${errorMessage}.`);
+                    console.error("API Key validation failed for Food/Drink Generator:", response.status, errorBody);
+                    return false;
+                }
+                const result = await response.json();
+                if (!result.candidates || result.candidates.length === 0) {
+                     await showModal('Validasi Gagal!', 'API Key valid namun respons tidak sesuai. Coba lagi atau periksa key Anda.');
+                     console.error("API Key valid but unexpected response for Food/Drink Generator:", result);
+                     return false;
+                }
+                console.log("DEBUG: API Key for Food/Drink Generator validated successfully.");
+                return true;
+            } catch (error) {
+                await showModal('Validasi Gagal!', `Terjadi kesalahan koneksi saat validasi API Key: ${error.message}.`);
+                console.error("Error during API Key validation for Food/Drink Generator:", error);
+                return false;
+            }
+        }
+
+        async function loadAndDisplayApiKey() {
+            const storedKey = localStorage.getItem('geminiApiKeyFoodDrink');
+            if (storedKey) {
+                API_KEY = storedKey;
+                apiKeyInput.value = storedKey; // Display the full key
+                const isValid = await validateAndLoadApiKey(API_KEY);
+                if (isValid) {
+                    apiKeySection.classList.add('hidden'); 
+                    mainContent.classList.remove('hidden'); 
+                    console.log("DEBUG: API Key for Food/Drink Generator loaded from localStorage and is valid.");
+                } else {
+                    apiKeySection.classList.remove('hidden'); 
+                    mainContent.classList.add('hidden'); 
+                    console.log("DEBUG: Stored API Key for Food/Drink Generator is invalid. Please re-enter.");
+                }
+            } else {
+                apiKeyInput.value = ""; // Ensure input is empty if no key
+                apiKeySection.classList.remove('hidden'); // Ensure API key input is visible
+                mainContent.classList.add('hidden'); // Ensure main content is hidden
+                console.log("DEBUG: No API Key found in localStorage for Food/Drink Generator. Please enter it.");
+            }
+        }
+
+        saveApiKeyBtn.addEventListener('click', async () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                const isValid = await validateAndLoadApiKey(key);
+                if (isValid) {
+                    localStorage.setItem('geminiApiKeyFoodDrink', key);
+                    API_KEY = key;
+                    await showModal('Berhasil!', 'API Key berhasil disimpan dan diverifikasi!');
+                    apiKeySection.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                } else {
+                    // validateAndLoadApiKey already showed a modal for invalid key
+                }
+            } else {
+                await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
+            }
+        });
+
+        // Function to show loading state for main generation
+        function showLoading() {
+            overlayMessage.textContent = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            fullLoadingOverlay.classList.add('active');
+            generateFoodBtn.disabled = true;
+            randomConceptBtn.disabled = true;
+            foodConceptInput.disabled = true;
+            foodTypeSelect.disabled = true;
+            effectTypeSelect.disabled = true;
+            additionalContextInput.disabled = true;
+            copyFoodDescBtn.classList.add('hidden');
+            copyImagePromptBtn.classList.add('hidden');
+            clearOutputBtn.classList.add('hidden');
+            buttonText.textContent = "Membuat...";
+            loadingSpinner.classList.remove('hidden');
+            foodDescriptionOutputDiv.innerHTML = '';
+            generatedImagePromptSpan.textContent = '';
+            imagePromptDisplayDiv.classList.add('hidden');
+            initialMessage.classList.add('hidden');
+        }
+
+        // Function to hide loading state for main generation
+        function hideLoading() {
+            fullLoadingOverlay.classList.remove('active');
+            generateFoodBtn.disabled = false;
+            randomConceptBtn.disabled = false;
+            foodConceptInput.disabled = false;
+            foodTypeSelect.disabled = false;
+            effectTypeSelect.disabled = false;
+            additionalContextInput.disabled = false;
+            copyFoodDescBtn.classList.remove('hidden');
+            clearOutputBtn.classList.remove('hidden');
+            // Show image prompt section and button if there's a prompt
+            if (generatedImagePromptSpan.textContent) {
+                imagePromptDisplayDiv.classList.remove('hidden');
+                copyImagePromptBtn.classList.remove('hidden');
+            }
+            buttonText.textContent = "Buat Makanan/Minuman!";
+            loadingSpinner.classList.add('hidden');
+        }
+
+        // Function to show loading state for random concept generation
+        function showRandomConceptLoading() {
+            randomConceptButtonText.textContent = "Mengacak...";
+            randomConceptLoadingSpinner.classList.remove('hidden');
+            randomConceptBtn.disabled = true;
+            generateFoodBtn.disabled = true;
+            foodConceptInput.disabled = true;
+        }
+
+        // Function to hide loading state for random concept generation
+        function hideRandomConceptLoading() {
+            randomConceptButtonText.textContent = "Acak Konsep!";
+            randomConceptLoadingSpinner.classList.add('hidden');
+            randomConceptBtn.disabled = false;
+            generateFoodBtn.disabled = false;
+            foodConceptInput.disabled = false;
+        }
+
+        // Function to copy text to clipboard
+        async function copyToClipboard(text, alertMessage = 'Teks berhasil disalin ke clipboard!') {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.top = 0;
+            textarea.style.left = 0;
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.opacity = 0;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                await showModal('Berhasil!', alertMessage);
+            } catch (err) {
+                console.error('Gagal menyalin teks: ', err);
+                await showModal('Gagal!', 'Gagal menyalin. Silakan salin manual.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // Function to render the food/drink output from JSON
+        function renderFoodDetails(foodData) {
+            let htmlContent = '';
+            if (foodData.name) {
+                htmlContent += `<h3 class="text-2xl font-bold mb-4 text-center comic-font">${foodData.name}</h3>`;
+            }
+            if (foodData.type) {
+                htmlContent += `<div class="detail-section"><strong>Jenis:</strong><p class="default-font">${foodData.type}</p></div>`;
+            }
+            if (foodData.description) {
+                htmlContent += `<div class="detail-section"><strong>Deskripsi:</strong><p class="default-font">${foodData.description}</p></div>`;
+            }
+            if (foodData.mainIngredients) {
+                htmlContent += `<div class="detail-section"><strong>Bahan Utama:</strong><p class="default-font">${foodData.mainIngredients}</p></div>`;
+            }
+            if (foodData.flavourProfile) {
+                htmlContent += `<div class="detail-section"><strong>Profil Rasa:</strong><p class="default-font">${foodData.flavourProfile}</p></div>`;
+            }
+            if (foodData.effects && foodData.effects.length > 0) {
+                htmlContent += `<div class="detail-section"><strong>Efek Khusus:</strong><ul>`;
+                foodData.effects.forEach(effect => {
+                    htmlContent += `<li class="default-font">${effect}</li>`;
+                });
+                htmlContent += `</ul></div>`;
+            }
+            if (foodData.culturalSignificance) {
+                htmlContent += `<div class="detail-section"><strong>Signifikansi Budaya/Sosial:</strong><p class="default-font">${foodData.culturalSignificance}</p></div>`;
+            }
+            
+            foodDescriptionOutputDiv.innerHTML = htmlContent;
+
+            // Set the image prompt
+            if (foodData.imagePrompt) {
+                generatedImagePromptSpan.textContent = foodData.imagePrompt;
+                imagePromptDisplayDiv.classList.remove('hidden');
+                copyImagePromptBtn.classList.remove('hidden'); // Show copy button
+            } else {
+                imagePromptDisplayDiv.classList.add('hidden');
+                copyImagePromptBtn.classList.add('hidden'); // Hide copy button
+            }
+        }
+
+        // Function to get raw text for copying
+        function getRawFoodContent(foodData) {
+            let rawText = '';
+            if (foodData.name) rawText += `Nama: ${foodData.name}\n\n`;
+            if (foodData.type) rawText += `Jenis: ${foodData.type}\n\n`;
+            if (foodData.description) rawText += `Deskripsi:\n${foodData.description}\n\n`;
+            if (foodData.mainIngredients) rawText += `Bahan Utama:\n${foodData.mainIngredients}\n\n`;
+            if (foodData.flavourProfile) rawText += `Profil Rasa:\n${foodData.flavourProfile}\n\n`;
+            if (foodData.effects && foodData.effects.length > 0) {
+                rawText += `Efek Khusus:\n`;
+                foodData.effects.forEach((effect, index) => {
+                    rawText += `- ${effect}\n`;
+                });
+                rawText += `\n`;
+            }
+            if (foodData.culturalSignificance) rawText += `Signifikansi Budaya/Sosial:\n${foodData.culturalSignificance}\n\n`;
+            rawText += `Prompt Gambar AI: ${foodData.imagePrompt}\n\n`; // Always include image prompt in raw copy
+            return rawText.trim();
+        }
+
+        // Core Function: Generate Food/Drink
+        async function generateFood() {
+            if (!API_KEY) {
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden');
+                mainContent.classList.add('hidden');
+                return;
+            }
+
+            const foodConcept = foodConceptInput.value.trim();
+            const foodType = foodTypeSelect.value;
+            const effectType = effectTypeSelect.value;
+            const additionalContext = additionalContextInput.value.trim();
+
+            if (!foodConcept) {
+                await showModal('Peringatan!', 'Silakan jelaskan konsep makanan/minuman Anda, atau klik "Acak Konsep!" untuk ide.');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                let prompt = `Sebagai seorang koki dunia fiksi, buatkan deskripsi mendalam untuk makanan atau minuman berdasarkan konsep berikut: "${foodConcept}".
+                
+                Jenis Makanan/Minuman: ${foodType}
+                ${effectType !== 'Tidak Ada' ? `Efek yang Diinginkan: ${effectType}` : 'Tidak Ada Efek Khusus yang Diinginkan.'}
+                ${additionalContext ? `Konteks Tambahan: ${additionalContext}` : 'Konteks Tambahan: (Tidak Ada)'}
+
+                Detail yang diminta:
+                -   Nama: Sebuah nama yang unik dan menarik.
+                -   Jenis: Klasifikasi umum (misal: "Hidangan Utama", "Minuman Penambah Stamina", "Buah Ajaib").
+                -   Deskripsi: Penampilan, tekstur, aroma, dan cara penyajiannya.
+                -   Bahan Utama: Bahan-bahan utama yang menyusunnya, terutama yang unik atau fiksi.
+                -   Profil Rasa: Deskripsi detail tentang bagaimana rasanya.
+                -   Efek/Properti Khusus: Jelaskan efek yang ditimbulkan saat dikonsumsi (jika ada, sesuaikan dengan 'Efek yang Diinginkan'). Jika 'Tidak Ada' dipilih, sebutkan 'Tidak ada efek khusus selain nutrisi dasar.'.
+                -   Signifikansi Budaya/Sosial: Bagaimana makanan/minuman ini digunakan dalam masyarakat fiksi (misal: makanan perayaan, obat tradisional, makanan pokok).
+
+                Di akhir deskripsi, berikan juga sebuah prompt yang sangat detail dan spesifik untuk AI Image Generator (seperti Imagen) untuk membuat gambar makanan/minuman ini yang mencerminkan penampilan, warna, tekstur, dan efek khususnya (jika relevan). Prompt gambar ini harus fokus pada gaya visual food photography atau ilustrasi fantasi. Prompt gambar AI harus dalam Bahasa Inggris.
+
+                Format respons Anda sebagai JSON object tunggal dengan properti berikut, semua dalam Bahasa Indonesia kecuali prompt gambar AI:
+                {
+                  "name": "STRING",
+                  "type": "STRING",
+                  "description": "STRING",
+                  "mainIngredients": "STRING",
+                  "flavourProfile": "STRING",
+                  "effects": ["STRING"], // Array of strings for effects
+                  "culturalSignificance": "STRING",
+                  "imagePrompt": "STRING" // Prompt gambar AI dalam Bahasa Inggris
+                }
+                `;
+                console.log("DEBUG: generateFood prompt:", prompt);
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { 
+                    contents: chatHistory,
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                "name": { "type": "STRING" },
+                                "type": { "type": "STRING" },
+                                "description": { "type": "STRING" },
+                                "mainIngredients": { "type": "STRING" },
+                                "flavourProfile": { "type": "STRING" },
+                                "effects": {
+                                    "type": "ARRAY",
+                                    "items": { "type": "STRING" }
+                                },
+                                "culturalSignificance": { "type": "STRING" },
+                                "imagePrompt": { "type": "STRING" }
+                            },
+                            "required": ["name", "type", "description", "mainIngredients", "flavourProfile", "effects", "imagePrompt"]
+                        }
+                    }
+                };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Response not OK for Food/Drink Generation:", response.status, errorBody);
+                    try {
+                        const errorData = typeof errorBody === 'string' ? JSON.parse(errorBody) : errorBody;
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorData.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                    } catch (parseError) {
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${JSON.stringify(errorBody).substring(0, 100)}...`);
+                    }
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${JSON.stringify(errorBody)}`);
+                }
+
+                const result = await response.json();
+                console.log("DEBUG: Food/Drink Raw Result:", result);
+                
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const foodData = JSON.parse(result.candidates[0].content.parts[0].text);
+                    console.log("DEBUG: Parsed Food/Drink Data:", foodData);
+                    renderFoodDetails(foodData);
+                    foodOutputSection.currentFoodData = foodData; // Store for copying
+
+                } else {
+                    foodOutputSection.innerHTML = `
+                        <p class="text-center text-red-700 comic-font text-lg pt-10">
+                            Maaf, AI gagal membuat detail makanan/minuman. Pastikan konsep Anda jelas dan spesifik.
+                        </p>
+                    `;
+                    console.error("AI failed to generate food/drink (missing candidates/content). Result:", result);
+                }
+            } catch (error) {
+                foodOutputSection.innerHTML = `
+                    <p class="text-center text-red-700 comic-font text-lg pt-10">
+                        Terjadi kesalahan saat memuat detail makanan/minuman. Periksa koneksi Anda atau API Key Anda.
+                    </p>
+                `;
+                console.error("ERROR fetching food/drink data:", error);
+                if (!document.getElementById('custom-modal').classList.contains('active')) {
+                    await showModal('Kesalahan!', `Terjadi kesalahan saat membuat makanan/minuman: ${error.message}. Pastikan API Key Anda valid.`);
+                }
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // New Function: Generate Random Concept for Food/Drink
+        async function generateRandomConcept() {
+            if (!API_KEY) {
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); 
+                mainContent.classList.add('hidden'); 
+                return;
+            }
+
+            showRandomConceptLoading();
+
+            try {
+                const prompt = `Berikan SATU ide konsep makanan atau minuman fiksi yang singkat, menarik, dan unik dalam MAKSIMAL dua kalimat. Fokus pada inti premisnya atau efek utamanya. Berikan hanya konsepnya sebagai teks biasa, tanpa awalan atau contoh, dan tanpa daftar bernomor atau bullet point.`;
+                
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json();
+                    console.error("API Response not OK for Random Concept Generation (Food/Drink):", response.status, errorBody);
+                    try {
+                        const errorData = typeof errorBody === 'string' ? JSON.parse(errorBody) : errorBody;
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorData.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                    } catch (parseError) {
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${JSON.stringify(errorBody).substring(0, 100)}...`);
+                    }
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${JSON.stringify(errorBody)}`);
+                }
+
+                const result = await response.json();
+                console.log("DEBUG: Random Concept Raw Result (Food/Drink):", result);
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const generatedConcept = result.candidates[0].content.parts[0].text.trim();
+                    foodConceptInput.value = generatedConcept;
+                } else {
+                    await showModal('Gagal!', 'AI gagal menghasilkan konsep acak. Coba lagi.');
+                    console.error("AI failed to generate random concept (Food/Drink) (missing candidates/content). Result:", result);
+                }
+
+            } catch (error) {
+                await showModal('Kesalahan!', `Terjadi kesalahan saat mengacak konsep makanan/minuman: ${error.message}.`);
+                console.error("ERROR generating random concept (Food/Drink):", error);
+            } finally {
+                hideRandomConceptLoading();
+            }
+        }
+
+        // --- Event Listeners ---
+        generateFoodBtn.addEventListener('click', generateFood);
+        randomConceptBtn.addEventListener('click', generateRandomConcept);
+
+        copyFoodDescBtn.addEventListener('click', async () => {
+            if (foodOutputSection.currentFoodData) {
+                const rawText = getRawFoodContent(foodOutputSection.currentFoodData);
+                await copyToClipboard(rawText, 'Deskripsi makanan/minuman berhasil disalin!');
+            } else {
+                await showModal('Peringatan!', 'Tidak ada deskripsi makanan/minuman untuk disalin.');
+            }
+        });
+
+        copyImagePromptBtn.addEventListener('click', async () => {
+            const textToCopy = generatedImagePromptSpan.textContent;
+            if (textToCopy) {
+                await copyToClipboard(textToCopy, 'Prompt gambar AI berhasil disalin!');
+            } else {
+                await showModal('Peringatan!', 'Tidak ada prompt gambar untuk disalin.');
+            }
+        });
+
+        clearOutputBtn.addEventListener('click', async () => {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus detail makanan/minuman yang ditampilkan dan input?', 'confirm');
+            if (confirmed) {
+                foodConceptInput.value = '';
+                foodTypeSelect.value = 'Makanan Padat';
+                effectTypeSelect.value = 'Tidak Ada';
+                additionalContextInput.value = '';
+                foodDescriptionOutputDiv.innerHTML = '';
+                generatedImagePromptSpan.textContent = '';
+                imagePromptDisplayDiv.classList.add('hidden');
+                initialMessage.classList.remove('hidden');
+                copyFoodDescBtn.classList.add('hidden');
+                clearOutputBtn.classList.add('hidden');
+                foodOutputSection.currentFoodData = null;
+            }
+        });
+
+        // Initial setup on page load
+        window.onload = loadAndDisplayApiKey;
+    </script>
+</body>
+</html>
