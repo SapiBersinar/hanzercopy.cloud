@@ -540,6 +540,27 @@
         }
 
         // =====================================================================
+        // Recalculate piece positions and redraw (used for resize without resetting state)
+        // =====================================================================
+        function recalculatePiecePositionsAndRedraw() {
+            const container = puzzleCanvas.parentElement;
+            const maxAllowedDimension = Math.min(container.clientWidth, window.innerHeight * 0.75);
+            puzzleCanvas.width = maxAllowedDimension;
+            puzzleCanvas.height = maxAllowedDimension;
+            pieceWidth = puzzleCanvas.width / gridSize;
+            pieceHeight = puzzleCanvas.height / gridSize;
+
+            // Re-assign currentX/currentY for each piece based on its *current index in the puzzlePieces array*
+            // This preserves the current (shuffled or solved) arrangement
+            puzzlePieces.forEach((piece, index) => {
+                piece.currentX = (index % gridSize) * pieceWidth;
+                piece.currentY = Math.floor(index / gridSize) * pieceHeight;
+            });
+
+            drawPuzzle();
+        }
+
+        // =====================================================================
         // Draw Puzzle on Canvas
         // =====================================================================
         function drawPuzzle() {
@@ -609,76 +630,60 @@
             const originalBlankId = gridSize * gridSize - 1; // ID of the blank piece
 
             const shuffleStartTime = Date.now(); 
-            let finalShuffledPiecePositions = null; // Stores the final positions of the pieces (currentX, currentY)
+            let solvableShuffledArrayOrder = null; // Store the final logical order of pieces (IDs)
 
             while (!currentSolvable && shuffleAttempts < maxShuffleAttempts) {
-                // Create a temporary set of pieces for internal shuffling and solvability check
-                // This ensures the main `puzzlePieces` array isn't altered until a solvable state is found
-                let tempPuzzlePieces = [];
-                // Initialize tempPuzzlePieces to a solved state first, for consistent shuffling logic
-                for (let i = 0; i < gridSize * gridSize; i++) {
-                    tempPuzzlePieces.push({
-                        id: i,
-                        originalIndex: i,
-                        currentX: (i % gridSize) * pieceWidth,
-                        currentY: Math.floor(i / gridSize) * pieceHeight,
-                        isBlank: (i === originalBlankId)
+                // Create a temporary array of IDs for shuffling and solvability check
+                let tempIds = Array.from({ length: gridSize * gridSize }, (_, i) => i);
+                let currentTempBlankIndex = gridSize * gridSize - 1; // Initially, blank is at the end
+
+                const { numMoves } = getShuffleParams(gridSize);
+
+                // Perform N random, valid swaps on `tempIds` array
+                for (let i = 0; i < numMoves; i++) {
+                    const blankRow = Math.floor(currentTempBlankIndex / gridSize);
+                    const blankCol = currentTempBlankIndex % gridSize;
+
+                    const possibleNextBlankIndices = [];
+                    if (blankRow > 0) possibleNextBlankIndices.push(currentTempBlankIndex - gridSize);
+                    if (blankRow < gridSize - 1) possibleNextBlankIndices.push(currentTempBlankIndex + gridSize);
+                    if (blankCol > 0) possibleNextBlankIndices.push(currentTempBlankIndex - 1);
+                    if (blankCol < gridSize - 1) possibleNextBlankIndices.push(currentTempBlankIndex + 1);
+                    
+                    if (possibleNextBlankIndices.length === 0) continue;
+
+                    const nextBlankIndex = possibleNextBlankIndices[Math.floor(Math.random() * possibleNextBlankIndices.length)];
+                    
+                    // Swap IDs in the temporary array
+                    const tempId = tempIds[currentTempBlankIndex];
+                    tempIds[currentTempBlankIndex] = tempIds[nextBlankIndex];
+                    tempIds[nextBlankIndex] = tempId;
+
+                    currentTempBlankIndex = nextBlankIndex;
+                }
+
+                // Create a dummy piece array that reflects this `tempIds` permutation for `isPuzzleSolvable`
+                let dummyPiecesForSolvability = [];
+                for (let i = 0; i < tempIds.length; i++) {
+                    dummyPiecesForSolvability.push({
+                        id: tempIds[i],
+                        isBlank: (tempIds[i] === originalBlankId), 
+                        currentX: (i % gridSize) * pieceWidth, // These coordinates are just for the `isPuzzleSolvable` function
+                        currentY: Math.floor(i / gridSize) * pieceHeight, 
                     });
                 }
                 
-                let tempBlankPiece = tempPuzzlePieces.find(p => p.isBlank);
-                const { numMoves } = getShuffleParams(gridSize);
-
-                // Perform N random, valid moves on `tempPuzzlePieces`
-                for (let i = 0; i < numMoves; i++) {
-                    const blankCol = Math.round(tempBlankPiece.currentX / pieceWidth);
-                    const blankRow = Math.round(tempBlankPiece.currentY / pieceHeight);
-
-                    const possibleMoves = []; // Array of pieces that can move into the blank space
-                    if (blankRow > 0) possibleMoves.push(tempPuzzlePieces.find(p => Math.round(p.currentX / pieceWidth) === blankCol && Math.round(p.currentY / pieceHeight) === blankRow - 1));
-                    if (blankRow < gridSize - 1) possibleMoves.push(tempPuzzlePieces.find(p => Math.round(p.currentX / pieceWidth) === blankCol && Math.round(p.currentY / pieceHeight) === blankRow + 1));
-                    if (blankCol > 0) possibleMoves.push(tempPuzzlePieces.find(p => Math.round(p.currentX / pieceWidth) === blankCol - 1 && Math.round(p.currentY / pieceHeight) === blankRow));
-                    if (blankCol < gridSize - 1) possibleMoves.push(tempPuzzlePieces.find(p => Math.round(p.currentX / pieceWidth) === blankCol + 1 && Math.round(p.currentY / pieceHeight) === blankRow));
-                    
-                    const validMoves = possibleMoves.filter(p => p && !p.isBlank); // Filter out nulls and the blank piece itself
-
-                    if (validMoves.length === 0) continue;
-
-                    const pieceToMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-
-                    // Perform the swap of visual coordinates
-                    const tempX = pieceToMove.currentX;
-                    const tempY = pieceToMove.currentY;
-
-                    pieceToMove.currentX = tempBlankPiece.currentX;
-                    pieceToMove.currentY = tempBlankPiece.currentY;
-
-                    tempBlankPiece.currentX = tempX;
-                    tempBlankPiece.currentY = tempY;
-
-                    // Update the array order to reflect the new visual positions
-                    const pieceToMoveIndexInArray = tempPuzzlePieces.indexOf(pieceToMove);
-                    const blankIndexInArray = tempPuzzlePieces.indexOf(tempBlankPiece);
-                    [tempPuzzlePieces[pieceToMoveIndexInArray], tempPuzzlePieces[blankIndexInArray]] = 
-                    [tempPuzzlePieces[blankIndexInArray], tempPuzzlePieces[pieceToMoveIndexInArray]];
-                }
-
-                currentSolvable = isPuzzleSolvable(tempPuzzlePieces, gridSize);
+                currentSolvable = isPuzzleSolvable(dummyPiecesForSolvability, gridSize);
                 if (currentSolvable) {
-                    finalShuffledPiecePositions = tempPuzzlePieces.map(p => ({
-                        id: p.id,
-                        currentX: p.currentX,
-                        currentY: p.currentY,
-                        isBlank: p.isBlank
-                    }));
+                    solvableShuffledArrayOrder = tempIds; // Store the ID permutation
                 } else {
                     shuffleAttempts++;
                 }
             } // End of while loop (ensuring solvability)
 
-            if (currentSolvable && finalShuffledPiecePositions) {
-                // Now, animate the actual puzzle from its current (solved) state to the found solvable state
-                // First, reset the main puzzlePieces to solved visual state if it's not already
+            if (currentSolvable && solvableShuffledArrayOrder) {
+                // Now, perform the visual animation to transition to the `solvableShuffledArrayOrder`
+                // First, ensure the current `puzzlePieces` are in a solved visual state
                 puzzlePieces.sort((a, b) => a.originalIndex - b.originalIndex);
                 puzzlePieces.forEach((piece, index) => {
                     piece.currentX = (index % gridSize) * pieceWidth;
@@ -688,22 +693,14 @@
                 drawPuzzle(); // Draw the solved state visually before animation starts
 
                 const { visualDelay } = getShuffleParams(gridSize);
-                const shuffleMovesCount = getShuffleParams(gridSize).numMoves;
-                let animatedMoves = 0;
+                const shuffleMovesCount = getShuffleParams(gridSize).numMoves; // Number of visual steps
 
-                // Create a sequence of random *valid* moves that leads to the `finalShuffledPiecePositions`
-                // This is the tricky part for perfectly mimicking a shuffle visually.
-                // A simpler approach for visual animation is to perform N random valid swaps directly on `puzzlePieces`
-                // and if the end result isn't solvable, regenerate the whole sequence until it is.
-                // The current `while` loop ensures a solvable *end state* but doesn't store the *sequence*.
-                
-                // Let's perform a new visual shuffle directly on `puzzlePieces` to reach a solvable state.
-                let currentVisualPieces = puzzlePieces.map(p => ({ ...p })); // Start from current solved state for animation
+                // Generate a visual shuffle path directly on the main puzzlePieces array
+                let currentVisualPieces = puzzlePieces.map(p => ({ ...p })); // A deep copy for animation state
                 let currentVisualBlank = currentVisualPieces.find(p => p.isBlank);
+                let visualShuffleSequence = [];
 
                 for (let i = 0; i < shuffleMovesCount; i++) {
-                    if (!shuffling) break; // Allow cancellation
-
                     const blankCol = Math.round(currentVisualBlank.currentX / pieceWidth);
                     const blankRow = Math.round(currentVisualBlank.currentY / pieceHeight);
 
@@ -718,8 +715,9 @@
                     if (validMoves.length === 0) continue;
 
                     const pieceToMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+                    visualShuffleSequence.push({ piece: pieceToMove, blank: currentVisualBlank }); // Store the move
 
-                    // Visually swap
+                    // Perform the logical swap in `currentVisualPieces` for next iteration
                     const tempX = pieceToMove.currentX;
                     const tempY = pieceToMove.currentY;
 
@@ -729,26 +727,62 @@
                     currentVisualBlank.currentX = tempX;
                     currentVisualBlank.currentY = tempY;
 
-                    // Update array order for these visual pieces (essential for solvability check later)
                     const pieceToMoveIndexInArray = currentVisualPieces.indexOf(pieceToMove);
                     const blankIndexInArray = currentVisualPieces.indexOf(currentVisualBlank);
                     [currentVisualPieces[pieceToMoveIndexInArray], currentVisualPieces[blankIndexInArray]] = 
                     [currentVisualPieces[blankIndexInArray], currentVisualPieces[pieceToMoveIndexInArray]];
+                }
 
-                    puzzlePieces = currentVisualPieces; // Update main array for drawing
-                    drawPuzzle(); // Redraw after each step
+                // After generating the visual sequence, apply it to the main puzzlePieces
+                // and animate them.
+                puzzlePieces.sort((a, b) => a.originalIndex - b.originalIndex); // Start from solved state visually
+
+                for (const { piece, blank } of visualShuffleSequence) {
+                    if (!shuffling) break;
+                    // Find the actual piece object from the main `puzzlePieces` array by its ID
+                    const actualPiece = puzzlePieces.find(p => p.id === piece.id);
+                    const actualBlank = puzzlePieces.find(p => p.id === blank.id); // This should still be the original blank piece ID
+
+                    // Get current visual positions
+                    const currentActualPieceIndex = puzzlePieces.indexOf(actualPiece);
+                    const currentActualBlankIndex = puzzlePieces.indexOf(actualBlank);
+
+                    // Determine target visual positions based on where they should be moved
+                    const targetXForPiece = actualBlank.currentX;
+                    const targetYForPiece = actualBlank.currentY;
+                    const targetXForBlank = actualPiece.currentX;
+                    const targetYForBlank = actualPiece.currentY;
+
+                    // Swap array elements to reflect new logical order for subsequent iterations
+                    [puzzlePieces[currentActualPieceIndex], puzzlePieces[currentActualBlankIndex]] = 
+                    [puzzlePieces[currentActualBlankIndex], puzzlePieces[currentActualPieceIndex]];
+
+                    // Update currentX/Y for immediate drawing
+                    actualPiece.currentX = targetXForPiece;
+                    actualPiece.currentY = targetYForPiece;
+                    actualBlank.currentX = targetXForBlank;
+                    actualBlank.currentY = targetYForBlank;
+
+                    drawPuzzle();
                     await new Promise(resolve => setTimeout(resolve, visualDelay));
-                    animatedMoves++;
                 }
 
-                // After visual shuffle, ensure the final state is indeed solvable
-                if (!isPuzzleSolvable(puzzlePieces, gridSize)) {
-                    // This is a fallback. If the *visual* shuffle didn't end up solvable,
-                    // which is very unlikely with this approach, regenerate.
-                    console.warn("Visual shuffle resulted in unsolvable puzzle, re-shuffling completely.");
-                    await animateShuffle(); // Recursive call to find a solvable one
-                    return; // Exit this call
+                // Final check to ensure the puzzle is in the *guaranteed solvable state*
+                // This step ensures that the final state after the visual shuffle is *exactly* the one
+                // that was confirmed solvable. If the visual shuffle diverges, we correct it here.
+                let correctedPuzzlePieces = [];
+                for(let i=0; i<solvableShuffledArrayOrder.length; i++) {
+                    const pieceId = solvableShuffledArrayOrder[i];
+                    const originalPieceData = puzzlePieces.find(p => p.id === pieceId);
+                    correctedPuzzlePieces.push({
+                        ...originalPieceData,
+                        currentX: (i % gridSize) * pieceWidth,
+                        currentY: Math.floor(i / gridSize) * pieceHeight,
+                        isBlank: (pieceId === originalBlankId)
+                    });
                 }
+                puzzlePieces = correctedPuzzlePieces;
+                drawPuzzle(); // Final redraw to the guaranteed solvable state
 
                 const shuffleEndTime = Date.now();
                 const elapsedTimeSeconds = ((shuffleEndTime - shuffleStartTime) / 1000).toFixed(2);
@@ -762,7 +796,7 @@
                 shuffling = false; 
                 enableAllButtons();
 
-                solveStatusDisplay.textContent = `Berhasil mengacak ${animatedMoves} gerakan dalam ${elapsedTimeSeconds} detik.`;
+                solveStatusDisplay.textContent = `Berhasil mengacak ${shuffleMovesCount} gerakan dalam ${elapsedTimeSeconds} detik.`;
             } else {
                 shuffling = false;
                 enableAllButtons();
@@ -788,11 +822,10 @@
                 isShuffled = prevState.isShuffled;
                 currentPuzzleMode = prevState.puzzleMode;
 
+                // Re-calculate positions based on the restored array order
                 puzzlePieces.forEach((piece, index) => {
-                    const targetCol = index % gridSize;
-                    const targetRow = Math.floor(index / gridSize);
-                    piece.currentX = targetCol * pieceWidth;
-                    piece.currentY = targetRow * pieceHeight;
+                    piece.currentX = (index % gridSize) * pieceWidth;
+                    piece.currentY = Math.floor(index / gridSize) * pieceHeight;
                 });
 
                 updateMoveCounter();
@@ -1307,23 +1340,25 @@
         // Handle Window Resize Responsiveness
         // =====================================================================
         window.addEventListener('resize', async () => {
-            if (puzzleReady) {
-                solving = false;
-                shuffling = false;
-                isProcessingClick = false;
-                enableAllButtons();
-                stopTimer();
-                hasMadeFirstMove = false; // Reset first move flag on resize as positions change
-                solveStatusDisplay.textContent = '';
-                
-                initializePuzzle(); 
-                if (isShuffled) { 
-                   drawPuzzle(); // Maintain shuffled visual state
-                } else {
-                    drawPuzzle(); // If solved/initial state, keep it solved
-                }
-                // Timer is reset, it will start on the first move after resize if puzzle is shuffled.
+            if (!puzzleReady) return; // Don't do anything if puzzle isn't ready
+
+            solving = false;
+            shuffling = false;
+            isProcessingClick = false;
+            enableAllButtons(); // Re-enable buttons if they were disabled by a prior operation
+            stopTimer(); // Always stop timer, it will restart on first move if puzzle is shuffled
+            hasMadeFirstMove = false; // Reset hasMadeFirstMove
+            solveStatusDisplay.textContent = '';
+            puzzleCanvas.classList.remove('puzzle-solved-animation'); // Clear win animation
+
+            // Only re-initialize (reset to solved) if the puzzle was NOT shuffled
+            // If it was shuffled, preserve its shuffled state on resize
+            if (!isShuffled) {
+                initializePuzzle(); // This will put it back to a solved state (correct for non-shuffled state)
+            } else {
+                recalculatePiecePositionsAndRedraw(); // Keep the current shuffled state, just rescale
             }
+            // Timer will start again on the first user move after resize if isShuffled is true.
         });
 
         // =====================================================================
