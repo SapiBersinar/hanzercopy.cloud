@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Puzzle Interaktif</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Menggunakan font Inter dari Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Latar belakang gradient modern */
+            background-image: linear-gradient(to bottom right, #a78bfa, #818cf8, #6366f1); /* Ungu-biru gradient */
+            background-attachment: fixed; /* Memastikan gradient tetap saat scroll */
+            overflow-x: hidden; /* Mencegah overflow horizontal */
+        }
+        /* Styling untuk canvas */
+        canvas {
+            display: block; /* Menghilangkan spasi ekstra di bawah canvas */
+            background-color: #ffffff; /* Latar belakang canvas putih bersih */
+            border: 3px solid #4f46e5; /* Border ungu tua (indigo-600) */
+            border-radius: 0.75rem; /* Sudut membulat */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Shadow lembut */
+            touch-action: manipulation; /* Memungkinkan event sentuhan */
+            -webkit-user-select: none; /* Non-seleksi teks untuk iOS */
+            -moz-user-select: none; /* Non-seleksi teks untuk Firefox */
+            -ms-user-select: none; /* Non-seleksi teks untuk IE/Edge */
+            user-select: none; /* Non-seleksi teks */
+            /* Transisi untuk animasi kemenangan */
+            transition: transform 0.5s ease-out, border 0.5s ease-out, box-shadow 0.5s ease-out;
+        }
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+            text-align: center;
+            border: 2px solid #4f46e5; /* Border ungu tua */
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        /* Styling untuk tombol */
+        .btn-primary-gradient {
+            background-image: linear-gradient(to right, #6366f1, #8b5cf6); /* Indigo ke Violet */
+            transition: background-image 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .btn-primary-gradient:hover {
+            background-image: linear-gradient(to right, #4f46e5, #7c3aed); /* Lebih gelap saat hover */
+        }
+        .btn-primary-gradient:active {
+            background-image: linear-gradient(to right, #3730a3, #5b21b6); /* Lebih gelap lagi saat ditekan */
+            transform: scale(0.98);
+        }
+
+        .btn-purple {
+            background-color: #a855f7; /* Purple-500 */
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .btn-purple:hover {
+            background-color: #9333ea; /* Purple-600 */
+        }
+        .btn-purple:active {
+            background-color: #7e22ce; /* Purple-700 saat ditekan */
+            transform: scale(0.98);
+        }
+
+        .btn-green-solve {
+            background-color: #10b981; /* Green-500 */
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .btn-green-solve:hover {
+            background-color: #059669; /* Green-600 */
+        }
+        .btn-green-solve:active {
+            background-color: #047857; /* Green-700 saat ditekan */
+            transform: scale(0.98);
+        }
+
+        .btn-gray { /* General gray button for Reset */
+            background-color: #6b7280; /* Gray-500 */
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .btn-gray:hover {
+            background-color: #4b5563; /* Gray-600 */
+        }
+        .btn-gray:active {
+            background-color: #374151; /* Gray-700 saat ditekan */
+            transform: scale(0.98);
+        }
+
+        /* Styling untuk gambar contoh yang bisa diklik */
+        .sample-image-container {
+            width: 80px; /* Lebar tetap untuk gambar contoh */
+            height: 80px; /* Tinggi tetap untuk gambar contoh */
+            overflow: hidden;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, border 0.2s ease-in-out;
+            border: 2px solid transparent; /* Border transparan default */
+        }
+        .sample-image-container:hover {
+            transform: scale(1.05); /* Sedikit membesar saat hover */
+            border-color: #6366f1; /* Warna border saat hover */
+        }
+        .sample-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Pastikan gambar mengisi container tanpa distorsi */
+            display: block;
+        }
+
+
+        /* Kelas untuk animasi kemenangan */
+        .puzzle-solved-animation {
+            animation: puzzle-bounce 0.5s ease-out forwards;
+            border-color: #10b981; /* Green-500 for solved state */
+            box-shadow: 0 0 20px 5px rgba(16, 185, 129, 0.7), 0 0 30px 10px rgba(16, 185, 129, 0.5); /* Glowing effect */
+        }
+
+        @keyframes puzzle-bounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4 text-gray-900">
+
+    <div class="w-full max-w-3xl bg-white p-6 rounded-xl shadow-lg">
+        <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">Sliding Puzzle Interaktif</h1>
+
+        <!-- Bagian Unggah Foto -->
+        <div class="mb-6">
+            <label for="imageUpload" class="block text-lg font-medium text-gray-700 mb-2">Unggah Foto Anda:</label>
+            <input type="file" id="imageUpload" accept="image/*" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+        </div>
+
+        <!-- Bagian Pilih Gambar Contoh -->
+        <div class="mb-6 text-center">
+            <label class="block text-lg font-medium text-gray-700 mb-2">Atau Pilih Gambar Contoh:</label>
+            <div id="sampleImageContainer" class="flex flex-wrap justify-center gap-2">
+                <div class="sample-image-container" data-src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/2.jpg">
+                    <img src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/2.jpg" alt="Contoh Gambar 1">
+                </div>
+                <div class="sample-image-container" data-src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/3.jpg">
+                    <img src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/3.jpg" alt="Contoh Gambar 2">
+                </div>
+                <div class="sample-image-container" data-src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/4.jpg">
+                    <img src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/4.jpg" alt="Contoh Gambar 3">
+                </div>
+                <div class="sample-image-container" data-src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/5.png">
+                    <img src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/5.png" alt="Contoh Gambar 4">
+                </div>
+            </div>
+        </div>
+
+        <!-- Pilihan Ukuran Grid -->
+        <div class="mb-6 text-center">
+            <label for="gridSizeSelect" class="block text-lg font-medium text-gray-700 mb-2">Pilih Ukuran Puzzle:</label>
+            <select id="gridSizeSelect" class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="3" selected>3x3</option>
+                <option value="4">4x4</option>
+                <option value="5">5x5</option>
+            </select>
+        </div>
+
+        <!-- Pilihan Mode Puzzle -->
+        <div class="mb-6 text-center">
+            <label for="puzzleModeSelect" class="block text-lg font-medium text-gray-700 mb-2">Pilih Mode Puzzle:</label>
+            <select id="puzzleModeSelect" class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <option value="sliding" selected>Sliding Puzzle (Default)</option>
+                <option value="jigsaw">Jigsaw (Tanpa Nomor)</option>
+            </select>
+        </div>
+        
+        <!-- Penghitung Gerakan & Timer -->
+        <div class="flex justify-center gap-8 mb-4 text-center">
+            <div class="text-lg font-semibold text-gray-700">
+                Gerakan: <span id="moveCounter" class="text-indigo-700">0</span>
+            </div>
+            <div class="text-lg font-semibold text-gray-700">
+                Waktu: <span id="timerDisplay" class="text-indigo-700">00:00</span>
+            </div>
+        </div>
+
+        <!-- Tombol Aksi - DIPOSISIKAN DI SINI -->
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-6">
+            <button id="shuffleButton" class="btn-primary-gradient text-white font-semibold py-3 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                Shuffle
+            </button>
+            <button id="undoButton" class="btn-purple text-white font-semibold py-3 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2">
+                Undo
+            </button>
+            <button id="solveButton" class="btn-green-solve text-white font-semibold py-3 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                Selesaikan Otomatis
+            </button>
+            <button id="resetButton" class="btn-gray text-white font-semibold py-3 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
+                Reset Puzzle
+            </button>
+        </div>
+        <!-- Status Selesaikan Otomatis / Shuffle -->
+        <div id="solveStatus" class="text-center text-red-600 font-medium mb-4" style="min-height: 24px;"></div>
+
+
+        <!-- Area Canvas untuk Puzzle -->
+        <div class="relative w-full max-w-full flex justify-center items-center overflow-hidden mb-6" style="min-height: 250px;">
+            <canvas id="puzzleCanvas" class="w-full h-auto max-w-full"></canvas>
+        </div>
+        
+        <!-- Pesan Informasi -->
+        <p class="text-center text-gray-600 text-sm italic">Klik potongan yang berdekatan dengan tempat kosong untuk memindahkannya.</p>
+        
+    </div>
+
+    <!-- Message Box untuk Notifikasi -->
+    <div id="messageBoxContainer"></div>
+
+    <script>
+        const imageUpload = document.getElementById('imageUpload');
+        const gridSizeSelect = document.getElementById('gridSizeSelect');
+        const puzzleModeSelect = document.getElementById('puzzleModeSelect');
+        const shuffleButton = document.getElementById('shuffleButton');
+        const undoButton = document.getElementById('undoButton');
+        const solveButton = document.getElementById('solveButton');
+        const resetButton = document.getElementById('resetButton');
+        const puzzleCanvas = document.getElementById('puzzleCanvas');
+        const ctx = puzzleCanvas.getContext('2d');
+        const messageBoxContainer = document.getElementById('messageBoxContainer');
+        const moveCounterDisplay = document.getElementById('moveCounter');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const solveStatusDisplay = document.getElementById('solveStatus');
+
+        // Sample image elements
+        const sampleImageContainers = document.querySelectorAll('.sample-image-container'); // Select containers now
+
+        let originalImage = new Image();
+        let puzzlePieces = [];
+        let gridSize = parseInt(gridSizeSelect.value);
+        let currentPuzzleMode = puzzleModeSelect.value;
+        let pieceWidth;
+        let pieceHeight;
+        let blankPieceIndex;
+        let isShuffled = false;
+        let puzzleReady = false;
+        let moves = 0;
+        let isProcessingClick = false; // Flag for manual click animation
+        let solving = false; // Flag for auto-solve process
+        let shuffling = false; // Flag for initial shuffle animation
+        let undoStack = [];
+        const maxUndoStates = 50;
+
+        let startTime;
+        let timerInterval;
+        const animationDuration = 200; // Durasi animasi pergerakan manual (ms)
+        
+        // Dynamic shuffle animation parameters
+        const getShuffleParams = (gridSize) => {
+            switch (gridSize) {
+                case 3: return { numMoves: 220, visualDelay: 16 }; // ~3.5s total (220 * 16ms)
+                case 4: return { numMoves: 240, visualDelay: 17 }; // ~4s total (240 * 17ms)
+                case 5: return { numMoves: 500, visualDelay: 10 }; // ~5s total (500 * 10ms)
+                default: return { numMoves: 220, visualDelay: 16 };
+            }
+        };
+
+        // Delay per gerakan untuk auto-solve, tergantung ukuran grid
+        const getAutoSolveStepDelay = (gridSize) => {
+            if (gridSize === 3 || gridSize === 4) return 1500; // 1.5 detik
+            if (gridSize === 5) return 3500; // 3.5 detik
+            return 1500; // Default
+        };
+        
+        const maxStatesToExploreForBFS = 1000000; 
+
+        // Untuk efek hover pada potongan puzzle
+        let hoveredPiece = null;
+
+        // Sound setup - always active
+        let moveSound = new Audio('https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/sound/click-tap-computer-mouse-352734.mp3');
+
+        // =====================================================================
+        // Fungsi Utilitas untuk Notifikasi (Pengganti alert())
+        // =====================================================================
+        function showMessageBox(message) {
+            const messageBox = document.createElement('div');
+            messageBox.className = 'message-box';
+            messageBox.innerHTML = `
+                <p class="text-xl font-semibold mb-4">${message}</p>
+                <button id="closeMessageBox" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300">Oke</button>
+            `;
+            
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+
+            messageBoxContainer.appendChild(overlay);
+            messageBoxContainer.appendChild(messageBox);
+
+            document.getElementById('closeMessageBox').onclick = () => {
+                messageBoxContainer.innerHTML = '';
+            };
+        }
+
+        // =====================================================================
+        // Fungsi Play Sound
+        // =====================================================================
+        function playMoveSound() {
+            if (moveSound) {
+                moveSound.currentTime = 0; // Reset to start for quick successive plays
+                moveSound.play().catch(e => {
+                    // This error is common if user hasn't interacted yet or browser policies prevent auto-play.
+                    // It's acceptable to silently catch here as the primary functionality is visual.
+                });
+            }
+        }
+
+        // =====================================================================
+        // Penanganan Unggah Gambar
+        // =====================================================================
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    originalImage.onload = async () => {
+                        initializePuzzle();
+                        await animateShuffle();
+                        startTimer();
+                    };
+                    originalImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // =====================================================================
+        // Penanganan Pilih Gambar Contoh
+        // =====================================================================
+        sampleImageContainers.forEach(container => {
+            container.addEventListener('click', async (event) => {
+                const imageUrl = container.dataset.src; // Get data-src from the container
+                if (!imageUrl) return;
+
+                if (shuffling || solving || isProcessingClick) return;
+
+                solveStatusDisplay.textContent = 'Memuat gambar contoh...';
+                disableAllButtons();
+
+                originalImage.onload = async () => {
+                    initializePuzzle();
+                    await animateShuffle();
+                    startTimer();
+                    solveStatusDisplay.textContent = '';
+                    enableAllButtons();
+                };
+                originalImage.onerror = () => {
+                    showMessageBox("Gagal memuat gambar contoh. Silakan coba lagi atau unggah gambar Anda sendiri.");
+                    enableAllButtons();
+                    solveStatusDisplay.textContent = '';
+                };
+                originalImage.src = imageUrl;
+            });
+        });
+
+
+        // =====================================================================
+        // Penanganan Perubahan Ukuran Grid
+        // =====================================================================
+        gridSizeSelect.addEventListener('change', async (event) => {
+            gridSize = parseInt(event.target.value);
+            if (puzzleReady) {
+                initializePuzzle();
+                await animateShuffle();
+                startTimer();
+            } else {
+                 const placeholderSize = 600;
+                originalImage.src = `https://placehold.co/${placeholderSize}x${placeholderSize}/e0e7ff/4f46e5?text=Unggah%20Foto%0A(${gridSize}x${gridSize})`;
+            }
+        });
+
+        // =====================================================================
+        // Penanganan Perubahan Mode Puzzle
+        // =====================================================================
+        puzzleModeSelect.addEventListener('change', async (event) => {
+            currentPuzzleMode = event.target.value;
+            if (puzzleReady) {
+                initializePuzzle(); 
+                if (isShuffled) {
+                    await animateShuffle();
+                } else {
+                    drawPuzzle();
+                }
+            } else {
+                drawPuzzle();
+            }
+        });
+
+        // =====================================================================
+        // Inisialisasi Puzzle (Menyesuaikan gambar ke 1:1)
+        // =====================================================================
+        function initializePuzzle() {
+            const container = puzzleCanvas.parentElement;
+            const maxAllowedDimension = Math.min(container.clientWidth, window.innerHeight * 0.75);
+
+            puzzleCanvas.width = maxAllowedDimension;
+            puzzleCanvas.height = maxAllowedDimension;
+
+            pieceWidth = puzzleCanvas.width / gridSize;
+            pieceHeight = puzzleCanvas.height / gridSize;
+
+            let sourceSize = Math.min(originalImage.width, originalImage.height);
+            let offsetX = (originalImage.width - sourceSize) / 2;
+            let offsetY = (originalImage.height - sourceSize) / 2;
+
+            puzzlePieces = [];
+            const totalPieces = gridSize * gridSize;
+            for (let i = 0; i < totalPieces; i++) {
+                puzzlePieces.push({
+                    id: i,
+                    originalIndex: i,
+                    currentX: (i % gridSize) * pieceWidth,
+                    currentY: Math.floor(i / gridSize) * pieceHeight,
+                    sourceX: offsetX + (sourceSize / gridSize) * (i % gridSize),
+                    sourceY: offsetY + (sourceSize / gridSize) * Math.floor(i / gridSize),
+                    sourceWidth: sourceSize / gridSize,
+                    sourceHeight: sourceSize / gridSize,
+                    isBlank: false
+                });
+            }
+            blankPieceIndex = totalPieces - 1;
+            puzzlePieces[blankPieceIndex].isBlank = true;
+            
+            isShuffled = false;
+            moves = 0;
+            undoStack = [];
+            updateMoveCounter();
+            stopTimer();
+            timerDisplay.textContent = '00:00';
+            drawPuzzle();
+
+            puzzleCanvas.classList.remove('puzzle-solved-animation');
+            solveStatusDisplay.textContent = '';
+            puzzleReady = true;
+        }
+
+        // =====================================================================
+        // Menggambar Puzzle di Canvas
+        // =====================================================================
+        function drawPuzzle() {
+            ctx.clearRect(0, 0, puzzleCanvas.width, puzzleCanvas.height);
+
+            puzzlePieces.forEach(piece => {
+                if (!piece.isBlank) {
+                    ctx.drawImage(
+                        originalImage,
+                        piece.sourceX, piece.sourceY,
+                        piece.sourceWidth, piece.sourceHeight,
+                        piece.currentX, piece.currentY,
+                        pieceWidth, pieceHeight
+                    );
+
+                    // Gambar border di sekitar potongan
+                    ctx.strokeStyle = '#6366f1';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(piece.currentX, piece.currentY, pieceWidth, pieceHeight);
+
+                    // Efek hover (hanya jika tidak sedang ada proses animasi atau auto-solve)
+                    if (hoveredPiece && hoveredPiece.id === piece.id && !isProcessingClick && !solving && !shuffling) {
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; // Semi-transparent overlay
+                        ctx.fillRect(piece.currentX, piece.currentY, pieceWidth, pieceHeight);
+                        ctx.strokeStyle = '#9333ea'; // Purple for hover border
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(piece.currentX, piece.currentY, pieceWidth, pieceHeight);
+                    }
+
+                    // Gambar nomor hanya jika bukan mode Jigsaw
+                    if (currentPuzzleMode === 'sliding') {
+                        ctx.fillStyle = '#312e81';
+                        ctx.font = `${Math.min(pieceWidth, pieceHeight) * 0.3}px Inter, sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(
+                            piece.id + 1,
+                            piece.currentX + pieceWidth / 2,
+                            piece.currentY + pieceHeight / 2
+                        );
+                    }
+                } else {
+                    ctx.fillStyle = '#e0e7ff';
+                    ctx.fillRect(piece.currentX, piece.currentY, pieceWidth, pieceHeight);
+                    ctx.strokeStyle = '#6366f1';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(piece.currentX, piece.currentY, pieceWidth, pieceHeight);
+                }
+            });
+        }
+
+        // =====================================================================
+        // Mengacak Puzzle dengan Animasi Cepat
+        // =====================================================================
+        async function animateShuffle() {
+            if (!puzzleReady || shuffling || solving) {
+                return;
+            }
+            shuffling = true;
+            disableAllButtons();
+            solveStatusDisplay.textContent = 'Mengacak puzzle...';
+            
+            // First, reset to solved state instantly for consistent shuffle start
+            puzzlePieces.sort((a, b) => a.originalIndex - b.originalIndex);
+            puzzlePieces.forEach((piece, index) => {
+                const targetCol = index % gridSize;
+                const targetRow = Math.floor(index / gridSize);
+                piece.currentX = targetCol * pieceWidth;
+                piece.currentY = targetRow * pieceHeight;
+            });
+            drawPuzzle();
+
+            let blankPiece = puzzlePieces.find(p => p.isBlank);
+            const { numMoves, visualDelay } = getShuffleParams(gridSize);
+
+            // Perform rapid swaps for visual effect
+            for (let i = 0; i < numMoves; i++) {
+                if (!shuffling) break;
+
+                const blankCol = Math.round(blankPiece.currentX / pieceWidth);
+                const blankRow = Math.round(blankPiece.currentY / pieceHeight);
+
+                const possibleMoves = [];
+                if (blankRow > 0) possibleMoves.push({ col: blankCol, row: blankRow - 1 });
+                if (blankRow < gridSize - 1) possibleMoves.push({ col: blankCol, row: blankRow + 1 });
+                if (blankCol > 0) possibleMoves.push({ col: blankCol - 1, row: blankRow });
+                if (blankCol < gridSize - 1) possibleMoves.push({ col: blankCol + 1, row: blankRow });
+
+                if (possibleMoves.length === 0) continue;
+
+                const randomMoveCoords = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                const pieceToMove = puzzlePieces.find(p => 
+                    Math.abs(p.currentX - (randomMoveCoords.col * pieceWidth)) < 1 && 
+                    Math.abs(p.currentY - (randomMoveCoords.row * pieceHeight)) < 1
+                );
+
+                if (pieceToMove) {
+                    const tempX = pieceToMove.currentX;
+                    const tempY = pieceToMove.currentY;
+
+                    pieceToMove.currentX = blankPiece.currentX;
+                    pieceToMove.currentY = blankPiece.currentY;
+
+                    blankPiece.currentX = tempX;
+                    blankPiece.currentY = tempY;
+
+                    const clickedIndexInArray = puzzlePieces.indexOf(pieceToMove);
+                    const blankIndexInArray = puzzlePieces.indexOf(blankPiece);
+                    [puzzlePieces[clickedIndexInArray], puzzlePieces[blankIndexInArray]] = 
+                    [puzzlePieces[blankIndexInArray], puzzlePieces[clickedIndexInArray]];
+                }
+                
+                drawPuzzle();
+                await new Promise(resolve => setTimeout(resolve, visualDelay));
+            }
+            isShuffled = true;
+            moves = 0;
+            undoStack = [];
+            updateMoveCounter();
+            enableAllButtons();
+            shuffling = false;
+            solveStatusDisplay.textContent = '';
+        }
+
+        shuffleButton.addEventListener('click', animateShuffle);
+
+        // =====================================================================
+        // Undo Gerakan Puzzle
+        // =====================================================================
+        undoButton.addEventListener('click', () => {
+            if (isProcessingClick || solving || shuffling) return;
+
+            if (undoStack.length > 0) {
+                const prevState = undoStack.pop();
+                puzzlePieces = prevState.pieces.map(p => ({ ...p }));
+                moves = prevState.moves;
+                isShuffled = prevState.isShuffled;
+                currentPuzzleMode = prevState.puzzleMode;
+
+                puzzlePieces.forEach((piece, index) => {
+                    const targetCol = index % gridSize;
+                    const targetRow = Math.floor(index / gridSize);
+                    piece.currentX = targetCol * pieceWidth;
+                    piece.currentY = targetRow * pieceHeight;
+                });
+
+                updateMoveCounter();
+                drawPuzzle();
+                puzzleModeSelect.value = currentPuzzleMode;
+            } else {
+                showMessageBox("Tidak ada gerakan untuk di-undo.");
+            }
+        });
+
+        // =====================================================================
+        // Reset Puzzle ke Urutan Asli
+        // =====================================================================
+        resetButton.addEventListener('click', () => {
+            if (!puzzleReady) {
+                showMessageBox("Silakan unggah gambar terlebih dahulu.");
+                return;
+            }
+
+            solving = false;
+            shuffling = false;
+
+            puzzlePieces.sort((a, b) => a.originalIndex - b.originalIndex);
+
+            puzzlePieces.forEach((piece, index) => {
+                const targetCol = index % gridSize;
+                const targetRow = Math.floor(index / gridSize);
+                piece.currentX = targetCol * pieceWidth;
+                piece.currentY = targetRow * pieceHeight;
+            });
+
+            isShuffled = false;
+            moves = 0;
+            undoStack = [];
+            updateMoveCounter();
+            stopTimer();
+            timerDisplay.textContent = '00:00';
+            drawPuzzle();
+
+            puzzleCanvas.classList.remove('puzzle-solved-animation');
+            solveStatusDisplay.textContent = '';
+
+            enableAllButtons();
+        });
+
+
+        // =====================================================================
+        // Penanganan Klik/Sentuh Puzzle (untuk Memindahkan Potongan)
+        // =====================================================================
+        puzzleCanvas.addEventListener('click', (event) => {
+            if (!puzzleReady || !isShuffled || isProcessingClick || solving || shuffling) {
+                return;
+            }
+            isProcessingClick = true;
+
+            const rect = puzzleCanvas.getBoundingClientRect();
+            const scaleX = puzzleCanvas.width / rect.width;
+            const scaleY = puzzleCanvas.height / rect.height;
+
+            const mouseX = (event.clientX - rect.left) * scaleX;
+            const mouseY = (event.clientY - rect.top) * scaleY;
+
+            const clickedCol = Math.floor(mouseX / pieceWidth);
+            const clickedRow = Math.floor(mouseY / pieceHeight);
+            
+            const clickedPiece = puzzlePieces.find(p => 
+                Math.abs(p.currentX - (clickedCol * pieceWidth)) < 1 && 
+                Math.abs(p.currentY - (clickedRow * pieceHeight)) < 1
+            );
+
+            if (!clickedPiece || clickedPiece.isBlank) {
+                isProcessingClick = false;
+                return;
+            }
+
+            const blankPiece = puzzlePieces.find(p => p.isBlank);
+
+            const clickedPieceCol = Math.round(clickedPiece.currentX / pieceWidth);
+            const clickedPieceRow = Math.round(clickedPiece.currentY / pieceHeight);
+            const blankPieceCol = Math.round(blankPiece.currentX / pieceWidth);
+            const blankPieceRow = Math.round(blankPiece.currentY / pieceHeight);
+
+            const isAdjacent = (
+                (Math.abs(clickedPieceCol - blankPieceCol) === 1 && clickedPieceRow === blankPieceRow) ||
+                (Math.abs(clickedPieceRow - blankPieceRow) === 1 && clickedPieceCol === blankPieceCol)
+            );
+
+            if (isAdjacent) {
+                const currentStatePieces = puzzlePieces.map(p => ({ ...p }));
+                undoStack.push({ pieces: currentStatePieces, moves: moves, isShuffled: isShuffled, puzzleMode: currentPuzzleMode });
+                if (undoStack.length > maxUndoStates) {
+                    undoStack.shift();
+                }
+
+                const targetXForClicked = blankPiece.currentX;
+                const targetYForClicked = blankPiece.currentY;
+                const targetXForBlank = clickedPiece.currentX;
+                const targetYForBlank = clickedPiece.currentY;
+
+                animatePieceMove(
+                    clickedPiece, targetXForClicked, targetYForClicked,
+                    blankPiece, targetXForBlank, targetYForBlank,
+                    () => {
+                        clickedPiece.currentX = targetXForClicked;
+                        clickedPiece.currentY = targetYForClicked;
+                        blankPiece.currentX = targetXForBlank;
+                        blankPiece.currentY = targetYForBlank;
+
+                        const clickedIndexInArray = puzzlePieces.indexOf(clickedPiece);
+                        const blankIndexInArray = puzzlePieces.indexOf(blankPiece);
+                        [puzzlePieces[clickedIndexInArray], puzzlePieces[blankIndexInArray]] = 
+                        [puzzlePieces[blankIndexInArray], puzzlePieces[clickedIndexInArray]];
+
+                        moves++;
+                        updateMoveCounter();
+                        drawPuzzle();
+                        playMoveSound(); // Play sound on successful manual move
+                        checkWin();
+                        isProcessingClick = false;
+                    }
+                );
+            } else {
+                isProcessingClick = false;
+            }
+        });
+
+        // =====================================================================
+        // Penanganan Mouse Hover (untuk efek visual)
+        // =====================================================================
+        puzzleCanvas.addEventListener('mousemove', (event) => {
+            if (!puzzleReady || !isShuffled || isProcessingClick || solving || shuffling) {
+                if (hoveredPiece) {
+                    hoveredPiece = null;
+                    drawPuzzle();
+                }
+                return;
+            }
+
+            const rect = puzzleCanvas.getBoundingClientRect();
+            const scaleX = puzzleCanvas.width / rect.width;
+            const scaleY = puzzleCanvas.height / rect.height;
+
+            const mouseX = (event.clientX - rect.left) * scaleX;
+            const mouseY = (event.clientY - rect.top) * scaleY;
+
+            const currentHoverCol = Math.floor(mouseX / pieceWidth);
+            const currentHoverRow = Math.floor(mouseY / pieceHeight);
+
+            const potentialHoveredPiece = puzzlePieces.find(p => 
+                Math.abs(p.currentX - (currentHoverCol * pieceWidth)) < 1 && 
+                Math.abs(p.currentY - (currentHoverRow * pieceHeight)) < 1
+            );
+
+            if (potentialHoveredPiece && potentialHoveredPiece !== hoveredPiece && !potentialHoveredPiece.isBlank) {
+                hoveredPiece = potentialHoveredPiece;
+                drawPuzzle();
+            } else if (!potentialHoveredPiece && hoveredPiece) {
+                hoveredPiece = null;
+                drawPuzzle();
+            } else if (potentialHoveredPiece && potentialHoveredPiece.isBlank && hoveredPiece) {
+                 hoveredPiece = null;
+                 drawPuzzle();
+            }
+        });
+
+        puzzleCanvas.addEventListener('mouseleave', () => {
+            if (hoveredPiece) {
+                hoveredPiece = null;
+                drawPuzzle();
+            }
+        });
+
+
+        // =====================================================================
+        // Fungsi Animasi Pergerakan Potongan (untuk gerakan manual & auto-solve)
+        // =====================================================================
+        function animatePieceMove(piece1, targetX1, targetY1, piece2, targetX2, targetY2, callback) {
+            const startX1 = piece1.currentX;
+            const startY1 = piece1.currentY;
+            const startX2 = piece2.currentX;
+            const startY2 = piece2.currentY;
+
+            let startTime = null;
+
+            function animate(currentTime) {
+                if (!startTime) startTime = currentTime;
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / animationDuration, 1);
+
+                piece1.currentX = startX1 + (targetX1 - startX1) * progress;
+                piece1.currentY = startY1 + (targetY1 - startY1) * progress;
+
+                piece2.currentX = startX2 + (targetX2 - startX2) * progress;
+                piece2.currentY = startY2 + (targetY2 - startY2) * progress;
+                
+                drawPuzzle();
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    callback();
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        // =====================================================================
+        // Memperbarui Penghitung Gerakan
+        // =====================================================================
+        function updateMoveCounter() {
+            moveCounterDisplay.textContent = moves;
+        }
+
+        // =====================================================================
+        // Fungsi Timer
+        // =====================================================================
+        function startTimer() {
+            stopTimer();
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        function updateTimer() {
+            const elapsedTime = Date.now() - startTime;
+            const totalSeconds = Math.floor(elapsedTime / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+
+            const formattedMinutes = String(minutes).padStart(2, '0');
+            const formattedSeconds = String(seconds).padStart(2, '0');
+
+            timerDisplay.textContent = `${formattedMinutes}:${formattedSeconds}`;
+        }
+
+        // =====================================================================
+        // Memeriksa Kondisi Menang
+        // =====================================================================
+        function checkWin() {
+            if (!isShuffled) return;
+
+            let solved = true;
+            for (let i = 0; i < puzzlePieces.length; i++) {
+                const piece = puzzlePieces[i];
+                if (piece.id !== i) {
+                    solved = false;
+                    break;
+                }
+            }
+
+            if (solved) {
+                isShuffled = false;
+                stopTimer();
+                
+                const blankPiece = puzzlePieces.find(p => p.isBlank);
+                const blankPieceCurrentIndex = puzzlePieces.indexOf(blankPiece);
+                const lastCorrectIndex = puzzlePieces.length - 1;
+
+                if (blankPieceCurrentIndex !== lastCorrectIndex) {
+                    const temp = puzzlePieces[lastCorrectIndex];
+                    puzzlePieces[lastCorrectIndex] = blankPiece;
+                    puzzlePieces[blankPieceCurrentIndex] = temp;
+                    
+                    puzzlePieces[lastCorrectIndex].currentX = (lastCorrectIndex % gridSize) * pieceWidth;
+                    puzzlePieces[lastCorrectIndex].currentY = Math.floor(lastCorrectIndex / gridSize) * pieceHeight;
+                    
+                    puzzlePieces[blankPieceCurrentIndex].currentX = (blankPieceCurrentIndex % gridSize) * pieceWidth;
+                    puzzlePieces[blankPieceCurrentIndex].currentY = Math.floor(blankPieceCurrentIndex / gridSize) * pieceHeight;
+                }
+
+                drawPuzzle(); 
+                showMessageBox(`Selamat! Puzzle telah selesai dalam ${moves} gerakan dan waktu ${timerDisplay.textContent}!`);
+
+                puzzleCanvas.classList.add('puzzle-solved-animation');
+                
+                enableAllButtons();
+                solving = false;
+                shuffling = false;
+                isProcessingClick = false;
+                solveStatusDisplay.textContent = '';
+            }
+        }
+
+        // =====================================================================
+        // Fungsi untuk menonaktifkan semua tombol interaktif
+        // =====================================================================
+        function disableAllButtons() {
+            shuffleButton.disabled = true;
+            undoButton.disabled = true;
+            solveButton.disabled = true;
+            resetButton.disabled = false; // Reset button always remains active
+            imageUpload.disabled = true;
+            gridSizeSelect.disabled = true;
+            puzzleModeSelect.disabled = true;
+            sampleImageContainers.forEach(container => container.style.pointerEvents = 'none'); // Disable clicks on sample images
+            sampleImageContainers.forEach(container => container.style.opacity = '0.5'); // Dim sample images
+        }
+
+        // =====================================================================
+        // Fungsi untuk mengaktifkan kembali semua tombol interaktif
+        // =====================================================================
+        function enableAllButtons() {
+            shuffleButton.disabled = false;
+            undoButton.disabled = false;
+            solveButton.disabled = false; 
+            resetButton.disabled = false;
+            imageUpload.disabled = false;
+            gridSizeSelect.disabled = false;
+            puzzleModeSelect.disabled = false;
+            sampleImageContainers.forEach(container => container.style.pointerEvents = 'auto'); // Enable clicks
+            sampleImageContainers.forEach(container => container.style.opacity = '1'); // Restore opacity
+        }
+
+        // =====================================================================
+        // Fungsi untuk mencari solusi menggunakan BFS (Breadth-First Search)
+        // =====================================================================
+        async function solvePuzzleAutomatically() {
+            if (!puzzleReady || !isShuffled || solving || shuffling) {
+                return;
+            }
+
+            solving = true;
+            isProcessingClick = true;
+
+            if (gridSize === 5) {
+                solveStatusDisplay.textContent = `Peringatan: 5x5 Otomatis Sangat Lambat! Harap Bersabar.`;
+            } else {
+                solveStatusDisplay.textContent = `Mencari solusi otomatis...`;
+            }
+            
+            disableAllButtons();
+            resetButton.disabled = false;
+
+            stopTimer();
+
+            const queue = [];
+            const visited = new Set();
+
+            const currentOrderedIds = Array(gridSize * gridSize).fill(0);
+            puzzlePieces.forEach(p => {
+                const col = Math.round(p.currentX / pieceWidth);
+                const row = Math.round(p.currentY / pieceHeight);
+                const index = row * gridSize + col;
+                currentOrderedIds[index] = p.id;
+            });
+
+            const blankId = puzzlePieces.find(p => p.isBlank).id;
+            const initialBlankPos = currentOrderedIds.indexOf(blankId);
+
+            queue.push({ state: currentOrderedIds, path: [], blankPos: initialBlankPos });
+            visited.add(JSON.stringify(currentOrderedIds));
+
+            let solutionPath = null;
+            let count = 0; 
+
+            while (queue.length > 0 && solving && count < maxStatesToExploreForBFS) {
+                const { state, path, blankPos } = queue.shift();
+                count++;
+
+                const isSolved = state.every((id, index) => id === index);
+                if (isSolved) {
+                    solutionPath = path;
+                    break;
+                }
+
+                const blankRow = Math.floor(blankPos / gridSize);
+                const blankCol = blankPos % gridSize;
+
+                const possibleSwapPositions = []; 
+
+                if (blankRow > 0) possibleSwapPositions.push({ row: blankRow - 1, col: blankCol, targetBlankIndex: blankPos - gridSize }); 
+                if (blankRow < gridSize - 1) possibleSwapPositions.push({ row: blankRow + 1, col: blankCol, targetBlankIndex: blankPos + gridSize }); 
+                if (blankCol > 0) possibleSwapPositions.push({ row: blankRow, col: blankCol - 1, targetBlankIndex: blankPos - 1 }); 
+                if (blankCol < gridSize - 1) possibleSwapPositions.push({ row: blankCol + 1, col: blankCol, targetBlankIndex: blankPos + 1 }); 
+
+                for (const moveOption of possibleSwapPositions) {
+                    const pieceToSwapIndex = moveOption.targetBlankIndex; 
+                    
+                    const nextState = [...state]; 
+                    
+                    const pieceToMoveId = state[pieceToSwapIndex];
+                    const blankPieceIdInState = state[blankPos]; 
+
+                    nextState[blankPos] = pieceToMoveId;
+                    nextState[pieceToSwapIndex] = blankPieceIdInState;
+
+                    const nextStateStr = JSON.stringify(nextState);
+
+                    if (!visited.has(nextStateStr)) {
+                        visited.add(nextStateStr);
+                        queue.push({
+                            state: nextState,
+                            path: [...path, pieceToMoveId], 
+                            blankPos: pieceToSwapIndex 
+                        });
+                    }
+                }
+                if (count % 1000 === 0) { 
+                    await new Promise(resolve => setTimeout(resolve, 0)); 
+                    if (!solving) break; 
+                }
+            }
+
+            if (!solving) {
+                solveStatusDisplay.textContent = '';
+                return;
+            }
+
+            if (solutionPath) {
+                solveStatusDisplay.textContent = `Solusi ditemukan! Memainkan ${solutionPath.length} gerakan...`;
+                const currentAutoSolveDelay = getAutoSolveStepDelay(gridSize);
+
+                for (const pieceIdToMove of solutionPath) {
+                    if (!solving) break;
+
+                    const pieceToMove = puzzlePieces.find(p => p.id === pieceIdToMove);
+                    const blankPiece = puzzlePieces.find(p => p.isBlank);
+
+                    if (!pieceToMove || !blankPiece) { 
+                        console.error("Error: Piece or blank not found during auto-solve execution.");
+                        solving = false;
+                        isProcessingClick = false;
+                        enableAllButtons();
+                        solveStatusDisplay.textContent = 'Terjadi kesalahan saat memainkan solusi.';
+                        return;
+                    }
+                    
+                    const startX1 = pieceToMove.currentX;
+                    const startY1 = pieceToMove.currentY;
+                    const startX2 = blankPiece.currentX;
+                    const startY2 = blankPiece.currentY;
+
+                    const targetX1 = startX2; 
+                    const targetY1 = startY2; 
+                    const targetX2 = startX1; 
+                    const targetY2 = startY1; 
+
+                    await new Promise(resolve => {
+                        animatePieceMove(
+                            pieceToMove, targetX1, targetY1,
+                            blankPiece, targetX2, targetY2,
+                            () => {
+                                pieceToMove.currentX = targetX1;
+                                pieceToMove.currentY = targetY1;
+                                blankPiece.currentX = targetX2;
+                                blankPiece.currentY = targetY2;
+
+                                const pieceToMoveCurrentIndex = puzzlePieces.indexOf(pieceToMove);
+                                const blankPieceCurrentIndex = puzzlePieces.indexOf(blankPiece);
+                                [puzzlePieces[pieceToMoveCurrentIndex], puzzlePieces[blankPieceCurrentIndex]] =
+                                [puzzlePieces[blankPieceCurrentIndex], puzzlePieces[pieceToMoveCurrentIndex]];
+
+                                moves++;
+                                updateMoveCounter();
+                                drawPuzzle();
+                                playMoveSound();
+                                resolve();
+                            }
+                        );
+                    });
+                    if (solving) {
+                        await new Promise(resolve => setTimeout(resolve, currentAutoSolveDelay));
+                    }
+                }
+                if (solving) {
+                    checkWin();
+                }
+            } else if (solving) { 
+                solveStatusDisplay.textContent = 'Solusi tidak ditemukan dalam batas waktu/komputasi. Coba acak ulang.';
+                showMessageBox('Solusi tidak ditemukan dalam batas waktu atau terlalu kompleks. Coba acak ulang puzzle atau pilih ukuran yang lebih kecil.');
+            }
+
+            solving = false;
+            isProcessingClick = false;
+            enableAllButtons();
+            if (isShuffled) {
+                startTimer();
+            }
+        }
+        solveButton.addEventListener('click', solvePuzzleAutomatically);
+
+
+        // =====================================================================
+        // Penanganan Responsivitas Ukuran Jendela
+        // =====================================================================
+        window.addEventListener('resize', async () => {
+            if (puzzleReady) {
+                solving = false;
+                shuffling = false;
+                isProcessingClick = false;
+                enableAllButtons();
+                stopTimer();
+                solveStatusDisplay.textContent = '';
+                
+                initializePuzzle(); 
+                if (isShuffled) { 
+                   await animateShuffle(); 
+                } else {
+                    drawPuzzle();
+                }
+                startTimer();
+            }
+        });
+
+        // =====================================================================
+        // Inisialisasi Awal (gambar placeholder)
+        // =====================================================================
+        window.onload = async () => {
+            originalImage.onload = async () => {
+                initializePuzzle();
+                await animateShuffle();
+                startTimer();
+            };
+            const placeholderSize = 600; 
+            originalImage.src = `https://placehold.co/${placeholderSize}x${placeholderSize}/e0e7ff/4f46e5?text=Unggah%20Foto%0A(3x3)`; 
+            gridSizeSelect.value = "3";
+        };
+
+    </script>
+</body>
+</html>
+
