@@ -580,6 +580,7 @@
                 const rowInTray = Math.floor(i / actualPiecesPerRow);
                 const colInTray = i % actualPiecesPerRow;
 
+                // Calculate X position, centering pieces within their potential grid cells
                 const x = (colInTray * pieceSide) + (availableTrayWidth - (actualPiecesPerRow * pieceSide)) / 2 + TRAY_PADDING;
                 const y = startYForPiecesInTray + (rowInTray * pieceSide);
                 shuffledPositions.push({ x, y });
@@ -810,18 +811,82 @@
         // =====================================================================
         window.addEventListener('resize', () => {
             console.log('Window resized. Recalculating positions...');
-            // Save current state (shuffled vs solved) before re-initializing
+            const oldCanvasWidth = puzzleCanvas.width;
+            const oldCanvasHeight = puzzleCanvas.height;
+
             const wasShuffled = puzzlePieces.some(p => !p.isLocked); 
 
-            initializePuzzle(); // This re-creates pieces and sets them to solved state
-            if (puzzleReady && wasShuffled) { // If initialization successful and it was shuffled before, re-shuffle
-                shufflePuzzle();
-            } else if (puzzleReady) {
-                drawPuzzle(); // If initialization successful and it was solved, just redraw
-            } else {
-                 // If puzzle not ready, just redraw to update placeholder size
-                 drawPuzzle();
-            }
+            // Re-calculate dimensions and update canvas size
+            const container = puzzleCanvas.parentElement;
+            const newMaxCanvasWidth = Math.max(300, Math.min(container.clientWidth, window.innerHeight * 0.75));
+            mainPuzzleAreaDimension = newMaxCanvasWidth;
+            pieceWidth = mainPuzzleAreaDimension / gridSize;
+            pieceHeight = mainPuzzleAreaDimension / gridSize;
+
+            const totalPieces = gridSize * gridSize;
+            const piecesPerRowInTray = Math.floor((mainPuzzleAreaDimension - (2 * TRAY_PADDING)) / pieceWidth);
+            const effectivePiecesPerRow = Math.max(1, piecesPerRowInTray);
+            const requiredTrayRows = Math.ceil(totalPieces / effectivePiecesPerRow);
+            trayAreaTotalHeight = (requiredTrayRows * pieceHeight) + (2 * TRAY_PADDING) + TRAY_LABEL_OFFSET_Y + TRAY_PADDING;
+            trayAreaTotalHeight = Math.max(trayAreaTotalHeight, pieceHeight + (2 * TRAY_PADDING) + TRAY_LABEL_OFFSET_Y + TRAY_PADDING);
+            trayAreaStartY = mainPuzzleAreaDimension + VERTICAL_SPACING_BETWEEN_AREAS;
+
+            puzzleCanvas.width = mainPuzzleAreaDimension;
+            puzzleCanvas.height = mainPuzzleAreaDimension + VERTICAL_SPACING_BETWEEN_AREAS + trayAreaTotalHeight;
+            
+            // Adjust piece positions proportionally and clamp
+            puzzlePieces.forEach(piece => {
+                // Adjust original positions (which are always relative to the main puzzle area)
+                // These are always relative to mainPuzzleAreaDimension, so they auto-scale
+                piece.originalX = (piece.id % gridSize) * pieceWidth;
+                piece.originalY = Math.floor(piece.id / gridSize) * pieceHeight;
+
+                // Scale current position relative to the overall canvas dimension
+                let newX = piece.currentX;
+                let newY = piece.currentY;
+
+                if (oldCanvasWidth > 0 && oldCanvasHeight > 0) {
+                    newX = (piece.currentX / oldCanvasWidth) * puzzleCanvas.width;
+                    newY = (piece.currentY / oldCanvasHeight) * puzzleCanvas.height;
+                }
+                
+                // Clamp newX and newY within the *new* total canvas boundaries
+                newX = Math.max(0, Math.min(newX, puzzleCanvas.width - pieceWidth));
+                newY = Math.max(0, Math.min(newY, puzzleCanvas.height - pieceHeight));
+
+                piece.currentX = newX;
+                piece.currentY = newY;
+                
+                // If the piece was locked, ensure it stays locked and in the assembly area
+                if (piece.isLocked) {
+                    piece.currentX = piece.originalX; // Force to scaled original position
+                    piece.currentY = piece.originalY;
+                    piece.inTray = false;
+                } else {
+                    // For unlocked pieces, re-evaluate if they are now in the tray area
+                    piece.inTray = (piece.currentY + pieceHeight / 2) > trayAreaStartY;
+                }
+
+                // Re-render cached canvases with new piece dimensions
+                piece.cachedCanvas.width = pieceWidth;
+                piece.cachedCanvas.height = pieceHeight;
+                const pieceCtx = piece.cachedCanvas.getContext('2d');
+                let sourceSize = Math.min(originalImage.naturalWidth, originalImage.naturalHeight);
+                let offsetXImage = (originalImage.naturalWidth - sourceSize) / 2;
+                let offsetYImage = (originalImage.naturalHeight - sourceSize) / 2;
+                pieceCtx.clearRect(0, 0, pieceWidth, pieceHeight);
+                pieceCtx.drawImage(
+                    originalImage,
+                    offsetXImage + (sourceSize / gridSize) * (piece.id % gridSize),
+                    offsetYImage + (sourceSize / gridSize) * Math.floor(piece.id / gridSize),
+                    sourceSize / gridSize,
+                    sourceSize / gridSize,
+                    0, 0,
+                    pieceWidth, pieceHeight
+                );
+            });
+            drawPuzzle();
+            console.log('Positions recalculated and redrawn.');
         });
 
         // =====================================================================
@@ -904,4 +969,5 @@
     </script>
 </body>
 </html>
+
 
