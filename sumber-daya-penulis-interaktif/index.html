@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-F8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hanzercopy.cloud - Platform Kreatif & Cerita Interaktif</title>
     <!-- SEO Meta Tags -->
@@ -216,48 +216,6 @@
             line-height: 1.6;
             flex-grow: 1; /* Make description take available space */
         }
-
-        /* Styles for the "Coming Soon" card with animation */
-        .coming-soon-card {
-            background-color: rgba(30, 30, 30, 0.95);
-            border-style: dashed;
-            border-color: #666;
-            cursor: not-allowed;
-            /* Add pulse animation */
-            animation: pulse 2s infinite ease-in-out;
-            will-change: transform, box-shadow; /* Optimize performance */
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-                box-shadow: 0px 0px 0px rgba(102, 102, 102, 0.7);
-            }
-            50% {
-                transform: scale(1.02);
-                box-shadow: 0px 0px 15px rgba(102, 102, 102, 0.9);
-            }
-            100% {
-                transform: scale(1);
-                box-shadow: 0px 0px 0px rgba(102, 102, 102, 0.7);
-            }
-        }
-
-        .coming-soon-card .card-title {
-            color: #999;
-        }
-
-        .coming-soon-card .card-description {
-            color: #888;
-        }
-
-        .coming-soon-card .coming-soon-text {
-            color: #f0f0f0; /* Light color for the "Coming Soon" status text */
-            font-size: 1.1rem;
-            font-weight: bold;
-            font-family: 'Inter', sans-serif;
-            margin-top: 10px;
-        }
         /* --- END NEW CARD STYLES --- */
 
 
@@ -283,8 +241,8 @@
             text-decoration: underline;
         }
 
-        /* Custom Message Box (for AI Alert) */
-        .custom-message-box-overlay {
+        /* Custom Message Box (for AI Alert) & Tutorial Modal */
+        .custom-message-box-overlay, .tutorial-modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
@@ -299,39 +257,90 @@
             visibility: hidden;
             transition: opacity 0.3s ease-in-out;
         }
-        .custom-message-box-overlay.active {
+        .custom-message-box-overlay.active, .tutorial-modal-overlay.active {
             opacity: 1;
             visibility: visible;
         }
-        .custom-message-box {
+        .custom-message-box, .tutorial-modal-content {
             background-color: #333333;
             color: #f0f0f0;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 5px 5px 0px 0px #000000;
             border: 2px solid #000000;
-            max-width: 400px;
+            max-width: 700px; /* Increased max-width for tutorial content */
+            width: 90%; /* Responsive width */
             text-align: center;
             transform: scale(0.9);
             transition: transform 0.3s ease-in-out;
+            max-height: 85vh; /* Limit height */
+            overflow-y: auto; /* Scroll for long content */
+            display: flex;
+            flex-direction: column;
         }
-        .custom-message-box-overlay.active .custom-message-box {
+        .custom-message-box-overlay.active .custom-message-box,
+        .tutorial-modal-overlay.active .tutorial-modal-content {
             transform: scale(1);
         }
-        .custom-message-box h3 {
+        .custom-message-box h3, .tutorial-modal-content h3 {
             font-size: 1.5rem;
             font-weight: 700;
             margin-bottom: 15px;
             color: #f0f0f0;
             text-shadow: 2px 2px 0px #000000;
         }
-        .custom-message-box p {
+        .tutorial-modal-content h2 { /* Added for the main tutorial title */
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: #f0f0f0;
+            text-shadow: 3px 3px 0px #000000;
+            text-align: center;
+        }
+        .tutorial-modal-content h4 { /* Subheadings for tutorial sections */
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #e0e0e0;
+            border-bottom: 2px solid #666;
+            padding-bottom: 5px;
+            text-align: left;
+        }
+        .custom-message-box p, .tutorial-modal-content p, .tutorial-modal-content ul {
             font-size: 1rem;
             line-height: 1.6;
             margin-bottom: 20px;
             color: #cccccc;
+            text-align: left; /* Align text left within modal */
         }
-        .custom-message-box button {
+        .tutorial-modal-content ul {
+            list-style-type: disc;
+            padding-left: 25px;
+        }
+        .tutorial-modal-content ol {
+            list-style-type: decimal;
+            padding-left: 25px;
+        }
+        .tutorial-modal-content li {
+            margin-bottom: 8px;
+        }
+        .tutorial-modal-content strong {
+            color: #ffffff;
+        }
+        .tutorial-modal-content .example-box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid #444;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            color: #aaddff;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+        }
+        .custom-message-box button, .tutorial-modal-content button {
             background-color: #000000;
             color: white;
             padding: 10px 25px;
@@ -342,8 +351,10 @@
             font-weight: 600;
             transition: all 0.2s ease-in-out;
             box-shadow: 3px 3px 0px 0px #cccccc;
+            margin-top: auto; /* Push button to bottom in flex container */
+            align-self: center; /* Center the button */
         }
-        .custom-message-box button:hover {
+        .custom-message-box button:hover, .tutorial-modal-content button:hover {
             transform: translate(-2px, -2px);
             box-shadow: 5px 5px 0px 0px #ffffff;
             background-color: #444444;
@@ -373,14 +384,21 @@
             .version-links a {
                 font-size: 0.85rem;
             }
-            .custom-message-box {
+            .custom-message-box, .tutorial-modal-content {
                 padding: 20px;
+                max-width: 95%; /* Adjust for very small screens */
             }
-            .custom-message-box h3 {
+            .custom-message-box h3, .tutorial-modal-content h3 {
                 font-size: 1.3rem;
             }
-            .custom-message-box p {
+            .custom-message-box p, .tutorial-modal-content p, .tutorial-modal-content ul {
                 font-size: 0.9rem;
+            }
+            .tutorial-modal-content h2 {
+                font-size: 2rem;
+            }
+            .tutorial-modal-content h4 {
+                font-size: 1.3rem;
             }
 
             /* Card responsive adjustments */
@@ -411,9 +429,20 @@
         </p>
     </div>
 
-    <!-- New grid container for the cards -->
+    <!-- Card Grid for Generators -->
     <div class="card-grid-container">
-        <!-- Card 1: Dossier Karakter -->
+        <!-- NEW Card: Panduan Pemula (activates modal) - MOVED TO TOP -->
+        <div class="card">
+            <h2 class="card-title">Panduan Pemula</h2>
+            <p class="card-description">
+                Baru mengenal Hanzercopy.cloud? Klik di sini untuk panduan cepat tentang cara menggunakan generator dan membangun cerita Anda!
+            </p>
+            <button id="showTutorialBtn" class="comic-button bg-blue-700 text-white px-8 py-3 rounded-full text-lg font-bold">
+                Mulai Tutorial
+            </button>
+        </div>
+
+        <!-- Card 1: Dossier Karakter (Original position, now after Panduan Pemula) -->
         <div class="card">
             <h2 class="card-title">Dossier Karakter</h2>
             <p class="card-description">
@@ -468,7 +497,19 @@
             </a>
         </div>
 
-        <!-- NEW Card: Generator Peta Dunia Fiksi -->
+        <!-- NEW Card: Mode Cerita Cepat - INSERTED IN MIDDLE -->
+        <div class="card">
+            <h2 class="card-title">Mode Cerita Cepat</h2>
+            <p class="card-description">
+                Butuh ide instan? Dapatkan kerangka cerita dasar (karakter, lokasi, objek, plot) hanya dengan satu konsep singkat. Sempurna untuk memulai!
+            </p>
+            <a href="/mode-cepat/" class="comic-button bg-fuchsia-600 text-white px-8 py-3 rounded-full text-lg font-bold">
+                Mulai Cerita Cepat
+            </a>
+        </div>
+
+        <!-- Rest of the cards follow -->
+        <!-- Card: Generator Peta Dunia Fiksi -->
         <div class="card">
             <h2 class="card-title">Generator Peta Dunia Fiksi</h2>
             <p class="card-description">
@@ -479,14 +520,14 @@
             </a>
         </div>
 
-        <!-- NEW Card: Ide Konsep Makhluk Acak (mengarah ke /yeah/) -->
+        <!-- Card: Generator Makhluk/Monster Fiksi -->
         <div class="card">
-            <h2 class="card-title">Ide Konsep Makhluk (Acak)</h2>
+            <h2 class="card-title">Generator Makhluk/Monster Fiksi</h2>
             <p class="card-description">
-                **Cara Kerja:** Bingung mencari ide konsep makhluk? Klik di sini untuk mendapatkan ide acak yang bisa Anda gunakan untuk inspirasi di generator makhluk utama!
+                **Cara Kerja:** Ciptakan makhluk atau monster unik dengan detail fisik, kemampuan, habitat, dan interaksinya dengan dunia fiksi Anda.
             </p>
             <a href="/yeah/" class="comic-button bg-pink-500 text-white px-8 py-3 rounded-full text-lg font-bold">
-                Dapatkan Ide Makhluk!
+                Rancang Makhluk
             </a>
         </div>
         
@@ -522,51 +563,7 @@
                 Buat Garis Besar Plot
             </a>
         </div>
-
-        <!-- Card Latar Belakang Dunia Fiksi -->
-        <div class="card">
-            <h2 class="card-title">Latar Belakang Dunia Fiksi</h2>
-            <p class="card-description">
-                **Cara Kerja:** Buat detail mendalam tentang sistem politik, ekonomi, budaya, dan sejarah dunia fiksi Anda. Lengkap dengan prompt gambar AI.
-            </p>
-            <a href="/latar/" class="comic-button bg-cyan-600 text-white px-8 py-3 rounded-full text-lg font-bold">
-                Buat Latar Belakang
-            </a>
-        </div>
         
-        <!-- Generator Acara & Festival Fiksi -->
-        <div class="card">
-            <h2 class="card-title">Acara & Festival Fiksi</h2>
-            <p class="card-description">
-                **Cara Kerja:** Rancang perayaan atau kompetisi mendalam untuk dunia cerita Anda, lengkap dengan plot hooks dan elemen budaya.
-            </p>
-            <a href="/gennn/" class="comic-button bg-orange-700 text-white px-8 py-3 rounded-full text-lg font-bold">
-                Buat Acara/Festival
-            </a>
-        </div>
-
-        <!-- Generator Makanan & Minuman Fiksi (NEW) -->
-        <div class="card">
-            <h2 class="card-title">Makanan & Minuman Fiksi</h2>
-            <p class="card-description">
-                **Cara Kerja:** Ciptakan hidangan dan minuman unik dengan deskripsi detail, profil rasa, bahan, efek khusus, serta prompt gambar AI.
-            </p>
-            <a href="/foodr/" class="comic-button bg-purple-700 text-white px-8 py-3 rounded-full text-lg font-bold">
-                Buat Makanan/Minuman
-            </a>
-        </div>
-
-        <!-- Generator Tokoh Fiksi -->
-        <div class="card">
-            <h2 class="card-title">Tokoh Fiksi</h2>
-            <p class="card-description">
-                **Cara Kerja:** Ciptakan profil mendalam untuk berbagai jenis tokoh fiksi (bukan hanya sejarah/legenda), dari pahlawan biasa hingga karakter sampingan unik.
-            </p>
-            <a href="/tkf/" class="comic-button bg-yellow-700 text-white px-8 py-3 rounded-full text-lg font-bold">
-                Buat Tokoh Fiksi
-            </a>
-        </div>
-
         <!-- Card Cerita Interaktif -->
         <div class="card">
             <h2 class="card-title">Cerita Interaktif</h2>
@@ -578,24 +575,15 @@
             </a>
         </div>
 
-        <!-- Card Cerita Non-Interaktif (Link Diperbarui) -->
+        <!-- Card Cerita Non-Interaktif -->
         <div class="card">
             <h2 class="card-title">Cerita Non-Interaktif</h2>
             <p class="card-description">
                 **Cara Kerja:** Nikmati beragam cerita fiksi yang dibuat oleh AI. Dari berbagai genre, temukan narasi baru dan mendalam yang siap memikat imajinasi Anda.
             </p>
-            <a href="/cerita-non-interaktif/" class="comic-button bg-purple-500 text-white px-8 py-3 rounded-full text-lg font-bold">
+            <a href="/tes.html" class="comic-button bg-purple-500 text-white px-8 py-3 rounded-full text-lg font-bold">
                 Baca Cerita
             </a>
-        </div>
-
-        <!-- NEW Card: Dalam Pertimbangan! dengan animasi denyut -->
-        <div class="card coming-soon-card">
-            <h2 class="card-title">Fitur Baru: Dalam Pertimbangan!</h2>
-            <p class="card-description">
-                Kami sedang mengeksplorasi ide untuk menghadirkan hal yang lain yang lebih baik. Memungkinkan, akan hadir secepat mungkin selambat mungkin atau tidak sama sekali!
-            </p>
-            <span class="coming-soon-text"></span> 
         </div>
     </div>
 
@@ -603,19 +591,86 @@
         <p>
             <a href="https://github.com/SapiBersinar/visual-novel-ai" target="_blank" rel="noopener noreferrer">Source Code di GitHub</a>
         </p>
+        <p>
+            <a href="https://hanzercopy.cloud/tes.html" target="_blank" rel="noopener noreferrer">Versi Tidak Rekomendasi (sebelumnya)</a>
+            </p>
         </div>
 
     <!-- Custom Message Box for AI Alert -->
     <div id="aiMessageBoxOverlay" class="custom-message-box-overlay">
         <div class="custom-message-box">
-            <h3>Pemberitahuan Penting</h3>
-            <p>Perlu diketahui bahwa seluruh website ini dibuat dengan bantuan Kecerdasan Buatan (AI).</p>
-            <button id="aiMessageBoxOkBtn">OKE</button>
+            <h3>Pemberitahuan Penting untuk Pemula</h3>
+            <p>
+                Perlu diketahui bahwa seluruh website ini dibuat dengan bantuan **Kecerdasan Buatan (AI)**.
+                Ini berarti output yang Anda dapatkan adalah hasil dari algoritma canggih yang merangkai kata dan ide.
+                Sebagai kreator, tugas Anda adalah:
+                <br><br>
+                **1. Menginspirasi:** Gunakan hasil AI sebagai titik awal ide Anda.
+                <br>
+                **2. Menyesuaikan:** Jangan ragu untuk mengubah, menambahkan, atau menghapus bagian yang tidak sesuai.
+                <br>
+                **3. Menjaga Konsistensi:** Pastikan semua elemen cerita Anda (karakter, plot, dunia) tetap konsisten. AI bisa menghasilkan hal-hal yang tidak terduga, jadi sentuhan manusia Anda sangat penting!
+                <br><br>
+                AI adalah alat yang hebat untuk mempercepat proses kreatif Anda, namun **sentuhan akhir dan keunikan cerita sepenuhnya ada di tangan Anda!**
+            </p>
+            <button id="aiMessageBoxOkBtn">SAYA MENGERTI</button>
+        </div>
+    </div>
+
+    <!-- NEW: Tutorial Modal Structure -->
+    <div id="tutorialModalOverlay" class="tutorial-modal-overlay">
+        <div class="tutorial-modal-content">
+            <h2 class="text-center">Panduan Memulai Cepat Hanzercopy.cloud</h2>
+            <p>Selamat datang di Hanzercopy.cloud, platform kreatif Anda untuk merancang cerita fiksi! Panduan singkat ini akan membantu Anda memulai petualangan menulis dan menghasilkan ide dengan AI.</p>
+
+            <h4>1. Cara Kerja Generator (Contoh: Dossier Karakter)</h4>
+            <p>Setiap generator di Hanzercopy.cloud dirancang untuk kesederhanaan. Mari kita ambil contoh **Dossier Karakter**:</p>
+            <ul>
+                <li>**Pikirkan Konsep Dasar:** Mulailah dengan ide sederhana tentang karakter Anda (misal: pahlawan, penjahat, penyihir).</li>
+                <li>**Masukkan Kata Kunci:** Di kolom input, masukkan kata kunci yang menggambarkan karakter Anda. Semakin spesifik, semakin detail hasilnya.
+                    <div class="example-box">Contoh: `Pahlawan remaja, kekuatan telekinesis, ceroboh tapi baik hati`</div>
+                    AI akan menganalisis prompt ini untuk menghasilkan profil lengkap.
+                </li>
+                <li>**Hasilkan dan Ulas:** Klik tombol "Hasilkan". AI akan membuat profil lengkap yang mencakup kepribadian, penampilan, latar belakang, kekuatan, kelemahan, dan lainnya. Baca, sesuaikan, dan kembangkan sesuka hati Anda!</li>
+            </ul>
+            <p>Tips: Jangan takut bereksperimen dengan kata kunci yang berbeda di setiap generator untuk mendapatkan hasil yang bervariasi.</p>
+
+            <h4>2. Alur Kerja Kreatif untuk Pemula: Bangun Cerita Anda!</h4>
+            <p>Hanzercopy.cloud adalah studio kreatif terintegrasi! Anda bisa menghubungkan output dari satu generator ke generator lain untuk membangun dunia dan cerita yang kohesif. Ikuti alur kerja dasar ini sebagai inspirasi:</p>
+            <ol>
+                <li>**Mulai dengan Fondasi (Pilih Salah Satu):**
+                    <ul>
+                        <li>**Dossier Karakter:** Ciptakan profil mendalam untuk pahlawan atau karakter kunci Anda.</li>
+                        <li>**Generator Nama Lokasi & Generator Peta Dunia Fiksi:** Atau, mulailah dengan membangun geografi dan penamaan tempat di dunia fiksi Anda.</li>
+                    </ul>
+                </li>
+                <li>**Perkaya Dunia:**
+                    <ul>
+                        <li>**Arsip Data Cerita (Adata):** Dokumentasikan sistem sihir, teknologi unik, faksi, atau budaya di dunia Anda. Ini menjaga konsistensi.</li>
+                        <li>**Perancang Item & Artefak Legendaris / Generator Konsep Peralatan:** Rancang objek-objek penting atau teknologi yang akan muncul dalam cerita Anda.</li>
+                        <li>**Generator Makhluk/Monster Fiksi:** Jika Anda butuh makhluk, alien, atau monster, rancanglah di sini.</li>
+                    </ul>
+                </li>
+                <li>**Rancang Plot & Tantangan:**
+                    <ul>
+                        <li>**Generator Plot & Garis Besar Cerita:** Dengan karakter dan dunia di tangan, buatlah kerangka plot utama cerita Anda, dari awal hingga akhir.</li>
+                        <li>**Generator Tantangan/Quest:** Kembangkan misi atau tantangan spesifik yang akan dihadapi karakter Anda dalam plot.</li>
+                    </ul>
+                </li>
+                <li>**Sempurnakan & Wujudkan:**
+                    <ul>
+                        <li>**Generator Judul & Slogan Cerita:** Buat judul yang menarik dan slogan yang memikat untuk proyek Anda.</li>
+                        <li>**Cerita Interaktif / Cerita Non-Interaktif:** Terakhir, gunakan semua ide yang Anda hasilkan untuk mulai menulis cerita Anda, apakah itu novel visual yang interaktif atau narasi tradisional.</li>
+                    </ul>
+                </li>
+            </ol>
+            <p>Ini hanyalah satu alur kerja yang disarankan. Jelajahi semua generator dan temukan kombinasi yang paling cocok dengan gaya kreatif Anda!</p>
+            <button id="closeTutorialBtn">TUTUP PANDUAN</button>
         </div>
     </div>
 
     <script>
-        // --- Custom Message Box Logic ---
+        // --- Custom Message Box Logic (for AI Alert) ---
         const aiMessageBoxOverlay = document.getElementById('aiMessageBoxOverlay');
         const aiMessageBoxOkBtn = document.getElementById('aiMessageBoxOkBtn');
 
@@ -629,6 +684,19 @@
         aiMessageBoxOkBtn.addEventListener('click', () => {
             aiMessageBoxOverlay.classList.remove('active');
             sessionStorage.setItem('aiMessageBoxShown', 'true'); // Mark as shown for this session
+        });
+
+        // --- Tutorial Modal Logic ---
+        const tutorialModalOverlay = document.getElementById('tutorialModalOverlay');
+        const showTutorialBtn = document.getElementById('showTutorialBtn');
+        const closeTutorialBtn = document.getElementById('closeTutorialBtn');
+
+        showTutorialBtn.addEventListener('click', () => {
+            tutorialModalOverlay.classList.add('active');
+        });
+
+        closeTutorialBtn.addEventListener('click', () => {
+            tutorialModalOverlay.classList.remove('active');
         });
 
         // --- Initial Load Logic ---

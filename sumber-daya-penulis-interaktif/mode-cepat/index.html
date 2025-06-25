@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mode Cerita Cepat - Hanzercopy</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Comic+Neue:wght@700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Fallback font Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overflow-x: hidden; /* Mencegah scroll horizontal */
+            background-color: #f0f0f0; /* Light background */
+            color: #1a1a1a; /* Dark text */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column; /* Use column to stack elements */
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Comic-like font */
+        .comic-font {
+            font-family: 'Comic Neue', cursive;
+        }
+        .mono-font {
+            font-family: 'Share Tech Mono', monospace; /* Font ala mesin tik/komputer */
+        }
+        /* Default font for inputs and general readability */
+        .default-font {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Gaya khusus untuk tombol komik (Hitam Putih) */
+        .comic-button {
+            border: 4px solid black;
+            box-shadow: 6px 6px 0px black;
+            transition: all 0.2s ease-in-out;
+            background-color: #1a1a1a; /* Dark button */
+            color: white;
+            padding: 12px 24px;
+            border-radius: 9999px; /* rounded-full */
+            font-weight: 700; /* font-bold */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .comic-button:hover {
+            box-shadow: 2px 2px 0px black;
+            transform: translate(4px, 4px);
+            background-color: #333333; /* Slightly lighter on hover */
+        }
+        .comic-button:active {
+            box-shadow: 0px 0px 0px black;
+            transform: translate(6px, 6px);
+        }
+
+        /* Gaya untuk tombol dengan border putih */
+        .comic-button.white-border {
+            border: 4px solid white;
+            box-shadow: 6px 6px 0px #cccccc; /* Light shadow for contrast */
+            background-color: #f0f0f0; /* Light background */
+            color: #1a1a1a; /* Dark text */
+        }
+        .comic-button.white-border:hover {
+            box-shadow: 2px 2px 0px #cccccc;
+            background-color: #e0e0e0;
+        }
+        .comic-button.white-border:active {
+            box-shadow: 0px 0px 0px #cccccc;
+        }
+
+
+        /* Main container styling (Hitam Putih) */
+        .main-container {
+            background-color: white;
+            border-radius: 1rem; /* rounded-xl */
+            padding: 2.5rem; /* p-10 */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1); /* shadow-xl */
+            max-width: 800px;
+            width: 100%;
+            border: 2px solid #1a1a1a; /* Black border */
+            margin-bottom: 20px; /* Space from other elements */
+        }
+
+        h1 {
+            font-size: 2.5rem; /* text-4xl */
+            font-weight: 800; /* font-extrabold */
+            color: #1a1a1a; /* Dark text */
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 3px 3px 0px rgba(200,200,200,0.5); /* Light shadow for dark text on light background */
+        }
+
+        p {
+            color: #333333; /* Darker gray for readability */
+        }
+
+        .form-label {
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600; /* font-semibold */
+            color: #333333; /* Dark gray */
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem; /* py-3 px-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            border: 2px solid #1a1a1a; /* Black border */
+            background-color: #ffffff; /* White background */
+            color: #1a1a1a; /* Dark text */
+            font-size: 1rem; /* text-base */
+            transition: all 0.2s ease-in-out;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #555555; /* Slightly lighter black on focus */
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2); /* Darker ring shadow */
+        }
+
+        /* API Key Section specific styling */
+        #api-key-section {
+            background-color: #e0e0e0; /* Light gray background */
+            border-color: #888888; /* Gray border */
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        #api-key-section .comic-button {
+            background-color: #000000;
+            color: white;
+            border: 2px solid white;
+            box-shadow: 3px 3px 0px #cccccc;
+        }
+        #api-key-section .comic-button:hover {
+            background-color: #333333;
+            box-shadow: 5px 5px 0px #ffffff;
+        }
+
+        /* Output sections (Hitam Putih) */
+        .output-section {
+            background-color: #f9f9f9; /* Off-white */
+            border: 2px solid #1a1a1a; /* Black border */
+            border-radius: 0.75rem; /* rounded-xl */
+            padding: 1.5rem; /* p-6 */
+            margin-top: 1.5rem; /* mt-6 */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.06); /* inset shadow */
+        }
+        .output-section h2 {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 700; /* font-bold */
+            color: #1a1a1a; /* Dark text */
+            margin-bottom: 1rem;
+            border-bottom: 1px dashed #666; /* Divider */
+            padding-bottom: 0.5rem;
+        }
+        .output-text {
+            color: #333333; /* Dark gray for readability */
+            line-height: 1.6;
+            white-space: pre-wrap; /* Preserve line breaks from AI output */
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.95rem;
+        }
+
+        /* Loading indicator (Hitam Putih) */
+        .loading-indicator {
+            display: none; /* Hidden by default */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #1a1a1a; /* Dark text */
+        }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.3); /* Dark gray transparent */
+            border-top: 4px solid #1a1a1a; /* Black spinner */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Custom Message Box (Hitam Putih) */
+        .custom-message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); /* Dark overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .custom-message-box-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-message-box {
+            background-color: white;
+            color: #1a1a1a;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 5px 5px 0px 0px #000000;
+            border: 2px solid #000000;
+            max-width: 400px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease-in-out;
+        }
+        .custom-message-box-overlay.active .custom-message-box {
+            transform: scale(1);
+        }
+        .custom-message-box h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+            text-shadow: 2px 2px 0px #cccccc; /* Light shadow for dark text */
+        }
+        .custom-message-box p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #333333;
+        }
+        .custom-message-box button {
+            background-color: #1a1a1a;
+            color: white;
+            padding: 10px 25px;
+            border: 2px solid #ffffff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 3px 3px 0px 0px #cccccc;
+        }
+        .custom-message-box button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px 0px #ffffff;
+            background-color: #333333;
+        }
+
+        /* Full-screen loading overlay */
+        .loading-overlay-full {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8); /* Light overlay semi-transparan */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100; /* Pastikan di atas semua elemen */
+            color: #1a1a1a; /* Dark text */
+            font-size: 1.5rem;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none; /* Izinkan klik untuk melewati saat tidak aktif */
+        }
+        .loading-overlay-full.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+            .main-container {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .form-label {
+                font-size: 1rem;
+            }
+            .form-input {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            .comic-button {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            .output-section {
+                padding: 1rem;
+            }
+            .output-section h2 {
+                font-size: 1.25rem;
+            }
+            .output-text {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <h1 class="comic-font">Mode Cerita Cepat</h1>
+        <p class="text-center mb-6">
+            Dapatkan kerangka cerita dasar dalam sekejap! Cukup masukkan konsep cerita Anda, atau biarkan AI membuat ide acak.
+        </p>
+
+        <!-- API Key Input Section -->
+        <div id="api-key-section" class="w-full flex flex-col md:flex-row gap-4 items-center p-4 border-2 border-dashed border-gray-400 rounded-lg">
+            <label for="api-key-input" class="comic-font text-lg text-gray-800 shrink-0 text-left md:text-center">API Key Anda:</label>
+            <input type="text" id="api-key-input" placeholder="Masukkan API Key Gemini Anda di sini" class="flex-grow p-3 border-4 border-black rounded-lg text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="save-api-key-btn" class="comic-button white-border px-6 py-3 rounded-full text-lg font-bold w-full md:w-auto">
+                Simpan & Verifikasi Key
+            </button>
+        </div>
+
+        <!-- Main Content Area - Hidden until API Key is set -->
+        <div id="main-content" class="hidden w-full space-y-6">
+            <div class="mb-6">
+                <label for="conceptInput" class="form-label mb-2">Konsep Cerita Utama (Misal: Petualangan fantasi di dunia sihir, Misteri di kota cyberpunk):</label>
+                <textarea id="conceptInput" class="form-input h-24" placeholder="Masukkan ide cerita Anda di sini..."></textarea>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                <button id="generateStoryBtn" class="comic-button w-full sm:w-1/3">
+                    <i class="fas fa-magic mr-2"></i> Buat Cerita Cepat!
+                </button>
+                <button id="randomConceptBtn" class="comic-button white-border w-full sm:w-1/3">
+                    <i class="fas fa-dice mr-2"></i> Acak Konsep AI
+                </button>
+                <button id="clearOutputBtn" class="comic-button white-border w-full sm:w-1/3">
+                    <i class="fas fa-redo mr-2"></i> Bersihkan
+                </button>
+            </div>
+
+            <!-- Initial Message/Placeholder -->
+            <div id="initial-message" class="output-section text-center text-gray-600 comic-font text-lg pt-20" style="min-height: 200px;">
+                Jelaskan konsep cerita Anda, lalu klik "Buat Cerita Cepat!"
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="loading-indicator">
+                <div class="spinner"></div>
+                <span id="loading-text">AI sedang merangkai cerita Anda...</span>
+            </div>
+
+            <!-- Output Sections -->
+            <div id="outputContainer" class="hidden">
+                <div class="output-section">
+                    <h2>Karakter Utama</h2>
+                    <p id="characterOutput" class="output-text">...</p>
+                    <button class="comic-button white-border mt-4 text-sm px-4 py-2" data-copy-target="characterOutput">
+                        <i class="fas fa-copy mr-2"></i> Salin
+                    </button>
+                </div>
+
+                <div class="output-section">
+                    <h2>Lokasi Kunci</h2>
+                    <p id="locationOutput" class="output-text">...</p>
+                    <button class="comic-button white-border mt-4 text-sm px-4 py-2" data-copy-target="locationOutput">
+                        <i class="fas fa-copy mr-2"></i> Salin
+                    </button>
+                </div>
+
+                <div class="output-section">
+                    <h2>Objek Penting</h2>
+                    <p id="objectOutput" class="output-text">...</p>
+                    <button class="comic-button white-border mt-4 text-sm px-4 py-2" data-copy-target="objectOutput">
+                        <i class="fas fa-copy mr-2"></i> Salin
+                    </button>
+                </div>
+
+                <div class="output-section">
+                    <h2>Garis Besar Plot Singkat</h2>
+                    <p id="plotOutput" class="output-text">...</p>
+                    <button class="comic-button white-border mt-4 text-sm px-4 py-2" data-copy-target="plotOutput">
+                        <i class="fas fa-copy mr-2"></i> Salin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Message Box (for AI alerts, e.g., API key errors) -->
+    <div id="custom-message-box" class="custom-message-box-overlay" style="display:none;">
+        <div class="custom-message-box">
+            <h3 id="message-box-title"></h3>
+            <p id="message-box-content"></p>
+            <button id="message-box-ok-btn">OK</button>
+        </div>
+    </div>
+
+    <!-- Full-screen loading overlay -->
+    <div id="full-loading-overlay" class="loading-overlay-full">
+        <div class="spinner"></div>
+        <span id="overlay-message" class="comic-font">AI sedang merangkai cerita Anda...</span>
+    </div>
+
+    <script>
+        // --- API Key Handling ---
+        // API Key will be loaded from localStorage, default is blank.
+        let API_KEY = localStorage.getItem('geminiApiKeyQuickStory') || "";
+
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        const apiKeySection = document.getElementById('api-key-section');
+        const mainContent = document.getElementById('main-content'); // Main content container
+
+        const conceptInput = document.getElementById('conceptInput');
+        const generateStoryBtn = document.getElementById('generateStoryBtn');
+        const randomConceptBtn = document.getElementById('randomConceptBtn');
+        const clearOutputBtn = document.getElementById('clearOutputBtn');
+        
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const loadingText = document.getElementById('loading-text'); // Text for inline spinner
+        const outputContainer = document.getElementById('outputContainer');
+        const characterOutput = document.getElementById('characterOutput');
+        const locationOutput = document.getElementById('locationOutput');
+        const objectOutput = document.getElementById('objectOutput');
+        const plotOutput = document.getElementById('plotOutput');
+        const copyButtons = document.querySelectorAll('.output-section .comic-button');
+        const initialMessage = document.getElementById('initial-message'); // Initial welcome message
+
+        const fullLoadingOverlay = document.getElementById('full-loading-overlay');
+        const overlayMessage = document.getElementById('overlay-message');
+
+        const loadingMessages = [
+            "Membuat karakter...",
+            "Mencari lokasi...",
+            "Menciptakan objek...",
+            "Merangkai plot...",
+            "AI sedang bekerja keras...",
+            "Membentuk ide cerita..."
+        ];
+
+        const randomConceptLoadingMessages = [
+            "Mencari ide acak...",
+            "Mengacak konsep...",
+            "Menjelajahi imajinasi AI..."
+        ];
+
+        // --- Custom Modal Functions (replaces alert/confirm) ---
+        async function showModal(title, message, type = 'alert') {
+            const modalOverlay = document.getElementById('custom-message-box');
+            const modalTitle = modalOverlay.querySelector('#message-box-title');
+            const modalContent = modalOverlay.querySelector('#message-box-content');
+            const modalOkBtn = modalOverlay.querySelector('#message-box-ok-btn');
+
+            modalTitle.textContent = title;
+            modalContent.textContent = message;
+
+            modalOverlay.style.display = 'flex';
+            modalOverlay.classList.add('active');
+
+            return new Promise((resolve) => {
+                modalOkBtn.onclick = () => {
+                    modalOverlay.classList.remove('active');
+                    modalOverlay.style.display = 'none';
+                    resolve(true);
+                };
+            });
+        }
+
+        // --- API Key Handling & Validation (Adapted from peta.txt and dossier.txt) ---
+        async function validateApiKey(key) {
+            if (!key) {
+                // No modal here, will be handled by checkAndDisplayApiKeyStatus
+                return false;
+            }
+
+            console.log("DEBUG: Validating API Key for Quick Story Generator:", key.substring(0, 5) + "...");
+            try {
+                let chatHistory = [{ role: "user", parts: [{ text: "Hello" }] }]; // Minimal prompt for validation
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.json(); // Attempt to parse JSON error
+                    const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                    await showModal('Validasi Gagal!', `API Key tidak valid: ${errorMessage}.`);
+                    console.error("API Key validation failed for Quick Story Generator:", response.status, errorBody);
+                    return false;
+                }
+                const result = await response.json();
+                if (!result.candidates || result.candidates.length === 0) {
+                     await showModal('Validasi Gagal!', 'API Key valid namun respons tidak sesuai. Coba lagi atau periksa key Anda.');
+                     console.error("API Key valid but unexpected response for Quick Story Generator:", result);
+                     return false;
+                }
+                console.log("DEBUG: API Key for Quick Story Generator validated successfully.");
+                return true;
+            } catch (error) {
+                await showModal('Validasi Gagal!', `Terjadi kesalahan koneksi saat validasi API Key: ${error.message}.`);
+                console.error("Error during API Key validation for Quick Story Generator:", error);
+                return false;
+            }
+        }
+
+        async function checkAndDisplayApiKeyStatus() {
+            const storedKey = localStorage.getItem('geminiApiKeyQuickStory');
+            if (storedKey) {
+                apiKeyInput.value = storedKey; // Display the full key in the input
+                API_KEY = storedKey;
+                const isValid = await validateApiKey(API_KEY);
+                if (isValid) {
+                    apiKeySection.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                    console.log("DEBUG: API Key for Quick Story Generator loaded from localStorage and is valid.");
+                } else {
+                    // If stored key is invalid, keep API section visible and main content hidden
+                    apiKeySection.classList.remove('hidden');
+                    mainContent.classList.add('hidden');
+                    console.log("DEBUG: Stored API Key for Quick Story Generator is invalid. Please re-enter.");
+                    // No need to show modal again, validateApiKey already did.
+                }
+            } else {
+                apiKeyInput.value = ""; // Ensure input is empty if no key
+                apiKeySection.classList.remove('hidden'); // Ensure API key input is visible
+                mainContent.classList.add('hidden'); // Ensure main content is hidden
+                console.log("DEBUG: No API Key found in localStorage for Quick Story Generator. Please enter it.");
+            }
+        }
+
+        saveApiKeyBtn.addEventListener('click', async () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                const isValid = await validateApiKey(key);
+                if (isValid) {
+                    localStorage.setItem('geminiApiKeyQuickStory', key);
+                    API_KEY = key;
+                    await showModal('Berhasil!', 'API Key berhasil disimpan dan diverifikasi!');
+                    apiKeySection.classList.add('hidden');
+                    mainContent.classList.remove('hidden');
+                } else {
+                    // validateApiKey already showed a modal for invalid key
+                    // Keep API section visible
+                }
+            } else {
+                await showModal('Kesalahan!', 'Masukkan API Key terlebih dahulu!');
+            }
+        });
+
+
+        // --- Loading State Functions ---
+        function showLoading(message) {
+            initialMessage.classList.add('hidden'); // Hide initial message
+            outputContainer.classList.add('hidden'); // Hide output container
+            loadingIndicator.style.display = 'flex'; // Show inline loading spinner
+            loadingText.textContent = message || loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            fullLoadingOverlay.classList.add('active'); // Show full screen overlay
+            overlayMessage.textContent = message || loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+
+
+            // Disable buttons and input during loading
+            generateStoryBtn.disabled = true;
+            randomConceptBtn.disabled = true;
+            clearOutputBtn.disabled = true;
+            conceptInput.disabled = true;
+        }
+
+        function hideLoading() {
+            loadingIndicator.style.display = 'none'; // Hide inline loading spinner
+            fullLoadingOverlay.classList.remove('active'); // Hide full screen overlay
+
+            // Re-enable buttons and input
+            generateStoryBtn.disabled = false;
+            randomConceptBtn.disabled = false;
+            clearOutputBtn.disabled = false;
+            conceptInput.disabled = false;
+        }
+
+        // Function to copy text to clipboard
+        async function copyToClipboard(text, successMessage) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = 0;
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                await showModal('Berhasil!', successMessage);
+            } catch (err) {
+                console.error('Gagal menyalin teks: ', err);
+                await showModal('Gagal!', 'Gagal menyalin teks. Silakan salin manual.');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // --- Core Function: Generate Quick Story ---
+        async function generateStory() {
+            if (!API_KEY) {
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden'); // Show API key input if not set
+                mainContent.classList.add('hidden'); // Hide main content
+                return;
+            }
+
+            const concept = conceptInput.value.trim();
+            if (!concept) {
+                await showModal('Peringatan!', 'Mohon masukkan konsep cerita Anda terlebih dahulu atau gunakan "Acak Konsep AI".');
+                return;
+            }
+
+            showLoading("AI sedang merangkai cerita Anda...");
+
+            try {
+                // 1. Generate Character first
+                const characterText = await generatePart('karakter utama', concept, 'karakter');
+                characterOutput.textContent = characterText;
+
+                // Extract character name for plot consistency
+                const characterNameMatch = characterText.match(/Nama: (.*?)\./);
+                const mainCharacterName = characterNameMatch && characterNameMatch[1] ? characterNameMatch[1].trim() : "protagonis utama";
+                
+                // 2. Generate other parts including plot, passing the character name
+                const [locationResult, objectResult, plotResult] = await Promise.all([
+                    generatePart('lokasi kunci', concept, 'lokasi'),
+                    generatePart('objek penting', concept, 'objek'),
+                    generatePart('garis besar plot singkat', concept, 'plot', mainCharacterName) // Pass character name here
+                ]);
+
+                locationOutput.textContent = locationResult;
+                objectOutput.textContent = objectResult;
+                plotOutput.textContent = plotResult;
+
+                outputContainer.classList.remove('hidden');
+                initialMessage.classList.add('hidden'); // Ensure initial message is hidden if generation is successful
+
+            } catch (error) {
+                console.error('Error generating story parts:', error);
+                await showModal('Terjadi Kesalahan!', `Gagal membuat cerita: ${error.message}. Coba lagi atau pastikan API Key Anda valid.`);
+                outputContainer.classList.add('hidden'); // Hide output if error
+                initialMessage.classList.remove('hidden'); // Show initial message back
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function generatePart(partName, concept, type, mainCharacterName = null) {
+            let prompt;
+            switch (type) {
+                case 'karakter':
+                    prompt = `Berdasarkan konsep cerita: "${concept}", buat deskripsi singkat untuk ${partName} (nama, satu ciri kepribadian menonjol, satu kemampuan/keterampilan). Hindari penggunaan nama 'Anya' dan 'Arya'. Format: "Nama: [Nama Karakter]. [Sifat]. [Kemampuan]."`;
+                    break;
+                case 'lokasi':
+                    prompt = `Berdasarkan konsep cerita: "${concept}", buat deskripsi singkat untuk ${partName} (nama lokasi, jenis lokasi, suasana/ciri khas penting). Format: "Lokasi: [Nama Lokasi]. [Jenis Lokasi]. [Suasana/Ciri Khas]."`;
+                    break;
+                case 'objek':
+                    prompt = `Berdasarkan konsep cerita: "${concept}", buat deskripsi singkat untuk satu ${partName}/artefak (nama objek, fungsi/kekuatan utamanya, mengapa penting). Format: "Objek: [Nama Objek]. [Fungsi]. [Pentingnya]."`;
+                    break;
+                case 'plot':
+                    const characterRef = mainCharacterName ? `karakter bernama ${mainCharacterName}` : `karakter utama`;
+                    prompt = `Berdasarkan konsep cerita: "${concept}", buat garis besar plot singkat (3-5 kalimat) yang mencakup awal, konflik, dan resolusi dasar, melibatkan ${characterRef}. Berikan hanya teks plotnya.`;
+                    break;
+                default:
+                    prompt = `Buat deskripsi untuk ${partName} dari cerita dengan konsep: "${concept}".`;
+            }
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || 'Gagal terhubung ke API Gemini.');
+            }
+
+            const result = await response.json();
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                return result.candidates[0].content.parts[0].text;
+            } else {
+                throw new Error(`Tidak dapat menghasilkan ${partName}.`);
+            }
+        }
+
+        // --- Function: Generate Random Concept ---
+        async function generateRandomConcept() {
+            if (!API_KEY) {
+                await showModal('Peringatan!', "Mohon masukkan API Key Gemini Anda terlebih dahulu dan simpan!");
+                apiKeySection.classList.remove('hidden');
+                mainContent.classList.add('hidden');
+                return;
+            }
+
+            showLoading("Mengacak konsep cerita..."); // Show loading for random concept
+
+            try {
+                const prompt = `Berikan satu konsep cerita fiksi yang menarik dan acak (misal: genre, latar, karakter utama). Berikan hanya konsep tersebut dalam satu kalimat, tanpa judul atau deskripsi panjang. Contoh: 'Petualangan fantasi epik tentang pencarian artefak kuno di reruntuhan kota yang hilang'. Hindari penggunaan nama 'Anya' dan 'Arya' dalam konsep ini.`;
+                
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'Gagal terhubung ke API Gemini untuk konsep acak.');
+                }
+
+                const result = await response.json();
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    conceptInput.value = result.candidates[0].content.parts[0].text.trim();
+                } else {
+                    throw new Error('Tidak dapat menghasilkan konsep acak.');
+                }
+
+            } catch (error) {
+                await showModal('Kesalahan!', `Terjadi kesalahan saat mengacak konsep: ${error.message}.`);
+                console.error("ERROR generating random concept:", error);
+            } finally {
+                hideLoading(); // Hide loading after random concept generation
+            }
+        }
+
+        function clearOutput() {
+            conceptInput.value = '';
+            characterOutput.textContent = '...';
+            locationOutput.textContent = '...';
+            objectOutput.textContent = '...';
+            plotOutput.textContent = '...';
+            outputContainer.classList.add('hidden');
+            initialMessage.classList.remove('hidden'); // Show initial message again
+            hideLoading();
+        }
+
+        // --- Event Listeners ---
+        generateStoryBtn.addEventListener('click', generateStory);
+        randomConceptBtn.addEventListener('click', generateRandomConcept);
+        clearOutputBtn.addEventListener('click', async () => {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus semua hasil dan input?', 'confirm');
+            if (confirmed) {
+                clearOutput();
+            }
+        });
+
+        // Add event listeners for copy buttons
+        copyButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const targetId = event.currentTarget.dataset.copyTarget;
+                const targetElement = document.getElementById(targetId);
+                if (targetElement && targetElement.textContent !== '...') {
+                    copyToClipboard(targetElement.textContent, `Deskripsi ${targetId.replace('Output', '').toLowerCase()} berhasil disalin!`);
+                } else {
+                    showModal('Peringatan!', 'Tidak ada teks untuk disalin.');
+                }
+            });
+        });
+
+        // Initial setup on page load
+        window.onload = checkAndDisplayApiKeyStatus;
+    </script>
+</body>
+</html>
