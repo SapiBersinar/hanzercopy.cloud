@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sliding Puzzle Interaktif</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* Menggunakan font Inter dari Google Fonts */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', sans-serif';
             /* Latar belakang gradient modern */
             background-image: linear-gradient(to bottom right, #a78bfa, #818cf8, #6366f1); /* Ungu-biru gradient */
             background-attachment: fixed; /* Memastikan gradient tetap saat scroll */
@@ -22,7 +21,7 @@
             background-color: #ffffff; /* Latar belakang canvas putih bersih */
             border: 3px solid #4f46e5; /* Border ungu tua (indigo-600) */
             border-radius: 0.75rem; /* Sudut membulat */
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Shadow lembut */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             touch-action: manipulation; /* Memungkinkan event sentuhan */
             -webkit-user-select: none; /* Non-seleksi teks untuk iOS */
             -moz-user-select: none; /* Non-seleksi teks untuk Firefox */
@@ -176,16 +175,17 @@
     <div id="mainContent" class="w-full max-w-3xl bg-white p-6 rounded-xl shadow-lg">
         <h1 class="text-3xl font-bold text-center text-indigo-700 mb-6">Sliding Puzzle Interaktif</h1>
 
-        <!-- Bagian Unggah Foto -->
         <div class="mb-6">
             <label for="imageUpload" class="block text-lg font-medium text-gray-700 mb-2">Unggah Foto Anda:</label>
             <input type="file" id="imageUpload" accept="image/*" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
         </div>
 
-        <!-- Bagian Pilih Gambar Contoh -->
         <div class="mb-6 text-center">
             <label class="block text-lg font-medium text-gray-700 mb-2">Atau Pilih Gambar Contoh:</label>
             <div id="sampleImageContainer" class="flex flex-wrap justify-center gap-2">
+                <div class="sample-image-container" data-src="https://github.com/SapiBersinar/hanzercopy.cloud/blob/main/fun/sliding-puzzle/gambar/1.jpg">
+                    <img src="https://github.com/SapiBersinar/hanzercopy.cloud/blob/main/fun/sliding-puzzle/gambar/1.jpg" alt="Contoh Gambar Baru">
+                </div>
                 <div class="sample-image-container" data-src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/2.jpg">
                     <img src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/2.jpg" alt="Contoh Gambar 1">
                 </div>
@@ -198,14 +198,12 @@
                 <div class="sample-image-container" data-src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/5.png">
                     <img src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/5.png" alt="Contoh Gambar 4">
                 </div>
-                <!-- Gambar contoh baru -->
                 <div class="sample-image-container" data-src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/5.jpg">
                     <img src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/5.jpg" alt="Contoh Gambar 5">
                 </div>
             </div>
         </div>
 
-        <!-- Pilihan Ukuran Grid -->
         <div class="mb-6 text-center">
             <label for="gridSizeSelect" class="block text-lg font-medium text-gray-700 mb-2">Pilih Ukuran Puzzle:</label>
             <select id="gridSizeSelect" class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
@@ -215,7 +213,6 @@
             </select>
         </div>
 
-        <!-- Pilihan Mode Puzzle -->
         <div class="mb-6 text-center">
             <label for="puzzleModeSelect" class="block text-lg font-medium text-gray-700 mb-2">Pilih Mode Puzzle:</label>
             <select id="puzzleModeSelect" class="px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
@@ -224,7 +221,6 @@
             </select>
         </div>
         
-        <!-- Penghitung Gerakan & Timer -->
         <div class="flex justify-center gap-8 mb-4 text-center">
             <div class="text-lg font-semibold text-gray-700">
                 Gerakan: <span id="moveCounter" class="text-indigo-700">0</span>
@@ -234,7 +230,6 @@
             </div>
         </div>
 
-        <!-- Tombol Aksi - DIPOSISIKAN DI SINI -->
         <div class="flex flex-col sm:flex-row justify-center gap-4 mb-6">
             <button id="shuffleButton" class="btn-primary-gradient text-white font-semibold py-3 px-6 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                 Acak
@@ -249,31 +244,25 @@
                 Reset Puzzle
             </button>
         </div>
-        <!-- Status Selesaikan Otomatis / Shuffle -->
         <div id="solveStatus" class="text-center text-red-600 font-medium mb-4" style="min-height: 24px;"></div>
 
 
-        <!-- Area Canvas untuk Puzzle -->
         <div class="relative w-full max-w-full flex justify-center items-center overflow-hidden mb-6" style="min-height: 250px;">
             <canvas id="puzzleCanvas" class="w-full h-auto max-w-full"></canvas>
         </div>
 
-        <!-- Tombol Lihat Gambar Asli -->
         <div class="text-center mt-4">
             <button id="viewOriginalImageButton" class="btn-gray text-white font-semibold py-2 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2">
                 Lihat Gambar Asli
             </button>
         </div>
         
-        <!-- Pesan Informasi -->
         <p class="text-center text-gray-600 text-sm italic mt-4">Klik potongan yang berdekatan dengan tempat kosong untuk memindahkannya.</p>
         
     </div>
 
-    <!-- Message Box untuk Notifikasi -->
     <div id="messageBoxContainer"></div>
 
-    <!-- Container untuk tampilan gambar asli (tidak lagi overlay) -->
     <div id="originalImageDisplayContainer" class="original-image-display-container">
         <img id="fullImageDisplay" src="" alt="Gambar Asli">
         <button id="backToPuzzleButton" class="btn-primary-gradient text-white font-semibold py-2 px-4 rounded-lg shadow-md">
@@ -303,7 +292,6 @@
 
         // Sample image elements
         const sampleImageContainers = document.querySelectorAll('.sample-image-container');
-
         let originalImage = new Image();
         let puzzlePieces = [];
         let gridSize = parseInt(gridSizeSelect.value);
@@ -342,11 +330,9 @@
             return 1500; // Default
         };
         
-        const maxStatesToExploreForBFS = 1000000; 
-
+        const maxStatesToExploreForBFS = 1000000;
         // For hover effects on puzzle pieces
         let hoveredPiece = null;
-
         // =====================================================================
         // Utility function for notifications (replaces alert())
         // =====================================================================
@@ -357,7 +343,6 @@
                 <p class="text-xl font-semibold mb-4">${message}</p>
                 <button id="closeMessageBox" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition duration-300">Oke</button>
             `;
-            
             const overlay = document.createElement('div');
             overlay.className = 'overlay';
 
@@ -384,15 +369,12 @@
                 currentOrder[index] = p.id;
                 piecePositions.set(p.id, index);
             });
-
             // Find the blank piece and its row (0-indexed from top)
             const blankPiece = piecesArray.find(p => p.isBlank);
             const blankIndex = piecePositions.get(blankPiece.id);
             const blankRowFromTop = Math.floor(blankIndex / currentGridSize);
-
             // Create a 1D array of non-blank piece IDs in their current reading order
             const flatState = currentOrder.filter(id => id !== blankPiece.id);
-
             let inversions = 0;
             for (let i = 0; i < flatState.length - 1; i++) {
                 for (let j = i + 1; j < flatState.length; j++) {
@@ -437,7 +419,6 @@
                 reader.readAsDataURL(file);
             }
         });
-
         // =====================================================================
         // Handle Sample Image Selection
         // =====================================================================
@@ -477,7 +458,7 @@
                 initializePuzzle(); // Resets to solved state
                 await animateShuffle(); // Shuffles and ensures solvability
             } else {
-                 const placeholderSize = 600;
+                const placeholderSize = 600;
                 originalImage.src = `https://placehold.co/${placeholderSize}x${placeholderSize}/e0e7ff/4f46e5?text=Unggah%20Foto%0A(${gridSize}x${gridSize})`;
             }
         });
@@ -492,7 +473,6 @@
                 drawPuzzle(); // Just draw if not puzzleReady (e.g., initial placeholder)
             }
         });
-
         // =====================================================================
         // Initialize Puzzle (Adapts image to 1:1, sets up pieces)
         // =====================================================================
@@ -528,7 +508,6 @@
             }
             blankPieceIndex = totalPieces - 1;
             puzzlePieces[blankPieceIndex].isBlank = true;
-            
             isShuffled = false; 
             moves = 0;
             undoStack = [];
@@ -569,7 +548,6 @@
         // =====================================================================
         function drawPuzzle() {
             ctx.clearRect(0, 0, puzzleCanvas.width, puzzleCanvas.height);
-
             puzzlePieces.forEach(piece => {
                 if (!piece.isBlank) {
                     ctx.drawImage(
@@ -627,10 +605,8 @@
             shuffling = true;
             disableAllButtons();
             solveStatusDisplay.textContent = 'Mengacak puzzle...';
-
             const originalBlankId = gridSize * gridSize - 1; // ID of the blank piece
             const { numMoves, visualDelay } = getShuffleParams(gridSize);
-
             const shuffleStartTime = Date.now();
             let currentSolvable = false;
             let shuffleAttempts = 0;
@@ -651,7 +627,6 @@
                 // Perform the visual shuffle animation for `numMoves`
                 let currentVisualPieces = puzzlePieces.map(p => ({ ...p })); // Deep copy for animation state
                 let currentVisualBlankPiece = currentVisualPieces.find(p => p.isBlank);
-
                 for (let i = 0; i < numMoves; i++) {
                     if (!shuffling) { // Check if shuffle was externally stopped
                         break;
@@ -665,13 +640,11 @@
                     if (blankRow < gridSize - 1) possibleMoves.push(currentVisualPieces.find(p => Math.round(p.currentX / pieceWidth) === blankCol && Math.round(p.currentY / pieceHeight) === blankRow + 1));
                     if (blankCol > 0) possibleMoves.push(currentVisualPieces.find(p => Math.round(p.currentX / pieceWidth) === blankCol - 1 && Math.round(p.currentY / pieceHeight) === blankRow));
                     if (blankCol < gridSize - 1) possibleMoves.push(currentVisualPieces.find(p => Math.round(p.currentX / pieceWidth) === blankCol + 1 && Math.round(p.currentY / pieceHeight) === blankRow));
-                    
                     const validMoves = possibleMoves.filter(p => p && !p.isBlank);
 
                     if (validMoves.length === 0) continue;
 
                     const pieceToMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-
                     // Perform the swap of visual coordinates on `currentVisualPieces`
                     const tempX = pieceToMove.currentX;
                     const tempY = pieceToMove.currentY;
@@ -681,13 +654,11 @@
 
                     currentVisualBlankPiece.currentX = tempX;
                     currentVisualBlankPiece.currentY = tempY;
-
                     // Update the array order of `currentVisualPieces` to reflect the new visual positions
                     const pieceToMoveIndexInArray = currentVisualPieces.indexOf(pieceToMove);
                     const blankIndexInArray = currentVisualPieces.indexOf(currentVisualBlankPiece);
                     [currentVisualPieces[pieceToMoveIndexInArray], currentVisualPieces[blankIndexInArray]] = 
                     [currentVisualPieces[blankIndexInArray], currentVisualPieces[pieceToMoveIndexInArray]];
-
                     // Temporarily assign currentVisualPieces to puzzlePieces for drawing
                     puzzlePieces = currentVisualPieces;
                     drawPuzzle(); // Redraw after each step
@@ -738,7 +709,7 @@
                 updateMoveCounter();
                 hasMadeFirstMove = false; // Reset for timer to start on first user move
                 
-                shuffling = false; 
+                shuffling = false;
                 enableAllButtons();
 
                 solveStatusDisplay.textContent = `Berhasil mengacak ${numMoves} gerakan dalam ${elapsedTimeSeconds} detik.`;
@@ -753,7 +724,6 @@
 
 
         shuffleButton.addEventListener('click', animateShuffle);
-
         // =====================================================================
         // Undo Puzzle Move
         // =====================================================================
@@ -810,7 +780,6 @@
             timerDisplay.textContent = '00:00';
             hasMadeFirstMove = false; // Reset first move flag
             drawPuzzle();
-
             puzzleCanvas.classList.remove('puzzle-solved-animation');
             solveStatusDisplay.textContent = '';
 
@@ -847,14 +816,12 @@
                 Math.abs(p.currentX - (clickedCol * pieceWidth)) < 1 && 
                 Math.abs(p.currentY - (clickedRow * pieceHeight)) < 1
             );
-
             if (!clickedPiece || clickedPiece.isBlank) {
                 isProcessingClick = false;
                 return;
             }
 
             const blankPiece = puzzlePieces.find(p => p.isBlank);
-
             const clickedPieceCol = Math.round(clickedPiece.currentX / pieceWidth);
             const clickedPieceRow = Math.round(clickedPiece.currentY / pieceHeight);
             const blankPieceCol = Math.round(blankPiece.currentX / pieceWidth);
@@ -864,7 +831,6 @@
                 (Math.abs(clickedPieceCol - blankPieceCol) === 1 && clickedPieceRow === blankPieceRow) ||
                 (Math.abs(clickedPieceRow - blankPieceRow) === 1 && clickedPieceCol === blankPieceCol)
             );
-
             if (isAdjacent) {
                 const currentStatePieces = puzzlePieces.map(p => ({ ...p }));
                 undoStack.push({ pieces: currentStatePieces, moves: moves, isShuffled: isShuffled, puzzleMode: currentPuzzleMode });
@@ -876,7 +842,6 @@
                 const targetYForClicked = blankPiece.currentY;
                 const targetXForBlank = clickedPiece.currentX;
                 const targetYForBlank = clickedPiece.currentY;
-                
                 animatePieceMove(
                     clickedPiece, targetXForClicked, targetYForClicked,
                     blankPiece, targetXForBlank, targetYForBlank,
@@ -929,7 +894,6 @@
                 Math.abs(p.currentX - (currentHoverCol * pieceWidth)) < 1 && 
                 Math.abs(p.currentY - (currentHoverRow * pieceHeight)) < 1
             );
-
             if (potentialHoveredPiece && potentialHoveredPiece !== hoveredPiece && !potentialHoveredPiece.isBlank) {
                 hoveredPiece = potentialHoveredPiece;
                 drawPuzzle();
@@ -937,19 +901,16 @@
                 hoveredPiece = null;
                 drawPuzzle();
             } else if (potentialHoveredPiece && potentialHoveredPiece.isBlank && hoveredPiece) {
-                 hoveredPiece = null;
-                 drawPuzzle();
+                hoveredPiece = null;
+                drawPuzzle();
             }
         });
-
         puzzleCanvas.addEventListener('mouseleave', () => {
             if (hoveredPiece) {
                 hoveredPiece = null;
                 drawPuzzle();
             }
         });
-
-
         // =====================================================================
         // Piece Movement Animation Function (for manual & auto-solve moves)
         // =====================================================================
@@ -960,20 +921,16 @@
             const startY2 = piece2.currentY;
 
             let startTime = null;
-
             function animate(currentTime) {
                 if (!startTime) startTime = currentTime;
                 const elapsed = currentTime - startTime;
                 const progress = Math.min(elapsed / animationDuration, 1);
-
                 piece1.currentX = startX1 + (targetX1 - startX1) * progress;
                 piece1.currentY = startY1 + (targetY1 - startY1) * progress;
-
                 piece2.currentX = startX2 + (targetX2 - startX2) * progress;
                 piece2.currentY = startY2 + (targetY2 - startY2) * progress;
                 
                 drawPuzzle();
-
                 if (progress < 1) {
                     requestAnimationFrame(animate);
                 } else {
@@ -1008,7 +965,6 @@
             const totalSeconds = Math.floor(elapsedTime / 1000);
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = totalSeconds % 60;
-
             const formattedMinutes = String(minutes).padStart(2, '0');
             const formattedSeconds = String(seconds).padStart(2, '0');
 
@@ -1020,7 +976,6 @@
         // =====================================================================
         function checkWin() {
             if (!isShuffled) return;
-
             let solved = true;
             for (let i = 0; i < puzzlePieces.length; i++) {
                 const piece = puzzlePieces[i];
@@ -1028,7 +983,6 @@
                 const currentPieceCol = Math.round(piece.currentX / pieceWidth);
                 const currentPieceRow = Math.round(piece.currentY / pieceHeight);
                 const currentPieceIndex = currentPieceRow * gridSize + currentPieceCol;
-
                 if (piece.id !== currentPieceIndex) {
                     solved = false;
                     break;
@@ -1044,7 +998,6 @@
                 const blankPiece = puzzlePieces.find(p => p.isBlank);
                 const blankPieceCurrentIndexInArray = puzzlePieces.indexOf(blankPiece);
                 const lastCorrectArrayPosition = puzzlePieces.length - 1;
-
                 if (blankPieceCurrentIndexInArray !== lastCorrectArrayPosition) {
                     const pieceAtLastPosition = puzzlePieces[lastCorrectArrayPosition];
                     puzzlePieces[lastCorrectArrayPosition] = blankPiece;
@@ -1052,16 +1005,14 @@
 
                     blankPiece.currentX = (lastCorrectArrayPosition % gridSize) * pieceWidth;
                     blankPiece.currentY = Math.floor(lastCorrectArrayPosition / gridSize) * pieceHeight;
-                    
                     pieceAtLastPosition.currentX = (blankPieceCurrentIndexInArray % gridSize) * pieceWidth;
                     pieceAtLastPosition.currentY = Math.floor(blankPieceCurrentIndexInArray / gridSize) * pieceHeight;
                 }
                 
-                drawPuzzle(); 
+                drawPuzzle();
                 puzzleCanvas.classList.add('puzzle-solved-animation'); // Apply bounce animation
                 
                 showMessageBox(`Selamat! Puzzle telah selesai dalam ${moves} gerakan dan waktu ${timerDisplay.textContent}!`);
-                
                 enableAllButtons();
                 solving = false;
                 shuffling = false;
@@ -1114,7 +1065,6 @@
             isProcessingClick = true;
             hasMadeFirstMove = true; // Auto-solve implies moves are being made, so start timer
             startTimer();
-
             if (gridSize === 5) {
                 solveStatusDisplay.textContent = `Peringatan: 5x5 Otomatis Sangat Lambat! Harap Bersabar.`;
             } else {
@@ -1143,7 +1093,6 @@
 
             queue.push({ state: initialOrderedIds, path: [], blankPos: initialBlankPos });
             visited.add(JSON.stringify(initialOrderedIds));
-
             let solutionPath = null;
             let count = 0; 
 
@@ -1160,23 +1109,21 @@
                 const blankRow = Math.floor(blankPos / gridSize);
                 const blankCol = blankPos % gridSize;
 
-                const possibleSwapPositions = []; 
+                const possibleSwapPositions = [];
                 // Check neighbors: Up, Down, Left, Right
-                if (blankRow > 0) possibleSwapPositions.push(blankPos - gridSize); 
+                if (blankRow > 0) possibleSwapPositions.push(blankPos - gridSize);
                 if (blankRow < gridSize - 1) possibleSwapPositions.push(blankPos + gridSize); 
-                if (blankCol > 0) possibleSwapPositions.push(blankPos - 1); 
+                if (blankCol > 0) possibleSwapPositions.push(blankPos - 1);
                 if (blankCol < gridSize - 1) possibleSwapPositions.push(blankPos + 1); 
 
                 for (const pieceToSwapIndex of possibleSwapPositions) {
-                    const nextState = [...state]; 
-                    
+                    const nextState = [...state];
                     // Swap the IDs in the new state array
                     const tempId = nextState[blankPos];
                     nextState[blankPos] = nextState[pieceToSwapIndex];
                     nextState[pieceToSwapIndex] = tempId;
 
                     const nextStateStr = JSON.stringify(nextState);
-
                     if (!visited.has(nextStateStr)) {
                         visited.add(nextStateStr);
                         queue.push({
@@ -1187,7 +1134,7 @@
                     }
                 }
                 if (count % 1000 === 0) { 
-                    await new Promise(resolve => setTimeout(resolve, 0)); 
+                    await new Promise(resolve => setTimeout(resolve, 0));
                     if (!solving) break; 
                 }
             }
@@ -1205,7 +1152,6 @@
                 
                 // Re-start timer for animation playback
                 startTimer();
-
                 for (const pieceIdToMove of solutionPath) {
                     if (!solving) break; // Allow cancellation during playback
 
@@ -1229,7 +1175,7 @@
                     const startY2 = blankPiece.currentY;
 
                     const targetX1 = startX2; 
-                    const targetY1 = startY2; 
+                    const targetY1 = startY2;
                     const targetX2 = startX1; 
                     const targetY2 = startY1; 
 
@@ -1272,15 +1218,13 @@
             enableAllButtons();
             // Timer is handled by checkWin or explicitly stopped on failure/cancellation
             if (isShuffled && !solving) { // If still shuffled and not in an active solve state
-                 startTimer(); // Ensure timer continues if not solved
+                startTimer(); // Ensure timer continues if not solved
             } else if (!isShuffled && !solving) { // If solved, ensure timer is stopped
-                 stopTimer();
-                 hasMadeFirstMove = false;
+                stopTimer();
+                hasMadeFirstMove = false;
             }
         }
         solveButton.addEventListener('click', solvePuzzleAutomatically);
-
-
         // =====================================================================
         // Handle Window Resize Responsiveness
         // =====================================================================
@@ -1293,13 +1237,12 @@
             // This allows the shuffle animation to continue uninterrupted by resizes (like scrolling on mobile)
             
             enableAllButtons(); // Re-enable in case they were disabled by auto-solve/click animation
-            stopTimer();
+            // Removed: stopTimer(); // REMOVED: This was causing the timer to stop on mobile scroll
             solveStatusDisplay.textContent = '';
             puzzleCanvas.classList.remove('puzzle-solved-animation'); // Clear win animation
 
             recalculatePiecePositionsAndRedraw(); // Always redraw to fit new canvas size, preserving current state
         });
-
         // =====================================================================
         // Local Storage Functions for Preferences
         // =====================================================================
@@ -1336,14 +1279,12 @@
                 showMessageBox("Tidak ada gambar yang dimuat untuk ditampilkan.");
             }
         });
-
         backToPuzzleButton.addEventListener('click', () => {
             originalImageDisplayContainer.classList.remove('show'); // Hide original image container
             mainContent.classList.remove('main-content-hidden'); // Show main puzzle UI
             // Scroll to the puzzle canvas for better context
             puzzleCanvas.scrollIntoView({ behavior: 'smooth', block: 'center' }); // block: 'center' tries to center it
         });
-
         // =====================================================================
         // Initial Page Load Setup (placeholder image)
         // =====================================================================
@@ -1361,5 +1302,3 @@
     </script>
 </body>
 </html>
-
-

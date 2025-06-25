@@ -27,7 +27,7 @@
             border: 3px solid #4f46e5;
             border-radius: 0.75rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            touch-action: none; /* Mencegah gulir saat menyeret pada sentuhan */
+            touch-action: none; /* Penting untuk mencegah gulir saat menyeret pada sentuhan */
             user-select: none; /* Non-seleksi teks */
             transition: transform 0.5s ease-out, border 0.5s ease-out, box-shadow 0.5s ease-out;
         }
@@ -150,6 +150,9 @@
         <div class="mb-6 text-center">
             <label class="block text-lg font-medium text-gray-700 mb-2">Atau Pilih Gambar Contoh:</label>
             <div id="sampleImageContainer" class="flex flex-wrap justify-center gap-2">
+                <div class="sample-image-container" data-src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/1.jpg">
+                    <img src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/1.jpg" alt="Contoh Gambar 0">
+                </div>
                 <div class="sample-image-container" data-src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/2.jpg">
                     <img src="https://raw.githubusercontent.com/SapiBersinar/hanzercopy.cloud/main/fun/sliding-puzzle/gambar/2.jpg" alt="Contoh Gambar 1">
                 </div>
@@ -266,7 +269,7 @@
         let trayAreaStartY;          // Y-coordinate where tray area begins on canvas
 
         // =====================================================================
-        // Utility function for notifications (replaces alert())
+        // Fungsi Utilitas untuk Notifikasi (Pengganti alert())
         // =====================================================================
         function showMessageBox(message) {
             const messageBox = document.createElement('div');
@@ -288,7 +291,7 @@
         }
 
         // =====================================================================
-        // Handle Image Upload
+        // Penanganan Unggah Gambar
         // =====================================================================
         imageUpload.addEventListener('change', (event) => {
             const file = event.target.files[0];
@@ -321,7 +324,7 @@
         });
 
         // =====================================================================
-        // Handle Sample Image Selection
+        // Penanganan Pilih Gambar Contoh
         // =====================================================================
         sampleImageContainers.forEach(container => {
             container.addEventListener('click', () => {
@@ -347,67 +350,67 @@
         });
 
         // =====================================================================
-        // Handle Grid Size Changes (with Local Storage)
+        // Penanganan Perubahan Ukuran Grid (dengan Penyimpanan Lokal)
         // =====================================================================
         gridSizeSelect.addEventListener('change', (event) => {
             gridSize = parseInt(event.target.value);
             localStorage.setItem('jigsawGridSize', gridSize); // Save preference
-            console.log('Grid size changed to:', gridSize);
-            // Re-initialize with the current image or placeholder
-            if (originalImage.src && originalImage.complete) {
+            console.log('Ukuran grid diubah menjadi:', gridSize);
+            // Inisialisasi ulang dengan gambar saat ini atau placeholder
+            if (originalImage.src && originalImage.complete && originalImage.naturalWidth > 0) {
                 initializePuzzle();
-                if (puzzleReady) { // Only shuffle if initialization was successful
+                if (puzzleReady) { // Hanya acak jika inisialisasi berhasil
                     shufflePuzzle(); 
                 }
             } else {
-                // If no image loaded, update placeholder with new grid size
+                // Jika tidak ada gambar yang dimuat, perbarui placeholder dengan ukuran grid baru
                 const placeholderSize = 600;
                 originalImage.src = `https://placehold.co/${placeholderSize}x${placeholderSize}/e0e7ff/4f46e5?text=Unggah%20Foto%0A(${gridSize}x${gridSize})`;
-                initializePuzzle(); // Call initialize to set up canvas size for new grid, even if no real image
+                initializePuzzle(); // Panggil inisialisasi untuk mengatur ukuran kanvas untuk grid baru, meskipun tidak ada gambar asli
             }
         });
 
         // =====================================================================
-        // Initialize Puzzle (Adapts image to 1:1, sets up pieces, creates cached canvases)
+        // Inisialisasi Puzzle (Menyesuaikan gambar ke 1:1, mengatur potongan, membuat kanvas cache)
         // =====================================================================
         function initializePuzzle() {
-            console.log('Initializing puzzle...');
+            console.log('Menginisialisasi puzzle...');
             const container = puzzleCanvas.parentElement;
-            // Ensure a minimum width for maxCanvasWidth
+            // Pastikan lebar minimum untuk maxCanvasWidth
             const maxCanvasWidth = Math.max(300, Math.min(container.clientWidth, window.innerHeight * 0.75)); 
 
-            mainPuzzleAreaDimension = maxCanvasWidth; // Main puzzle area is square
+            mainPuzzleAreaDimension = maxCanvasWidth; // Area puzzle utama berbentuk persegi
             
             pieceWidth = mainPuzzleAreaDimension / gridSize;
             pieceHeight = mainPuzzleAreaDimension / gridSize;
 
-            // Validate piece dimensions - add a fallback for `pieceWidth` and `pieceHeight` as well
-            if (isNaN(pieceWidth) || pieceWidth <= 0) pieceWidth = mainPuzzleAreaDimension / 3; // Fallback to 3x3 piece size
+            // Validasi dimensi potongan - tambahkan fallback untuk `pieceWidth` dan `pieceHeight` juga
+            if (isNaN(pieceWidth) || pieceWidth <= 0) pieceWidth = mainPuzzleAreaDimension / 3; // Fallback ke ukuran potongan 3x3
             if (isNaN(pieceHeight) || pieceHeight <= 0) pieceHeight = mainPuzzleAreaDimension / 3;
 
             const totalPieces = gridSize * gridSize;
             const piecesPerRowInTray = Math.floor((maxCanvasWidth - (2 * TRAY_PADDING)) / pieceWidth);
-            const effectivePiecesPerRow = Math.max(1, piecesPerRowInTray); // Ensure at least 1 piece per row
+            const effectivePiecesPerRow = Math.max(1, piecesPerRowInTray); // Pastikan setidaknya 1 potongan per baris
 
             const requiredTrayRows = Math.ceil(totalPieces / effectivePiecesPerRow);
             
-            // Calculate tray height based on pieces, label, and padding
+            // Hitung tinggi nampan berdasarkan potongan, label, dan padding
             trayAreaTotalHeight = (requiredTrayRows * pieceHeight) + (2 * TRAY_PADDING) + TRAY_LABEL_OFFSET_Y + TRAY_PADDING; 
             
-            // Ensure tray has a minimum sensible height
+            // Pastikan nampan memiliki tinggi minimum yang masuk akal
             trayAreaTotalHeight = Math.max(trayAreaTotalHeight, pieceHeight + (2 * TRAY_PADDING) + TRAY_LABEL_OFFSET_Y + TRAY_PADDING);
             
             puzzleCanvas.width = mainPuzzleAreaDimension;
-            puzzleCanvas.height = mainPuzzleAreaDimension + VERTICAL_SPACING_BETWEEN_AREAS + trayAreaTotalHeight; // Add spacing
+            puzzleCanvas.height = mainPuzzleAreaDimension + VERTICAL_SPACING_BETWEEN_AREAS + trayAreaTotalHeight; // Tambahkan spasi
             
-            trayAreaStartY = mainPuzzleAreaDimension + VERTICAL_SPACING_BETWEEN_AREAS; // Y-coordinate where tray starts on canvas, adjusted for spacing
+            trayAreaStartY = mainPuzzleAreaDimension + VERTICAL_SPACING_BETWEEN_AREAS; // Koordinat Y di mana area nampan dimulai di kanvas, disesuaikan untuk spasi
 
-            // Only attempt to draw image pieces if originalImage is fully loaded
-            // Use naturalWidth/Height to confirm image data is present
+            // Hanya coba menggambar potongan gambar jika originalImage dimuat sepenuhnya
+            // Gunakan naturalWidth/Height untuk mengkonfirmasi data gambar ada
             if (!originalImage.complete || originalImage.naturalWidth === 0 || originalImage.naturalHeight === 0) {
-                console.warn('Original image not complete or has no natural dimensions. Cannot create puzzle pieces.');
+                console.warn('Gambar asli tidak lengkap atau tidak memiliki dimensi alami. Tidak dapat membuat potongan puzzle.');
                 puzzleReady = false;
-                drawPuzzle(); // Draw placeholder text
+                drawPuzzle(); // Gambar teks placeholder
                 return;
             }
 
@@ -417,7 +420,7 @@
 
             puzzlePieces = [];
             for (let i = 0; i < totalPieces; i++) {
-                // Create an off-screen canvas for each piece (performance optimization)
+                // Buat kanvas di luar layar untuk setiap potongan (optimasi kinerja)
                 const cachedPieceCanvas = document.createElement('canvas');
                 cachedPieceCanvas.width = pieceWidth;
                 cachedPieceCanvas.height = pieceHeight;
@@ -428,37 +431,37 @@
                     offsetYImage + (sourceSize / gridSize) * Math.floor(i / gridSize),
                     sourceSize / gridSize,
                     sourceSize / gridSize,
-                    0, 0, // Draw at (0,0) on its own small canvas
+                    0, 0, // Gambar di (0,0) di kanvas kecilnya sendiri
                     pieceWidth, pieceHeight
                 );
 
                 puzzlePieces.push({
                     id: i,
-                    originalX: (i % gridSize) * pieceWidth,        // Solved X on main puzzle area
-                    originalY: Math.floor(i / gridSize) * pieceHeight, // Solved Y on main puzzle area
-                    currentX: (i % gridSize) * pieceWidth,         // Initial current X (solved position)
-                    currentY: Math.floor(i / gridSize) * pieceHeight, // Initial current Y (solved position)
-                    isLocked: true,                               // Initially locked (solved state)
-                    inTray: false,                                // Initially not in tray
-                    cachedCanvas: cachedPieceCanvas               // Store the pre-rendered piece
+                    originalX: (i % gridSize) * pieceWidth,        // X yang dipecahkan di area puzzle utama
+                    originalY: Math.floor(i / gridSize) * pieceHeight, // Y yang dipecahkan di area puzzle utama
+                    currentX: (i % gridSize) * pieceWidth,         // X saat ini awal (posisi terpecahkan)
+                    currentY: Math.floor(i / gridSize) * pieceHeight, // Y saat ini awal (posisi terpecahkan)
+                    isLocked: true,                               // Awalnya terkunci (keadaan terpecahkan)
+                    inTray: false,                                // Awalnya tidak di nampan
+                    cachedCanvas: cachedPieceCanvas               // Simpan potongan yang sudah di-render
                 });
             }
             moves = 0;
             updateMoveCounter();
             puzzleCanvas.classList.remove('puzzle-solved-animation');
-            puzzleReady = true; // Set to true only if pieces are successfully created
-            drawPuzzle(); // Draw in solved state initially
-            console.log('Puzzle initialized. Pieces count:', puzzlePieces.length);
+            puzzleReady = true; // Atur ke true hanya jika potongan berhasil dibuat
+            drawPuzzle(); // Gambar dalam keadaan terpecahkan pada awalnya
+            console.log('Puzzle diinisialisasi. Jumlah potongan:', puzzlePieces.length);
         }
 
         // =====================================================================
-        // Draw Puzzle on Canvas (both main area and tray)
+        // Menggambar Puzzle di Kanvas (area utama dan nampan)
         // =====================================================================
         function drawPuzzle() {
             ctx.clearRect(0, 0, puzzleCanvas.width, puzzleCanvas.height);
 
             if (!puzzleReady) {
-                ctx.fillStyle = '#6366f1'; // Indigo color
+                ctx.fillStyle = '#6366f1'; // Warna indigo
                 ctx.font = `2rem Inter, sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -467,20 +470,20 @@
                     puzzleCanvas.width / 2,
                     puzzleCanvas.height / 2
                 );
-                return; // Stop drawing further if puzzle is not ready
+                return; // Berhenti menggambar lebih lanjut jika puzzle belum siap
             }
 
-            // 1. Draw background for the main puzzle area and its label
-            ctx.fillStyle = '#f3f4f6'; // Light gray for main area
+            // 1. Gambar latar belakang untuk area puzzle utama dan labelnya
+            ctx.fillStyle = '#f3f4f6'; // Abu-abu terang untuk area utama
             ctx.fillRect(0, 0, mainPuzzleAreaDimension, mainPuzzleAreaDimension);
             ctx.strokeStyle = '#4f46e5';
             ctx.lineWidth = 3;
             ctx.strokeRect(0, 0, mainPuzzleAreaDimension, mainPuzzleAreaDimension);
 
-            // "Susun di Sini" label - only if no pieces are locked in place
+            // Label "Susun di Sini" - hanya jika tidak ada potongan yang terkunci pada tempatnya
             const anyPieceLockedInAssembly = puzzlePieces.some(p => p.isLocked && !p.inTray);
-            if (!anyPieceLockedInAssembly) { // Show only when the assembly area is empty of locked pieces
-                ctx.fillStyle = ASSEMBLE_LABEL_COLOR; // Softer color for the label
+            if (!anyPieceLockedInAssembly) { // Tampilkan hanya saat area perakitan kosong dari potongan yang terkunci
+                ctx.fillStyle = ASSEMBLE_LABEL_COLOR; // Warna yang lebih lembut untuk label
                 ctx.font = `2rem Inter, sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -491,8 +494,8 @@
                 );
             }
 
-            // 2. Draw background for the tray area and its label
-            ctx.fillStyle = '#e0e7ff'; // Light indigo for tray
+            // 2. Gambar latar belakang untuk area nampan dan labelnya
+            ctx.fillStyle = '#e0e7ff'; // Indigo terang untuk nampan
             ctx.fillRect(0, trayAreaStartY, puzzleCanvas.width, trayAreaTotalHeight);
             ctx.strokeStyle = '#4f46e5';
             ctx.lineWidth = 3;
@@ -508,52 +511,52 @@
                 trayAreaStartY + TRAY_LABEL_OFFSET_Y
             );
 
-            // Sort pieces for drawing order: locked first, then unlocked, then dragged (on top)
+            // Urutkan potongan untuk urutan penggambaran: terkunci dulu, lalu tidak terkunci, lalu yang diseret (di atas)
             const sortedPieces = [...puzzlePieces].sort((a, b) => {
                 if (a.isLocked && !b.isLocked) return -1;
                 if (!a.isLocked && b.isLocked) return 1;
-                // For non-locked pieces, ensure the draggedPiece is last
+                // Untuk potongan yang tidak terkunci, pastikan draggedPiece adalah yang terakhir
                 if (a === draggedPiece) return 1;
                 if (b === draggedPiece) return -1;
                 return 0;
             });
 
             sortedPieces.forEach(piece => {
-                if (piece === draggedPiece) return; // Skip drawing dragged piece here, it's drawn last
+                if (piece === draggedPiece) return; // Lewati penggambaran potongan yang diseret di sini, akan digambar terakhir
 
                 ctx.drawImage(piece.cachedCanvas, piece.currentX, piece.currentY, pieceWidth, pieceHeight);
                 
-                // Apply borders based on state
+                // Terapkan batas berdasarkan status
                 if (piece.isLocked) {
-                    ctx.strokeStyle = LOCKED_PIECE_BORDER_COLOR; // Black border
+                    ctx.strokeStyle = LOCKED_PIECE_BORDER_COLOR; // Batas hitam
                     ctx.lineWidth = 3;
-                    ctx.shadowColor = LOCKED_PIECE_SHADOW_COLOR; // Black glow
+                    ctx.shadowColor = LOCKED_PIECE_SHADOW_COLOR; // Cahaya hitam
                     ctx.shadowBlur = 10;
                     ctx.strokeRect(piece.currentX, piece.currentY, pieceWidth, pieceHeight);
-                    ctx.shadowColor = 'transparent'; // Reset shadow
+                    ctx.shadowColor = 'transparent'; // Atur ulang bayangan
                     ctx.shadowBlur = 0;
                 } else if (piece.inTray) {
-                    ctx.strokeStyle = '#6b7280'; // Gray for pieces in tray
-                    ctx.lineWidth = 1; // Thinner border for tray pieces
+                    ctx.strokeStyle = '#6b7280'; // Abu-abu untuk potongan di nampan
+                    ctx.lineWidth = 1; // Batas lebih tipis untuk potongan nampan
                     ctx.strokeRect(piece.currentX, piece.currentY, pieceWidth, pieceHeight);
                 } else {
-                    ctx.strokeStyle = '#6366f1'; // Default blue for movable pieces on main area
+                    ctx.strokeStyle = '#6366f1'; // Biru default untuk potongan yang dapat dipindahkan di area utama
                     ctx.lineWidth = 2;
                     ctx.strokeRect(piece.currentX, piece.currentY, pieceWidth, pieceHeight);
                 }
             });
 
-            // Draw the dragged piece last to ensure it's always on top
+            // Gambar potongan yang diseret terakhir untuk memastikan selalu di atas
             if (draggedPiece) {
                 ctx.drawImage(draggedPiece.cachedCanvas, draggedPiece.currentX, draggedPiece.currentY, pieceWidth, pieceHeight);
-                ctx.strokeStyle = '#ef4444'; // Red border for dragged piece
+                ctx.strokeStyle = '#ef4444'; // Batas merah untuk potongan yang diseret
                 ctx.lineWidth = 3;
                 ctx.strokeRect(draggedPiece.currentX, draggedPiece.currentY, pieceWidth, pieceHeight);
             }
         }
 
         // =====================================================================
-        // Shuffle Puzzle (places pieces into the tray)
+        // Acak Puzzle (menempatkan potongan ke dalam nampan)
         // =====================================================================
         shuffleButton.addEventListener('click', shufflePuzzle);
 
@@ -562,14 +565,14 @@
                 showMessageBox("Silakan unggah gambar terlebih dahulu.");
                 return;
             }
-            console.log('Shuffling puzzle...');
+            console.log('Mengacak puzzle...');
 
             const totalPieces = gridSize * gridSize;
             const availableTrayWidth = puzzleCanvas.width - (2 * TRAY_PADDING);
-            const pieceSide = pieceWidth; // Assuming pieceWidth == pieceHeight
+            const pieceSide = pieceWidth; // Asumsikan pieceWidth == pieceHeight
 
             const maxPiecesPerRow = Math.floor(availableTrayWidth / pieceSide);
-            const actualPiecesPerRow = Math.max(1, maxPiecesPerRow); // Ensure at least 1 piece per row
+            const actualPiecesPerRow = Math.max(1, maxPiecesPerRow); // Pastikan setidaknya 1 potongan per baris
 
             const numRowsForPieces = Math.ceil(totalPieces / actualPiecesPerRow);
 
@@ -580,12 +583,12 @@
                 const rowInTray = Math.floor(i / actualPiecesPerRow);
                 const colInTray = i % actualPiecesPerRow;
 
-                // Calculate X position, centering pieces within their potential grid cells
+                // Hitung posisi X, pusatkan potongan di dalam sel grid potensialnya
                 const x = (colInTray * pieceSide) + (availableTrayWidth - (actualPiecesPerRow * pieceSide)) / 2 + TRAY_PADDING;
                 const y = startYForPiecesInTray + (rowInTray * pieceSide);
                 shuffledPositions.push({ x, y });
             }
-            // Shuffle the positions themselves
+            // Acak posisi itu sendiri
             for (let i = shuffledPositions.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [shuffledPositions[i], shuffledPositions[j]] = [shuffledPositions[j], shuffledPositions[i]];
@@ -594,51 +597,55 @@
             puzzlePieces.forEach((piece, index) => {
                 piece.currentX = shuffledPositions[index].x;
                 piece.currentY = shuffledPositions[index].y;
-                piece.isLocked = false;    // Unlock all pieces
-                piece.inTray = true;       // Mark as in tray
+                piece.isLocked = false;    // Buka kunci semua potongan
+                piece.inTray = true;       // Tandai sebagai di nampan
             });
 
             moves = 0;
             updateMoveCounter();
             puzzleCanvas.classList.remove('puzzle-solved-animation');
             drawPuzzle();
-            console.log('Puzzle shuffled and pieces moved to tray.');
+            console.log('Puzzle diacak dan potongan dipindahkan ke nampan.');
         }
 
         // =====================================================================
-        // Reset Puzzle to Original Order (places all pieces in main assembly area)
+        // Atur Ulang Puzzle ke Urutan Asli (menempatkan semua potongan di area perakitan utama)
         // =====================================================================
         resetButton.addEventListener('click', () => {
             if (!puzzleReady) {
                 showMessageBox("Silakan unggah gambar terlebih dahulu.");
                 return;
             }
-            console.log('Resetting puzzle...');
+            console.log('Mengatur ulang puzzle...');
 
             puzzlePieces.forEach(piece => {
                 piece.currentX = piece.originalX;
                 piece.currentY = piece.originalY;
-                piece.isLocked = true;    // Lock pieces in solved state
-                piece.inTray = false;     // Not in tray
+                piece.isLocked = true;    // Kunci potongan dalam keadaan terpecahkan
+                piece.inTray = false;     // Tidak di nampan
             });
 
             moves = 0;
             updateMoveCounter();
             puzzleCanvas.classList.remove('puzzle-solved-animation');
             drawPuzzle();
-            checkWin(); // Check immediately if reset makes it solved
-            console.log('Puzzle reset to solved state.');
+            checkWin(); // Periksa segera apakah reset membuatnya terpecahkan
+            console.log('Puzzle diatur ulang ke keadaan terpecahkan.');
         });
 
         // =====================================================================
-        // Handle Drag and Drop
+        // Penanganan Seret dan Lepas
         // =====================================================================
         puzzleCanvas.addEventListener('mousedown', handleMouseDown);
         puzzleCanvas.addEventListener('touchstart', handleMouseDown, { passive: false });
 
         function handleMouseDown(event) {
-            if (!puzzleReady) return;
-            event.preventDefault(); // Prevent scrolling on touch
+            console.log('handleMouseDown triggered.');
+            if (!puzzleReady) {
+                console.log('Puzzle not ready, blocking mouse down.');
+                return;
+            }
+            event.preventDefault(); // Mencegah pengguliran pada sentuhan
 
             const rect = puzzleCanvas.getBoundingClientRect();
             const scaleX = puzzleCanvas.width / rect.width;
@@ -655,7 +662,9 @@
             const mouseX = (clientX - rect.left) * scaleX;
             const mouseY = (clientY - rect.top) * scaleY;
 
-            // Find the top-most piece at the clicked location that is NOT locked
+            console.log(`Mouse Down at: (${mouseX}, ${mouseY})`);
+
+            // Cari potongan paling atas di lokasi yang diklik yang TIDAK terkunci
             for (let i = puzzlePieces.length - 1; i >= 0; i--) {
                 const piece = puzzlePieces[i];
                 if (!piece.isLocked &&
@@ -666,26 +675,28 @@
                     offsetX = mouseX - piece.currentX;
                     offsetY = mouseY - piece.currentY;
 
-                    draggedPiece.inTray = false; // Mark it as no longer in tray once dragged
+                    draggedPiece.inTray = false; // Tandai sebagai tidak lagi di nampan setelah diseret
 
-                    // Bring the dragged piece to the top of the drawing order
+                    // Bawa potongan yang diseret ke bagian atas urutan gambar
                     puzzlePieces.splice(i, 1);
                     puzzlePieces.push(draggedPiece);
 
-                    drawPuzzle(); // Redraw to show dragged piece on top
+                    drawPuzzle(); // Gambar ulang untuk menunjukkan potongan yang diseret di atas
                     
                     document.addEventListener('mousemove', handleMouseMove);
                     document.addEventListener('mouseup', handleMouseUp);
                     document.addEventListener('touchmove', handleMouseMove, { passive: false });
                     document.addEventListener('touchend', handleMouseUp);
+                    console.log(`Dragging piece ID: ${draggedPiece.id}`);
                     return;
                 }
             }
+            console.log('No movable piece found at click location.');
         }
 
         function handleMouseMove(event) {
             if (!draggedPiece) return;
-            event.preventDefault(); // Prevent scrolling while dragging
+            event.preventDefault(); // Mencegah pengguliran saat menyeret
 
             const rect = puzzleCanvas.getBoundingClientRect();
             const scaleX = puzzleCanvas.width / rect.width;
@@ -702,39 +713,41 @@
             let newX = (clientX - rect.left) * scaleX - offsetX;
             let newY = (clientY - rect.top) * scaleY - offsetY;
 
-            // Clamp newX and newY within canvas boundaries
+            // Jepit newX dan newY dalam batas kanvas
             newX = Math.max(0, Math.min(newX, puzzleCanvas.width - pieceWidth));
             newY = Math.max(0, Math.min(newY, puzzleCanvas.height - pieceHeight));
 
             draggedPiece.currentX = newX;
             draggedPiece.currentY = newY;
             drawPuzzle();
+            // console.log(`Dragging piece ${draggedPiece.id} to: (${newX}, ${newY})`); // Hati-hati, ini bisa menghasilkan banyak log
         }
 
         function handleMouseUp() {
+            console.log('handleMouseUp triggered.');
             if (!draggedPiece) return;
 
-            // Get the center point of the piece when dropped
+            // Dapatkan titik tengah potongan saat dijatuhkan
             const pieceCenterX = draggedPiece.currentX + pieceWidth / 2;
             const pieceCenterY = draggedPiece.currentY + pieceHeight / 2;
 
-            // Check if dropped within the main puzzle area
+            // Periksa apakah dijatuhkan di dalam area puzzle utama
             const isDroppedInMainArea = pieceCenterX >= 0 && pieceCenterX <= mainPuzzleAreaDimension &&
                                          pieceCenterY >= 0 && pieceCenterY <= mainPuzzleAreaDimension;
 
             let snapped = false;
 
             if (isDroppedInMainArea) {
-                // Calculate position relative to top-left of the canvas
+                // Hitung posisi relatif terhadap kiri atas kanvas
                 const targetXForSnap = draggedPiece.originalX;
                 const targetYForSnap = draggedPiece.originalY;
 
-                // Check if the dragged piece is close to its *own* correct position
+                // Periksa apakah potongan yang diseret dekat dengan posisi aslinya
                 const dx = draggedPiece.currentX - targetXForSnap;
                 const dy = draggedPiece.currentY - targetYForSnap;
 
                 if (Math.abs(dx) < snapThreshold && Math.abs(dy) < snapThreshold) {
-                    // Check if another *locked* piece is already occupying this exact spot
+                    // Periksa apakah ada potongan lain yang terkunci sudah menempati titik yang sama persis ini
                     const occupyingPiece = puzzlePieces.find(p => 
                         p !== draggedPiece && p.isLocked &&
                         p.currentX === targetXForSnap && p.currentY === targetYForSnap
@@ -743,32 +756,35 @@
                     if (!occupyingPiece) {
                         draggedPiece.currentX = targetXForSnap;
                         draggedPiece.currentY = targetYForSnap;
-                        draggedPiece.isLocked = true; // Lock the piece in place
-                        draggedPiece.inTray = false; // Ensure it's marked as not in tray
+                        draggedPiece.isLocked = true; // Kunci potongan pada tempatnya
+                        draggedPiece.inTray = false; // Pastikan tidak ditandai sebagai di nampan
                         snapped = true;
-                        console.log(`Piece ${draggedPiece.id} snapped to its correct position.`);
+                        console.log(`Potongan ${draggedPiece.id} terkunci pada posisi yang benar.`);
+                    } else {
+                        console.log(`Posisi ${draggedPiece.id} benar tapi sudah ditempati oleh potongan terkunci ${occupyingPiece.id}.`);
                     }
                 }
-                // If dropped in main area BUT NOT snapped, it stays at its current (dragged) position
-                // It's already been updated by handleMouseMove, so no further change to currentX/Y needed here.
-                // Just ensure its locked/inTray status is correct.
+                // Jika dijatuhkan di area utama TAPI TIDAK terkunci, potongan tetap di posisi saat ini (diseret).
+                // Sudah diperbarui oleh handleMouseMove, jadi tidak perlu perubahan furtherX/Y di sini.
+                // Pastikan saja status terkunci/di nampan-nya benar.
                 if (!snapped) {
                     draggedPiece.isLocked = false;
-                    draggedPiece.inTray = false; // It's no longer in the tray if it's in the main area
-                    console.log(`Piece ${draggedPiece.id} dropped in main area, not snapped.`);
+                    draggedPiece.inTray = false; // Tidak lagi di nampan jika di area utama
+                    console.log(`Potongan ${draggedPiece.id} dijatuhkan di area utama, tidak terkunci.`);
                 }
 
-            } else { // Dropped outside main puzzle area (e.g., in tray, or completely off-canvas)
-                // If dropped in the tray area, it stays at its current (dragged) position.
-                // handleMouseMove already clamped it, so just update flags.
-                draggedPiece.inTray = true;
+            } else { // Dijatuhkan di luar area puzzle utama (misalnya, di nampan, atau sepenuhnya di luar kanvas)
+                // Jika dijatuhkan di area nampan, tetap di posisi saat ini (diseret).
+                // handleMouseMove sudah menjepitnya, jadi cukup perbarui flag.
+                // Jika dijatuhkan di luar area nampan, juga biarkan di posisi terjepitnya.
+                draggedPiece.inTray = true; // Anggap di nampan jika tidak terkunci di area utama
                 draggedPiece.isLocked = false; 
-                console.log(`Piece ${draggedPiece.id} returned to tray from outside main area.`);
+                console.log(`Potongan ${draggedPiece.id} kembali ke nampan/tetap di posisi terjepit di luar area utama.`);
             }
             
             draggedPiece = null;
-            drawPuzzle(); // Final redraw
-            checkWin(); // Check for win after piece is dropped
+            drawPuzzle(); // Gambar ulang terakhir
+            checkWin(); // Periksa kemenangan setelah potongan dijatuhkan
             moves++;
             updateMoveCounter();
 
@@ -779,20 +795,20 @@
         }
 
         // =====================================================================
-        // Update Move Counter
+        // Perbarui Penghitung Gerakan
         // =====================================================================
         function updateMoveCounter() {
             moveCounterDisplay.textContent = moves;
         }
 
         // =====================================================================
-        // Check Win Condition
+        // Periksa Kondisi Menang
         // =====================================================================
         function checkWin() {
             let solved = true;
             for (let i = 0; i < puzzlePieces.length; i++) {
                 const piece = puzzlePieces[i];
-                // A piece is "correct" if it's locked AND its current position matches its original position
+                // Potongan "benar" jika terkunci DAN posisi saat ini cocok dengan posisi aslinya
                 if (!piece.isLocked || piece.currentX !== piece.originalX || piece.currentY !== piece.originalY) {
                     solved = false;
                     break;
@@ -802,142 +818,143 @@
             if (solved) {
                 puzzleCanvas.classList.add('puzzle-solved-animation');
                 showMessageBox(`Selamat! Puzzle telah selesai dalam ${moves} gerakan!`);
-                console.log('Puzzle solved!');
+                console.log('Puzzle terpecahkan!');
             }
         }
 
         // =====================================================================
-        // Handle Window Resize Responsiveness
+        // Penanganan Responsivitas Ukuran Jendela
         // =====================================================================
         window.addEventListener('resize', () => {
-            console.log('Window resized. Recalculating positions...');
-            const oldCanvasWidth = puzzleCanvas.width;
-            const oldCanvasHeight = puzzleCanvas.height;
-
+            console.log('Ukuran jendela diubah. Menghitung ulang posisi...');
+            // Simpan status saat ini (acak vs terpecahkan) sebelum menginisialisasi ulang
             const wasShuffled = puzzlePieces.some(p => !p.isLocked); 
 
-            // Re-calculate dimensions and update canvas size
-            const container = puzzleCanvas.parentElement;
-            const newMaxCanvasWidth = Math.max(300, Math.min(container.clientWidth, window.innerHeight * 0.75));
-            mainPuzzleAreaDimension = newMaxCanvasWidth;
-            pieceWidth = mainPuzzleAreaDimension / gridSize;
-            pieceHeight = mainPuzzleAreaDimension / gridSize;
+            // Simpan posisi relatif potongan yang tidak terkunci sebelum inisialisasi ulang
+            // Ini akan mencoba mempertahankan posisi mereka di kanvas yang diubah ukurannya
+            const relativePositions = puzzlePieces.map(p => ({
+                id: p.id,
+                xRatio: p.currentX / puzzleCanvas.width,
+                yRatio: p.currentY / puzzleCanvas.height,
+                inTray: p.inTray,
+                isLocked: p.isLocked
+            }));
 
-            const totalPieces = gridSize * gridSize;
-            const piecesPerRowInTray = Math.floor((mainPuzzleAreaDimension - (2 * TRAY_PADDING)) / pieceWidth);
-            const effectivePiecesPerRow = Math.max(1, piecesPerRowInTray);
-            const requiredTrayRows = Math.ceil(totalPieces / effectivePiecesPerRow);
-            trayAreaTotalHeight = (requiredTrayRows * pieceHeight) + (2 * TRAY_PADDING) + TRAY_LABEL_OFFSET_Y + TRAY_PADDING;
-            trayAreaTotalHeight = Math.max(trayAreaTotalHeight, pieceHeight + (2 * TRAY_PADDING) + TRAY_LABEL_OFFSET_Y + TRAY_PADDING);
-            trayAreaStartY = mainPuzzleAreaDimension + VERTICAL_SPACING_BETWEEN_AREAS;
 
-            puzzleCanvas.width = mainPuzzleAreaDimension;
-            puzzleCanvas.height = mainPuzzleAreaDimension + VERTICAL_SPACING_BETWEEN_AREAS + trayAreaTotalHeight;
+            initializePuzzle(); // Ini membuat ulang potongan dan mengaturnya ke status terpecahkan
             
-            // Adjust piece positions proportionally and clamp
-            puzzlePieces.forEach(piece => {
-                // Adjust original positions (which are always relative to the main puzzle area)
-                // These are always relative to mainPuzzleAreaDimension, so they auto-scale
-                piece.originalX = (piece.id % gridSize) * pieceWidth;
-                piece.originalY = Math.floor(piece.id / gridSize) * pieceHeight;
+            // Setelah inisialisasi ulang, terapkan kembali posisi relatif
+            if (puzzleReady) {
+                // Skala ulang posisi asli untuk potongan terkunci terlebih dahulu
+                puzzlePieces.forEach(piece => {
+                    piece.originalX = (piece.id % gridSize) * pieceWidth;
+                    piece.originalY = Math.floor(piece.id / gridSize) * pieceHeight;
+                });
 
-                // Scale current position relative to the overall canvas dimension
-                let newX = piece.currentX;
-                let newY = piece.currentY;
+                // Kemudian perbarui posisi saat ini berdasarkan posisi relatif yang disimpan
+                // dan menjepitnya ke dalam batas kanvas yang baru
+                puzzlePieces.forEach(piece => {
+                    const oldPieceData = relativePositions.find(rp => rp.id === piece.id);
+                    if (oldPieceData) {
+                        let newX = oldPieceData.xRatio * puzzleCanvas.width;
+                        let newY = oldPieceData.yRatio * puzzleCanvas.height;
 
-                if (oldCanvasWidth > 0 && oldCanvasHeight > 0) {
-                    newX = (piece.currentX / oldCanvasWidth) * puzzleCanvas.width;
-                    newY = (piece.currentY / oldCanvasHeight) * puzzleCanvas.height;
-                }
-                
-                // Clamp newX and newY within the *new* total canvas boundaries
-                newX = Math.max(0, Math.min(newX, puzzleCanvas.width - pieceWidth));
-                newY = Math.max(0, Math.min(newY, puzzleCanvas.height - pieceHeight));
+                        // Jepit newX dan newY dalam batas kanvas yang baru
+                        newX = Math.max(0, Math.min(newX, puzzleCanvas.width - pieceWidth));
+                        newY = Math.max(0, Math.min(newY, puzzleCanvas.height - pieceHeight));
 
-                piece.currentX = newX;
-                piece.currentY = newY;
-                
-                // If the piece was locked, ensure it stays locked and in the assembly area
-                if (piece.isLocked) {
-                    piece.currentX = piece.originalX; // Force to scaled original position
-                    piece.currentY = piece.originalY;
-                    piece.inTray = false;
+                        piece.currentX = newX;
+                        piece.currentY = newY;
+                        piece.isLocked = oldPieceData.isLocked; // Pertahankan status terkunci
+                        piece.inTray = oldPieceData.inTray; // Pertahankan status di nampan
+
+                        // Untuk potongan yang terkunci, paksa ke posisi asli yang benar
+                        if (piece.isLocked) {
+                             piece.currentX = piece.originalX;
+                             piece.currentY = piece.originalY;
+                             piece.inTray = false; // Potongan terkunci tidak di nampan
+                        }
+                    }
+                    // Perbarui kanvas cache untuk dimensi potongan yang baru
+                    const pieceCtx = piece.cachedCanvas.getContext('2d');
+                    piece.cachedCanvas.width = pieceWidth;
+                    piece.cachedCanvas.height = pieceHeight;
+                    let sourceSize = Math.min(originalImage.naturalWidth, originalImage.naturalHeight);
+                    let offsetXImage = (originalImage.naturalWidth - sourceSize) / 2;
+                    let offsetYImage = (originalImage.naturalHeight - sourceSize) / 2;
+                    pieceCtx.clearRect(0, 0, pieceWidth, pieceHeight);
+                    pieceCtx.drawImage(
+                        originalImage,
+                        offsetXImage + (sourceSize / gridSize) * (piece.id % gridSize),
+                        offsetYImage + (sourceSize / gridSize) * Math.floor(piece.id / gridSize),
+                        sourceSize / gridSize,
+                        sourceSize / gridSize,
+                        0, 0,
+                        pieceWidth, pieceHeight
+                    );
+                });
+
+                if (wasShuffled) { // Jika sebelumnya diacak, acak ulang untuk distribusi yang baik
+                    shufflePuzzle(); // Ini akan menempatkan ulang semua yang tidak terkunci ke nampan
                 } else {
-                    // For unlocked pieces, re-evaluate if they are now in the tray area
-                    piece.inTray = (piece.currentY + pieceHeight / 2) > trayAreaStartY;
+                    drawPuzzle(); // Jika sebelumnya terpecahkan, cukup gambar ulang
                 }
-
-                // Re-render cached canvases with new piece dimensions
-                piece.cachedCanvas.width = pieceWidth;
-                piece.cachedCanvas.height = pieceHeight;
-                const pieceCtx = piece.cachedCanvas.getContext('2d');
-                let sourceSize = Math.min(originalImage.naturalWidth, originalImage.naturalHeight);
-                let offsetXImage = (originalImage.naturalWidth - sourceSize) / 2;
-                let offsetYImage = (originalImage.naturalHeight - sourceSize) / 2;
-                pieceCtx.clearRect(0, 0, pieceWidth, pieceHeight);
-                pieceCtx.drawImage(
-                    originalImage,
-                    offsetXImage + (sourceSize / gridSize) * (piece.id % gridSize),
-                    offsetYImage + (sourceSize / gridSize) * Math.floor(piece.id / gridSize),
-                    sourceSize / gridSize,
-                    sourceSize / gridSize,
-                    0, 0,
-                    pieceWidth, pieceHeight
-                );
-            });
-            drawPuzzle();
-            console.log('Positions recalculated and redrawn.');
+            } else {
+                 // Jika puzzle tidak siap, cukup gambar ulang untuk memperbarui ukuran placeholder
+                 drawPuzzle();
+            }
+            console.log('Posisi dihitung ulang dan digambar ulang.');
         });
 
         // =====================================================================
-        // Local Storage Functions for Preferences
+        // Fungsi Penyimpanan dan Pemuatan Preferensi (LocalStorage)
         // =====================================================================
         function loadPreferences() {
             const savedGridSize = localStorage.getItem('jigsawGridSize');
             if (savedGridSize) {
                 gridSizeSelect.value = savedGridSize;
                 gridSize = parseInt(savedGridSize);
-                console.log('Loaded grid size preference:', gridSize);
+                console.log('Preferensi ukuran grid dimuat:', gridSize);
             }
         }
 
         // =====================================================================
-        // Handle "View Original Image" Button
+        // Penanganan Tombol "Lihat Gambar Asli"
         // =====================================================================
         viewOriginalImageButton.addEventListener('click', () => {
-            if (originalImage.src && originalImage.complete && originalImage.naturalWidth > 0) { // Ensure image is loaded before displaying
+            if (originalImage.src && originalImage.complete && originalImage.naturalWidth > 0) { // Pastikan gambar dimuat sebelum ditampilkan
                 fullImageDisplay.src = originalImage.src;
-                mainContent.classList.add('main-content-hidden'); // Hide main puzzle UI
-                originalImageDisplayContainer.classList.add('show'); // Show original image container
+                mainContent.classList.add('main-content-hidden'); // Sembunyikan UI puzzle utama
+                originalImageDisplayContainer.classList.add('show'); // Tampilkan container gambar asli
                 originalImageDisplayContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                console.log('Displaying original image.');
+                console.log('Menampilkan gambar asli.');
             } else {
                 showMessageBox("Tidak ada gambar yang dimuat untuk ditampilkan.");
-                console.warn('Attempted to view original image, but no image loaded.');
+                console.warn('Mencoba melihat gambar asli, tetapi tidak ada gambar yang dimuat.');
             }
         });
 
         backToPuzzleButton.addEventListener('click', () => {
-            originalImageDisplayContainer.classList.remove('show'); // Hide original image container
-            mainContent.classList.remove('main-content-hidden'); // Show main puzzle UI
-            puzzleCanvas.scrollIntoView({ behavior: 'smooth', block: 'center' }); // Scroll to puzzle
-            console.log('Returning to puzzle view.');
+            originalImageDisplayContainer.classList.remove('show'); // Sembunyikan container gambar asli
+            mainContent.classList.remove('main-content-hidden'); // Tampilkan UI puzzle utama
+            puzzleCanvas.scrollIntoView({ behavior: 'smooth', block: 'center' }); // Gulir ke puzzle
+            console.log('Kembali ke tampilan puzzle.');
         });
 
         // =====================================================================
-        // Initial Page Load Setup (placeholder image)
+        // Pengaturan Pemuatan Halaman Awal (gambar placeholder)
         // =====================================================================
         window.onload = () => {
             loadPreferences(); // Muat preferensi tersimpan terlebih dahulu
-            console.log('Window loaded. Initializing with placeholder...');
+            console.log('Jendela dimuat. Menginisialisasi dengan placeholder...');
             
-            // Set initial canvas size here to ensure it's visible even before image loads
+            // Atur ukuran kanvas awal di sini untuk memastikan terlihat bahkan sebelum gambar dimuat
             const initialCanvasWidth = Math.max(300, Math.min(puzzleCanvas.parentElement.clientWidth, window.innerHeight * 0.75));
-            mainPuzzleAreaDimension = initialCanvasWidth; // Use this for initial calculation
-            pieceWidth = initialCanvasWidth / gridSize; // Calculate an initial pieceWidth
+            mainPuzzleAreaDimension = initialCanvasWidth; // Gunakan ini untuk perhitungan awal
+            pieceWidth = initialCanvasWidth / gridSize; // Hitung pieceWidth awal
             pieceHeight = initialCanvasWidth / gridSize;
 
-            // Estimate initial tray height for placeholder drawing
+            // Perkirakan tinggi nampan awal untuk penggambaran placeholder
             const totalPiecesEstimate = gridSize * gridSize;
             const piecesPerRowEstimate = Math.floor((initialCanvasWidth - (2 * TRAY_PADDING)) / pieceWidth);
             const effectivePiecesPerRowEstimate = Math.max(1, piecesPerRowEstimate);
@@ -949,25 +966,24 @@
             puzzleCanvas.height = initialCanvasWidth + VERTICAL_SPACING_BETWEEN_AREAS + trayAreaTotalHeight;
             
             originalImage.onload = () => {
-                console.log('Initial placeholder image loaded. Initializing puzzle components.');
+                console.log('Gambar placeholder awal dimuat. Menginisialisasi komponen puzzle.');
                 initializePuzzle();
-                // If initialization succeeded with the placeholder, shuffle it
+                // Jika inisialisasi berhasil dengan placeholder, acak
                 if (puzzleReady) { 
                     shufflePuzzle(); 
                 }
             };
             originalImage.onerror = () => {
-                console.error('Failed to load initial placeholder image.');
+                console.error('Gagal memuat gambar placeholder awal.');
                 showMessageBox("Gagal memuat gambar placeholder awal. Harap periksa koneksi internet Anda.");
                 puzzleReady = false;
-                drawPuzzle(); // Draw the 'Unggah atau Pilih Gambar' text
+                drawPuzzle(); // Gambar teks 'Unggah atau Pilih Gambar'
             };
             const placeholderSize = 600; 
             originalImage.src = `https://placehold.co/${placeholderSize}x${placeholderSize}/e0e7ff/4f46e5?text=Unggah%20Foto%0A(${gridSize}x${gridSize})`; 
-            drawPuzzle(); // Initial draw to show placeholder text immediately
+            drawPuzzle(); // Penggambaran awal untuk segera menunjukkan teks placeholder
         };
     </script>
 </body>
 </html>
-
 
