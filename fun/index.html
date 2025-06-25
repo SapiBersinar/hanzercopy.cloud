@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hanzercopy.cloud - Kategori Fun: Puzzle Interaktif</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Hanzercopy.cloud menawarkan berbagai permainan dan teka-teki yang menyenangkan. Jelajahi Sliding Puzzle dan Jigsaw Puzzle interaktif kami, cocok untuk semua usia dan tidak memerlukan API Key. Nikmati hiburan tanpa batas!">
+    <meta name="keywords" content="puzzle, game, fun, teka-teki, sliding puzzle, jigsaw puzzle, permainan interaktif, hanzercopy, hiburan, tanpa api key, gratis">
+    <meta name="author" content="Hanzercopy">
+    <meta property="og:title" content="Hanzercopy.cloud - Kategori Fun: Puzzle Interaktif">
+    <meta property="og:description" content="Hanzercopy.cloud menawarkan berbagai permainan dan teka-teki yang menyenangkan. Jelajahi Sliding Puzzle dan Jigsaw Puzzle interaktif kami, cocok untuk semua usia dan tidak memerlukan API Key. Nikmati hiburan tanpa batas!">
+    <meta property="og:url" content="https://hanzercopy.cloud/fun/">
+    <meta property="og:type" content="website">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #333333, #1a1a1a); /* Dark gradient background */
+            background-size: 400% 400%;
+            animation: gradientMove 15s ease infinite; /* Smooth gradient animation */
+            color: #f0f0f0; /* Light text color */
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+            display: flex; /* Use flex to center content */
+            flex-direction: column; /* Allow vertical stacking */
+            justify-content: center; /* Center horizontally */
+            align-items: center; /* Center vertically */
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Main Container - Centered and allows content flow */
+        .container {
+            background-color: rgba(51, 51, 51, 0.95); /* Slightly transparent dark gray container background */
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 10px 10px 0px 0px rgba(0, 0, 0, 0.7); /* Stronger black shadow */
+            width: 100%;
+            max-width: 700px; /* Wider max-width for content */
+            text-align: center;
+            border: 3px solid #000000; /* Thick black border */
+            position: relative;
+            z-index: 1; /* Ensure content is above background */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 0 auto 30px auto; /* Center the container horizontally, add margin bottom */
+            animation: fadeIn 1.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Title Styling */
+        h1 {
+            font-size: 3.5rem; /* Larger, impactful title */
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: #f0f0f0; /* Light title color */
+            text-shadow: 4px 4px 0px #000000; /* Stronger text shadow */
+            letter-spacing: -2px;
+            line-height: 1.1;
+            text-transform: uppercase;
+            position: relative;
+            /* Optimized animation for performance */
+            animation: finalTitlePulse 1.2s ease-in-out infinite alternate 1.5s;
+            will-change: transform, text-shadow; /* Hint to browser for optimization */
+        }
+
+        /* Optimized pulse animation for the H1 - less resource-intensive */
+        @keyframes finalTitlePulse {
+            0% { transform: translateY(0); text-shadow: 4px 4px 0px #000000; }
+            50% { transform: translateY(-3px); text-shadow: 6px 6px 0px rgba(0, 0, 0, 0.8); }
+            100% { transform: translateY(0); text-shadow: 4px 4px 0px #000000; }
+        }
+
+        h1 span {
+            display: inline-block;
+            opacity: 0;
+            transform: scale(0.2) translateY(-50px);
+            animation: bounceInText 0.6s ease-out forwards;
+        }
+        h1 span:nth-child(1) { animation-delay: 0.1s; }
+        h1 span:nth-child(2) { animation-delay: 0.15s; }
+        h1 span:nth-child(3) { animation-delay: 0.2s; }
+        h1 span:nth-child(4) { animation-delay: 0.25s; }
+        h1 span:nth-child(5) { animation-delay: 0.3s; }
+        h1 span:nth-child(6) { animation-delay: 0.35s; }
+        h1 span:nth-child(7) { animation-delay: 0.4s; }
+        h1 span:nth-child(8) { animation-delay: 0.45s; }
+        h1 span:nth-child(9) { animation-delay: 0.5s; }
+        h1 span:nth-child(10) { animation-delay: 0.55s; }
+        h1 span:nth-child(11) { animation-delay: 0.6s; }
+        h1 span:nth-child(12) { animation-delay: 0.65s; }
+        h1 span:nth-child(13) { animation-delay: 0.7s; }
+        h1 span:nth-child(14) { animation-delay: 0.75s; }
+        h1 span:nth-child(15) { animation-delay: 0.8s; }
+
+
+        @keyframes bounceInText {
+            0% { opacity: 0; transform: scale(0.2) translateY(-50px); }
+            60% { opacity: 1; transform: scale(1.3) translateY(15px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            color: #cccccc;
+        }
+
+        /* --- CARD GRID STYLES --- */
+        .card-grid-container {
+            width: 100%;
+            max-width: 800px; /* Lebar maksimum untuk 2 kartu */
+            display: grid;
+            grid-template-columns: 1fr; /* Satu kolom di layar kecil */
+            gap: 2rem; /* Jarak antar kartu */
+            margin-top: 20px; /* Jarak dari judul utama */
+            margin-bottom: 30px;
+        }
+
+        @media (min-width: 768px) { /* Dua kolom di layar sedang dan besar */
+            .card-grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .card {
+            background-color: rgba(51, 51, 51, 0.95); /* Warna latar belakang default */
+            border: 3px solid #000000; /* Border hitam */
+            border-radius: 8px;
+            box-shadow: 7px 7px 0px 0px rgba(0, 0, 0, 0.7); /* Bayangan */
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 16px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%; /* Pastikan tinggi kartu sama */
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 10px 10px 0px 0px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Gaya untuk kartu Fun (gradien modern) - specific to this page */
+        .card-fun-page {
+            background: linear-gradient(135deg, #FF6B6B, #FFB86B, #6BFFB8, #6BB8FF); /* Gradien pelangi */
+            background-size: 400% 400%;
+            animation: gradientFlow 10s ease infinite;
+            color: #1a1a1a; /* Warna teks gelap untuk kontras */
+            border: 3px solid #000000; /* Border hitam */
+            box-shadow: 7px 7px 0px 0px rgba(0, 0, 0, 0.7); /* Bayangan */
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .card-fun-page .card-title,
+        .card-fun-page .card-description {
+            color: #1a1a1a; /* Pastikan teks gelap */
+            text-shadow: none; /* Hilangkan bayangan teks untuk kejelasan */
+        }
+
+
+        .card-title {
+            color: #f0f0f0; /* Default light text color */
+            font-size: 2rem; /* text-3xl */
+            font-weight: 800;
+            font-family: 'Inter', sans-serif; /* Keep Inter font */
+            line-height: 1.2;
+            text-shadow: 2px 2px 0px #000000;
+        }
+        /* Override for fun page cards */
+        .card-fun-page .card-title {
+            color: #1a1a1a;
+        }
+
+        .card-description {
+            color: #cccccc; /* Default slightly darker light gray for description */
+            font-size: 1rem; /* text-base */
+            font-family: 'Inter', sans-serif; /* Keep Inter font */
+            line-height: 1.6;
+            flex-grow: 1; /* Make description take available space */
+        }
+        /* Override for fun page cards */
+        .card-fun-page .card-description {
+            color: #333333; /* Darker text for fun card description */
+        }
+
+        .card-button {
+            display: inline-block;
+            background-color: #000000;
+            color: white;
+            padding: 12px 30px;
+            border: 2px solid #ffffff;
+            border-radius: 9999px; /* Full rounded */
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 700;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 4px 4px 0px 0px #cccccc;
+            text-decoration: none; /* Remove underline for links */
+        }
+        .card-button:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 7px 7px 0px 0px #ffffff;
+            background-color: #444444;
+        }
+
+        /* Gaya khusus untuk tombol di kartu Fun */
+        .card-fun-page .card-button {
+            background-color: #1a1a1a; /* Tombol gelap */
+            color: #ffffff; /* Teks putih */
+            border: 2px solid #ffffff;
+            box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.7);
+        }
+        .card-fun-page .card-button:hover {
+            background-color: #000000;
+            box-shadow: 7px 7px 0px 0px rgba(0, 0, 0, 0.9);
+        }
+        
+        .feature-list {
+            list-style: none; /* Hilangkan bullet default */
+            padding: 0;
+            margin: 10px 0;
+            text-align: left; /* Rata kiri untuk daftar */
+            width: 100%; /* Penuhi lebar kartu */
+            font-size: 0.9rem; /* Ukuran font lebih kecil */
+            line-height: 1.4;
+        }
+
+        .feature-list li {
+            margin-bottom: 5px;
+            padding-left: 10px; /* Indentasi */
+            position: relative;
+            color: #4a4a4a; /* Warna teks lebih gelap untuk fitur */
+        }
+
+        .feature-list li:last-child {
+            margin-bottom: 0;
+        }
+        .feature-list li em {
+            font-style: italic;
+            color: #1a1a1a; /* Make italic text dark for fun cards */
+        }
+
+        /* Style for "Available:" text - animated gradient */
+        .feature-label {
+            font-weight: 600; /* Semi-bold */
+            font-size: 1.05rem; /* Slightly larger */
+            background: linear-gradient(90deg, #EE82EE, #87CEEB, #34D399, #FBBF24); /* Vibrant gradient colors */
+            background-size: 400% 400%;
+            -webkit-background-clip: text; /* Clip background to text */
+            -webkit-text-fill-color: transparent; /* Make text transparent to show background */
+            animation: textGradientFlow 8s ease infinite; /* Animate the gradient */
+            display: inline-block; /* Essential for background-clip to work */
+        }
+
+        @keyframes textGradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Version links (consistent style) */
+        .version-links {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            color: #999999;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+        }
+        .version-links a {
+            color: #999999;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: color 0.2s ease-in-out;
+        }
+        .version-links a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        /* Custom Message Box (from main page) */
+        .custom-message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .custom-message-box-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .custom-message-box {
+            background-color: #333333;
+            color: #f0f0f0;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 5px 5px 0px 0px #000000;
+            border: 2px solid #000000;
+            max-width: 400px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease-in-out;
+        }
+        .custom-message-box-overlay.active .custom-message-box {
+            transform: scale(1);
+        }
+        .custom-message-box h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #f0f0f0;
+            text-shadow: 2px 2px 0px #000000;
+        }
+        .custom-message-box p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #cccccc;
+        }
+        .custom-message-box button {
+            background-color: #000000;
+            color: white;
+            padding: 10px 25px;
+            border: 2px solid #ffffff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 3px 3px 0px 0px #cccccc;
+        }
+        .custom-message-box button:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 5px 5px 0px 0px #ffffff;
+            background-color: #444444;
+        }
+
+
+        /* Responsive adjustments for small screens */
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+            .container {
+                padding: 30px;
+                box-shadow: 7px 7px 0px 0px #000000;
+            }
+            h1 {
+                font-size: 2.5rem;
+                text-shadow: 3px 3pt 0px #000000; /* Adjusted for smaller screens */
+                letter-spacing: -1px;
+            }
+            p {
+                font-size: 1rem;
+            }
+            .version-links {
+                margin-top: 20px;
+            }
+            .version-links a {
+                font-size: 0.85rem;
+            }
+            .custom-message-box {
+                padding: 20px;
+            }
+            .custom-message-box h3 {
+                font-size: 1.3rem;
+            }
+            .custom-message-box p {
+                font-size: 0.9rem;
+            }
+
+            /* Card responsive adjustments */
+            .card-title {
+                font-size: 1.75rem; /* text-2xl on small */
+            }
+            .card-description {
+                font-size: 0.9rem; /* text-sm on small */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background is now handled by animated gradient in body CSS -->
+
+    <div class="container">
+        <h1>
+            <span>H</span><span>A</span><span>N</span><span>Z</span><span>E</span><span>R</span><span>C</span><span>O</span><span>P</span><span>Y</span><span style="color:#ffffff;">.</span><span>C</span><span>L</span><span>O</span><span>U</span><span>D</span>
+        </h1>
+        <p>
+            Selamat datang di Kategori Fun! Temukan berbagai permainan dan teka-teki yang menyenangkan untuk mengisi waktu luang Anda.
+        </p>
+    </div>
+
+    <!-- Grid container for the two puzzle cards -->
+    <div class="card-grid-container">
+        <!-- Card 1: Sliding Puzzle -->
+        <div class="card card-fun-page">
+            <h2 class="card-title">Sliding Puzzle</h2>
+            <p class="card-description">
+                Uji kecerdasan dan kecepatan Anda dalam menyusun kembali gambar. Geser potongan-potongan puzzle ke posisi yang benar untuk memecahkan misteri gambar!
+            </p>
+            <p class="feature-label mb-2">Available:</p>
+            <ul class="feature-list text-left w-full px-4">
+                <li><span class="font-bold">Puzzle Geser</span> <em class="text-black italic">(No apikey required)</em> ❌</li>
+            </ul>
+            <a href="sliding-puzzle/" class="card-button">
+                Mainkan Sliding Puzzle
+            </a>
+        </div>
+
+        <!-- Card 2: Jigsaw Puzzle -->
+        <div class="card card-fun-page">
+            <h2 class="card-title">Jigsaw Puzzle</h2>
+            <p class="card-description">
+                Nikmati tantangan klasik jigsaw puzzle. Seret dan letakkan potongan-potongan gambar untuk membentuk gambar utuh. Pilih tingkat kesulitan favorit Anda!
+            </p>
+            <p class="feature-label mb-2">Available:</p>
+            <ul class="feature-list text-left w-full px-4">
+                <li><span class="font-bold">Puzzle Potongan</span> <em class="text-black italic">(No apikey required)</em> ❌</li>
+            </ul>
+            <a href="jigsaw-puzzle/" class="card-button">
+                Mainkan Jigsaw Puzzle
+            </a>
+        </div>
+    </div>
+
+    <div class="version-links">
+        <p>
+            <a href="../" rel="noopener noreferrer">Kembali ke Halaman Utama</a>
+        </p>
+        <p>
+            <a href="https://github.com/SapiBersinar/visual-novel-ai/tree/main/fun" target="_blank" rel="noopener noreferrer">Source Code Kategori Fun di GitHub</a>
+        </p>
+    </div>
+
+    <!-- Custom Message Box for AI Alert (from main page) -->
+    <div id="aiMessageBoxOverlay" class="custom-message-box-overlay">
+        <div class="custom-message-box">
+            <h3>Pemberitahuan Penting</h3>
+            <p>Perlu diketahui bahwa seluruh website ini dibuat dengan bantuan Kecerdasan Buatan (AI).</p>
+            <button id="aiMessageBoxOkBtn">OKE</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Custom Message Box Logic ---
+        const aiMessageBoxOverlay = document.getElementById('aiMessageBoxOverlay');
+        const aiMessageBoxOkBtn = document.getElementById('aiMessageBoxOkBtn');
+
+        function showAiMessage() {
+            // Check if the message has been shown before in this session
+            if (!sessionStorage.getItem('aiMessageBoxShown')) {
+                aiMessageBoxOverlay.classList.add('active');
+            }
+        }
+
+        aiMessageBoxOkBtn.addEventListener('click', () => {
+            aiMessageBoxOverlay.classList.remove('active');
+            sessionStorage.setItem('aiMessageBoxShown', 'true'); // Mark as shown for this session
+        });
+
+        // --- Initial Load Logic ---
+        window.onload = () => {
+            // Show the AI message box when the page finishes loading
+            showAiMessage();
+        };
+    </script>
+</body>
+</html>
+
