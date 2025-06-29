@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resep Aneh Ajaib!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #2d3748, #4a5568); /* Food-themed gradient */
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .container {
+            background-color: #3e4451; /* Darker food theme */
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            padding: 2.5rem;
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1;
+            flex-shrink: 0;
+            margin-top: auto;
+            margin-bottom: auto;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .container.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 1.5rem;
+            }
+            .btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.95rem;
+            }
+            .input-field {
+                padding: 0.65rem 1rem;
+            }
+            .api-key-card {
+                padding: 1.5rem;
+            }
+            .api-key-card h2 {
+                font-size: 1.75rem;
+            }
+            .output-area p {
+                font-size: 1rem;
+            }
+            .rating-icons span {
+                font-size: 1.75rem; /* Make emojis bigger for touch */
+            }
+            .nutritional-facts p, .absurd-pairing p {
+                font-size: 0.85rem;
+            }
+        }
+        .btn {
+            background-color: #f97316; /* Orange for cooking/food */
+            color: white;
+            padding: 0.85rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 5px 15px rgba(249, 115, 22, 0.3);
+        }
+        .btn:hover {
+            background-color: #ea580c;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(249, 115, 22, 0.4);
+        }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(249, 115, 22, 0.2);
+        }
+        .input-field, .select-field {
+            background-color: #5a6270;
+            color: #e2e8f0;
+            border: 1px solid #718096;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="#e2e8f0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.5em;
+            padding-right: 2.5rem;
+        }
+        .input-field:focus, .select-field:focus {
+            outline: none;
+            border-color: #f97316; /* Orange focus border */
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.3);
+        }
+        .input-field::placeholder {
+            color: #a0aec0;
+        }
+        .output-area {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: left;
+            min-height: 120px;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            white-space: pre-wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .output-area.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #f97316; /* Orange spinner */
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 1.5rem auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* API Key Modal Styling (reused) */
+        #apiKeyModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .api-key-card {
+            background-color: #1f2937; border-radius: 1.5rem; padding: 2.5rem; max-width: 500px; width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); text-align: center; border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .api-key-card h2 { font-size: 2.25rem; font-weight: 800; color: #ef4444; margin-bottom: 1.5rem; }
+        .api-key-card p { color: #cbd5e1; margin-bottom: 1.5rem; line-height: 1.6; }
+        .api-key-card a { color: #60a5fa; text-decoration: underline; }
+        .api-key-card input {
+            background-color: #3e4451; color: #e2e8f0; border: 1px solid #5a6270; padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem; width: 100%; margin-bottom: 1.5rem; font-family: 'monospace';
+        }
+        .api-key-card input:focus { outline: none; border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3); }
+        #apiKeyInfo {
+            background-color: #1f2937; border: 1px solid #374151; border-radius: 0.75rem; padding: 0.75rem;
+            margin-bottom: 1.5rem; text-align: center; font-size: 0.9rem; color: #94a3b8; word-break: break-all;
+        }
+        #onScreenDebugger {
+            background-color: #333; color: #0f0; padding: 10px; margin-top: 15px; border-radius: 8px;
+            font-family: 'monospace'; font-size: 0.85rem; text-align: left; word-wrap: break-word; white-space: pre-wrap;
+            max-height: 100px; overflow-y: auto; border: 1px solid #0a0;
+        }
+        #apiValidationMessage { color: #ef4444; font-size: 0.9rem; margin-top: -1rem; margin-bottom: 1rem; }
+
+        /* Rating System Styles */
+        .rating-container {
+            margin-top: 1rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .rating-icons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .rating-icons span {
+            font-size: 2rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        .rating-icons span:hover {
+            transform: scale(1.2);
+        }
+        .rating-icons span.selected {
+            filter: drop-shadow(0 0 5px #f97316); /* Glow effect */
+        }
+        #ratingFeedback {
+            color: #cbd5e1;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Animated Food Icons */
+        .food-icon-animation-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Allow clicks through */
+            overflow: hidden;
+        }
+        .food-icon {
+            position: absolute;
+            font-size: 2em; /* Larger emojis */
+            opacity: 0;
+            animation: floatAndFade 5s ease-out forwards;
+        }
+        @keyframes floatAndFade {
+            0% {
+                opacity: 0;
+                transform: translate(var(--x-start), var(--y-start)) scale(0.5) rotate(0deg);
+            }
+            20% {
+                opacity: 1;
+            }
+            80% {
+                opacity: 1;
+                transform: translate(var(--x-end), var(--y-end)) scale(1.2) rotate(360deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--x-end), var(--y-end)) scale(0.8) rotate(720deg);
+            }
+        }
+        /* Nutritional Facts Styles */
+        .nutritional-facts {
+            background-color: #1a202c; /* Slightly different dark background */
+            border: 1px solid #374151;
+            border-radius: 0.75rem;
+            padding: 1.2rem;
+            margin-top: 1.5rem;
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #cbd5e1;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+            white-space: pre-wrap; /* Preserve formatting from AI */
+            opacity: 0; /* For fade-in */
+            transform: translateY(10px); /* For slight slide-up */
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .nutritional-facts.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .nutritional-facts h3 {
+            font-weight: 700;
+            color: #f97316; /* Orange heading */
+            margin-bottom: 0.8rem;
+            font-size: 1.1em;
+        }
+        /* Absurd Pairing Styles */
+        .absurd-pairing {
+            background-color: #1a202c; /* Consistent dark background */
+            border: 1px solid #374151;
+            border-radius: 0.75rem;
+            padding: 1.2rem;
+            margin-top: 1.5rem;
+            text-align: left;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #cbd5e1;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+            white-space: pre-wrap;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .absurd-pairing.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .absurd-pairing h3 {
+            font-weight: 700;
+            color: #f97316; /* Orange heading */
+            margin-bottom: 0.8rem;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen flex flex-col items-center p-4">
+
+    <!-- API Key Input Modal -->
+    <div id="apiKeyModal">
+        <div class="api-key-card">
+            <h2>Butuh API Key! 🔑</h2>
+            <p>
+                Untuk menggunakan aplikasi ini, Anda perlu memasukkan Google Gemini API Key Anda.
+                Dapatkan API Key gratis Anda di
+                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a>.
+            </p>
+            <p>
+                Atau, Anda bisa menyalin API Key yang sudah disediakan di sini:
+                <a href="https://anotepad.com/notes/fdxactcr" target="_blank" rel="noopener noreferrer">anotepad.com/notes/fdxactcr</a>
+            </p>
+            <input type="text" id="apiKeyInput" placeholder="Tempel API Key Anda di sini (mis: AIzaSy...)" />
+            <p id="apiValidationMessage" class="hidden"></p>
+            <button id="submitApiKeyBtn" class="btn w-full">
+                Gunakan API Key Ini
+            </button>
+            <div id="onScreenDebugger" class="hidden"></div>
+        </div>
+    </div>
+
+    <div id="mainContainer" class="container hidden">
+        <h1 class="text-4xl font-extrabold text-orange-400 mb-4">
+            Pembuat Resep Aneh Ajaib! 🍳
+        </h1>
+        <p class="text-gray-400 mb-7 text-lg">
+            Masukkan beberapa bahan makanan aneh, dan AI akan membuat resep yang... unik!
+        </p>
+
+        <div id="apiKeyInfo" class="hidden">
+            <p>API Key Aktif: <span id="currentApiKey" class="font-bold text-green-400"></span></p>
+            <p class="text-xs mt-1 text-gray-500">Informasi nama/Gmail tidak dapat diakses untuk privasi Anda.</p>
+        </div>
+
+        <div class="space-y-4 mb-6">
+            <input
+                type="text"
+                id="ingredientsInput"
+                class="input-field w-full"
+                placeholder="Daftar bahan aneh (mis: es krim, sarden, timun)"
+            />
+            <div class="relative">
+                <select id="crazinessLevelSelect" class="select-field w-full">
+                    <option value="aneh_ringan">Tingkat Kegilaan: Pemula (Aneh Ringan)</option>
+                    <option value="pakar_absurditas">Tingkat Kegilaan: Pakar Absurditas</option>
+                    <option value="chef_gila_total">Tingkat Kegilaan: Chef Gila Total 🧑‍🍳</option>
+                    <option value="krisis_eksistensial">Tingkat Kegilaan: Krisis Eksistensial Kuliner 🤯</option>
+                </select>
+            </div>
+        </div>
+
+        <button id="generateBtn" class="btn w-full">
+            Buat Resep!
+        </button>
+        <button id="randomRecipeBtn" class="btn bg-gray-600 hover:bg-gray-700 w-full mt-4">
+            Resep Acak Penuh! 🎲
+        </button>
+
+
+        <div id="loadingSpinner" class="loading-spinner"></div>
+        <div id="foodIconAnimationContainer" class="food-icon-animation-container"></div>
+
+        <div id="resultArea" class="output-area mt-8">
+            <p class="text-gray-500">Resep ajaib Anda akan muncul di sini. Berani coba?</p>
+        </div>
+
+        <div id="nutritionalFacts" class="nutritional-facts hidden">
+            <h3>Fakta Gizi Absurd</h3>
+            <div id="nutritionalFactsContent">
+                <!-- Absurd nutritional facts will be inserted here by JS -->
+            </div>
+        </div>
+
+        <div id="absurdPairing" class="absurd-pairing hidden">
+            <h3>Saran Pasangan Absurd</h3>
+            <div id="absurdPairingContent">
+                <!-- Absurd pairing suggestions will be inserted here by JS -->
+            </div>
+        </div>
+
+        <div id="ratingContainer" class="rating-container hidden">
+            <p>Bagaimana tingkat keanehan resep ini?</p>
+            <div class="rating-icons" id="ratingIcons">
+                <span data-rating="1">🤢</span>
+                <span data-rating="2">🤨</span>
+                <span data-rating="3">🤔</span>
+                <span data-rating="4">🤯</span>
+                <span data-rating="5">✨</span>
+            </div>
+            <p id="ratingFeedback"></p>
+        </div>
+
+        <button id="shareWhatsappBtn" class="btn bg-green-500 hover:bg-green-600 w-full mt-6 hidden">
+            Bagikan Resep ke WhatsApp
+        </button>
+
+        <p class="text-gray-600 text-sm mt-8">
+            <span class="text-orange-400">Peringatan:</span> Konten ini murni untuk hiburan. Jangan coba resep ini di rumah!
+        </p>
+    </div>
+
+    <script type="module">
+        let API_KEY = "";
+
+        const apiKeyModal = document.getElementById('apiKeyModal');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const submitApiKeyBtn = document.getElementById('submitApiKeyBtn');
+        const onScreenDebugger = document.getElementById('onScreenDebugger');
+        const apiValidationMessage = document.getElementById('apiValidationMessage');
+        const mainContainer = document.getElementById('mainContainer');
+        const currentApiKeyDisplay = document.getElementById('currentApiKey');
+        const apiKeyInfoDiv = document.getElementById('apiKeyInfo');
+
+        const ingredientsInput = document.getElementById('ingredientsInput');
+        const crazinessLevelSelect = document.getElementById('crazinessLevelSelect'); // New: Craziness level selector
+        const generateBtn = document.getElementById('generateBtn');
+        const randomRecipeBtn = document.getElementById('randomRecipeBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const resultArea = document.getElementById('resultArea');
+        const shareWhatsappBtn = document.getElementById('shareWhatsappBtn');
+
+        const ratingContainer = document.getElementById('ratingContainer');
+        const ratingIcons = document.getElementById('ratingIcons');
+        const ratingFeedback = document.getElementById('ratingFeedback');
+        const foodIconAnimationContainer = document.getElementById('foodIconAnimationContainer');
+        const nutritionalFactsDiv = document.getElementById('nutritionalFacts');
+        const nutritionalFactsContent = document.getElementById('nutritionalFactsContent');
+        const absurdPairingDiv = document.getElementById('absurdPairing'); // New: Absurd pairing container
+        const absurdPairingContent = document.getElementById('absurdPairingContent'); // New: Absurd pairing content div
+
+
+        const randomIngredientsPool = [
+            "es krim", "sarden kalengan", "timun", "bubuk kopi instan", "bawang bombay mentah",
+            "saus cokelat", "acar mentimun", "permen karet bekas", "sereal kering", "keju cheddar cair",
+            "saus sambal level dewa", "biskuit basi", "selai kacang", "jelly rasa buah", "daun bawang",
+            "susu kental manis", "nasi dingin", "telur rebus", "pasta gigi", "kecap ikan",
+            "batu kerikil bersih", "kembang sepatu", "rambut palsu", "benang wol", "karet gelang",
+            "cat air (non-toksik)", "pasir pantai", "kaos kaki bekas", "lilin leleh", "air cucian beras"
+        ];
+
+        const foodEmojis = ['🍔', '🍟', '🍕', '🍣', '🍦', '🍩', '🍪', '🍫', '🥦', '🥕', '🍎', '🍓', '🍚', '🍝', '🍳', '🧂', '🌶️', '🍋', '🥛', '🍞', '🤢', '🤯', '😵', '😱', '💩', '🤮', '👻', '👽', '🧠', '🧪'];
+
+        let animationInterval;
+
+        // --- On-screen Debugger Function ---
+        function debugToScreen(message) {
+            if (onScreenDebugger) {
+                onScreenDebugger.classList.remove('hidden');
+                onScreenDebugger.innerHTML += `<div>${message}</div>`;
+                onScreenDebugger.scrollTop = onScreenDebugger.scrollHeight;
+            }
+            console.log("DEBUGGER:", message);
+        }
+
+        // --- Utility Functions ---
+        function showMessageBox(message) {
+            debugToScreen("Showing message box: " + message);
+            if (apiKeyModal.classList.contains('hidden')) {
+                 resultArea.innerHTML = `<p class="text-red-400">${message}</p>`;
+                 resultArea.classList.add('fade-in');
+            } else {
+                apiValidationMessage.textContent = message;
+                apiValidationMessage.classList.remove('hidden');
+            }
+        }
+
+        function showApiKeyModal() {
+            debugToScreen("showApiKeyModal called. Displaying modal.");
+            apiKeyModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            apiKeyInput.focus();
+            onScreenDebugger.innerHTML = '';
+            onScreenDebugger.classList.remove('hidden');
+            apiValidationMessage.classList.add('hidden');
+            apiValidationMessage.textContent = '';
+        }
+
+        async function validateApiKey(key) {
+            debugToScreen("Validating API Key: " + key.substring(0, 5) + "...");
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`, {
+                    method: 'GET'
+                });
+                if (response.ok) {
+                    debugToScreen("API Key VALID. Status: " + response.status);
+                    return true;
+                } else {
+                    const errorData = await response.json();
+                    debugToScreen(`API Key INVALID. Status: ${response.status}. Error: ${errorData.error.message || 'Unknown error'}`);
+                    return false;
+                }
+            } catch (error) {
+                debugToScreen("API Key validation fetch error: " + error.message);
+                return false;
+            }
+        }
+
+        if (submitApiKeyBtn) {
+            submitApiKeyBtn.addEventListener('click', async (event) => {
+                event.preventDefault();
+                debugToScreen("--- 'Gunakan API Key Ini' button HAS BEEN CLICKED! ---");
+                const enteredKey = apiKeyInput.value.trim();
+                debugToScreen("API Key entered: " + enteredKey);
+
+                if (!enteredKey) {
+                    apiValidationMessage.textContent = "Harap masukkan API Key Anda!";
+                    apiValidationMessage.classList.remove('hidden');
+                    debugToScreen("API Key input is empty.");
+                    return;
+                }
+
+                apiValidationMessage.textContent = "Memverifikasi API Key...";
+                apiValidationMessage.classList.remove('hidden');
+                submitApiKeyBtn.disabled = true;
+
+                const isValid = await validateApiKey(enteredKey);
+
+                if (isValid) {
+                    API_KEY = enteredKey;
+                    debugToScreen("API_KEY global variable set to: " + API_KEY);
+                    apiKeyModal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                    mainContainer.classList.remove('hidden');
+                    mainContainer.classList.add('fade-in');
+                    currentApiKeyDisplay.textContent = API_KEY;
+                    apiKeyInfoDiv.classList.remove('hidden');
+                    debugToScreen("API Key modal hidden, main content shown, API Key info displayed.");
+                    apiValidationMessage.classList.add('hidden');
+                } else {
+                    apiValidationMessage.textContent = "API Key tidak valid. Harap masukkan API Key yang benar.";
+                    apiValidationMessage.classList.remove('hidden');
+                    debugToScreen("API Key is invalid. Modal remains visible.");
+                }
+                submitApiKeyBtn.disabled = false;
+            });
+            debugToScreen("Event listener for submitApiKeyBtn ATTACHED successfully.");
+        } else {
+            debugToScreen("ERROR: Element with ID 'submitApiKeyBtn' NOT FOUND during script execution!");
+        }
+
+        // --- Animated Food Icons Logic ---
+        function startFoodAnimation() {
+            foodIconAnimationContainer.innerHTML = '';
+            const numIcons = 20;
+            debugToScreen("Starting food icon animation.");
+            for (let i = 0; i < numIcons; i++) {
+                const icon = document.createElement('span');
+                icon.className = 'food-icon';
+                icon.textContent = foodEmojis[Math.floor(Math.random() * foodEmojis.length)];
+                
+                const startX = Math.random() * window.innerWidth;
+                const startY = Math.random() * window.innerHeight;
+                const endX = Math.random() * window.innerWidth;
+                const endY = Math.random() * window.innerHeight;
+
+                icon.style.setProperty('--x-start', `${startX}px`);
+                icon.style.setProperty('--y-start', `${startY}px`);
+                icon.style.setProperty('--x-end', `${endX}px`);
+                icon.style.setProperty('--y-end', `${endY}px`);
+                icon.style.animationDelay = `${i * 0.15}s`;
+                icon.style.animationDuration = `${Math.random() * 3 + 3}s`;
+
+                foodIconAnimationContainer.appendChild(icon);
+            }
+        }
+
+        function stopFoodAnimation() {
+            debugToScreen("Stopping food icon animation.");
+            foodIconAnimationContainer.innerHTML = '';
+        }
+
+        // --- Rating System Logic ---
+        ratingIcons.addEventListener('click', (event) => {
+            const target = event.target;
+            if (target.tagName === 'SPAN' && target.dataset.rating) {
+                const rating = parseInt(target.dataset.rating);
+                debugToScreen("Recipe rated: " + rating);
+                
+                Array.from(ratingIcons.children).forEach(icon => {
+                    icon.classList.remove('selected');
+                });
+                for (let i = 0; i < rating; i++) {
+                    ratingIcons.children[i].classList.add('selected');
+                }
+
+                let feedbackMessage = '';
+                switch(rating) {
+                    case 1: feedbackMessage = "Astaga, resepnya sungguh mengerikan! 😱"; break;
+                    case 2: feedbackMessage = "Hmm, ini agak meragukan. 🤨"; break;
+                    case 3: feedbackMessage = "Lumayan aneh, bisa dicoba (mungkin). 🤔"; break;
+                    case 4: feedbackMessage = "Wow, keanehannya di level lain! 🤯"; break;
+                    case 5: feedbackMessage = "Ini mahakarya kekacauan kuliner! ✨"; break;
+                }
+                ratingFeedback.textContent = feedbackMessage;
+            }
+        });
+
+        // --- Main Recipe Generation Logic ---
+        async function generateRecipe() {
+            debugToScreen("generateRecipe function started.");
+            if (!API_KEY) {
+                showMessageBox("API Key belum dimasukkan. Harap masukkan API Key Anda terlebih dahulu!");
+                showApiKeyModal();
+                debugToScreen("API Key is missing, showing modal and returning.");
+                return;
+            }
+
+            const ingredients = ingredientsInput.value.trim();
+            const crazinessLevel = crazinessLevelSelect.value; // Get selected craziness level
+
+            if (!ingredients) {
+                showMessageBox("Harap masukkan setidaknya satu bahan!");
+                return;
+            }
+
+            resultArea.innerHTML = '<p class="text-gray-500">Menciptakan mahakarya kuliner yang aneh... 🧪</p>';
+            resultArea.classList.remove('fade-in');
+            nutritionalFactsDiv.classList.add('hidden');
+            nutritionalFactsContent.innerHTML = '';
+            absurdPairingDiv.classList.add('hidden'); // Hide absurd pairing
+            absurdPairingContent.innerHTML = ''; // Clear absurd pairing content
+            loadingSpinner.style.display = 'block';
+            generateBtn.disabled = true;
+            randomRecipeBtn.disabled = true;
+            shareWhatsappBtn.classList.add('hidden');
+            ratingContainer.classList.add('hidden');
+            ratingFeedback.textContent = '';
+            Array.from(ratingIcons.children).forEach(icon => icon.classList.remove('selected'));
+            
+            startFoodAnimation();
+            debugToScreen("UI updated for loading state. Building prompt...");
+
+            try {
+                let chatHistory = [];
+                let prompt = `Buatlah resep masakan yang sangat aneh dan ajaib menggunakan bahan-bahan berikut: "${ingredients}".\n`;
+
+                // Adjust prompt based on Craziness Level
+                switch (crazinessLevel) {
+                    case 'aneh_ringan':
+                        prompt += `Fokus pada kombinasi bahan yang aneh tapi masih bisa dibayangkan dan instruksi yang agak konyol. Humornya ringan.`;
+                        break;
+                    case 'pakar_absurditas':
+                        prompt += `Gunakan kombinasi bahan yang lebih kontras, instruksi yang mulai tidak masuk akal, dan humor yang lebih menonjol.`;
+                        break;
+                    case 'chef_gila_total':
+                        prompt += `Buat kombinasi bahan yang benar-benar tidak masuk akal. Instruksi harus sangat gila dan lucu, serta fakta gizi yang ekstrem. Ini adalah resep paling intens.`;
+                        break;
+                    case 'krisis_eksistensial':
+                        prompt += `Buat resep yang mempertanyakan keberadaan makanan itu sendiri. Bahan dan instruksi harus sangat filosofis, absurd, dan bahkan bisa menimbulkan sedikit kebingungan eksistensial.`;
+                        break;
+                }
+                prompt += `\nSertakan bagian-bagian berikut dalam resep, dengan nilai yang sangat absurd dan lucu:
+                Nama Hidangan:
+                Bahan-bahan:
+                Waktu Persiapan:
+                Waktu Memasak:
+                Porsi:
+                Tingkat Kesulitan:
+                Instruksi:
+                Catatan dari Chef Absurd:
+                Fakta Gizi Absurd:
+                Saran Pasangan Absurd:
+
+                Pastikan seluruh resep disajikan dalam satu blok teks yang koheren, dengan setiap bagian di atas diawali dengan labelnya.`;
+
+
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                debugToScreen("Sending API request with prompt length: " + prompt.length);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    debugToScreen(`API response NOT OK. Status: ${response.status}. Error: ${errorData.error.message || 'Unknown'}`);
+                    throw new Error(`Kesalahan API: ${response.status} - ${errorData.error.message || 'Respons tidak OK'}`);
+                }
+
+                const result = await response.json();
+                debugToScreen("Gemini API raw response received.");
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const fullRecipeText = result.candidates[0].content.parts[0].text;
+                    
+                    let recipeOnly = fullRecipeText;
+                    let nutritionalFacts = "Tidak ada fakta gizi yang ditemukan.";
+                    let absurdPairing = "Tidak ada saran pasangan absurd.";
+
+                    // Regex to extract sections. Order matters if sections can appear multiple times.
+                    const nutritionalFactsRegex = /Fakta Gizi Absurd:([\s\S]*?)(?:Saran Pasangan Absurd:|$)/i;
+                    const absurdPairingRegex = /Saran Pasangan Absurd:([\s\S]*)/i;
+
+                    const pairingMatch = fullRecipeText.match(absurdPairingRegex);
+                    if (pairingMatch && pairingMatch[1]) {
+                        absurdPairing = pairingMatch[1].trim();
+                        absurdPairingDiv.classList.remove('hidden');
+                        absurdPairingContent.innerHTML = `<p>${absurdPairing}</p>`;
+                        absurdPairingDiv.classList.add('fade-in');
+                        recipeOnly = fullRecipeText.replace(absurdPairingRegex, '').trim();
+                    } else {
+                         absurdPairingDiv.classList.add('hidden');
+                    }
+
+                    const factsMatch = recipeOnly.match(nutritionalFactsRegex); // Apply regex on the remaining text
+                    if (factsMatch && factsMatch[1]) {
+                        nutritionalFacts = factsMatch[1].trim();
+                        nutritionalFactsDiv.classList.remove('hidden');
+                        nutritionalFactsContent.innerHTML = `<p>${nutritionalFacts}</p>`;
+                        nutritionalFactsDiv.classList.add('fade-in');
+                        recipeOnly = recipeOnly.replace(nutritionalFactsRegex, '').trim();
+                    } else {
+                         nutritionalFactsDiv.classList.add('hidden');
+                    }
+
+                    resultArea.innerHTML = `<p>${recipeOnly}</p>`;
+                    resultArea.classList.add('fade-in');
+                    shareWhatsappBtn.classList.remove('hidden');
+                    shareWhatsappBtn.dataset.text = fullRecipeText; // Share full text including facts and pairing
+                    ratingContainer.classList.remove('hidden');
+                    debugToScreen("Recipe generated successfully, facts and pairing extracted.");
+                } else {
+                    resultArea.innerHTML = '<p class="text-red-400">Hmm, AI sedang kehabisan ide bahan makanan aneh. Coba lagi ya!</p>';
+                    debugToScreen("Gemini API response structure unexpected or empty content.");
+                }
+            } catch (error) {
+                debugToScreen('Error during recipe generation: ' + error.message);
+                resultArea.innerHTML = `<p class="text-red-400">Ups, ada yang tidak beres! ${error.message}. Coba periksa koneksi internetmu, atau bahannya terlalu normal?</p>`;
+            } finally {
+                loadingSpinner.style.display = 'none';
+                generateBtn.disabled = false;
+                randomRecipeBtn.disabled = false;
+                stopFoodAnimation();
+                debugToScreen("Recipe generation finished.");
+            }
+        }
+
+        generateBtn.addEventListener('click', generateRecipe);
+
+        randomRecipeBtn.addEventListener('click', () => {
+            debugToScreen("Random Recipe button clicked. Populating ingredients and craziness level.");
+            const numIngredients = Math.floor(Math.random() * 3) + 2; // 2 to 4 ingredients
+            let selectedIngredients = new Set();
+            while (selectedIngredients.size < numIngredients) {
+                selectedIngredients.add(randomIngredientsPool[Math.floor(Math.random() * randomIngredientsPool.length)]);
+            }
+            ingredientsInput.value = Array.from(selectedIngredients).join(', ');
+            
+            // Randomly select a craziness level
+            const crazinessOptions = Array.from(crazinessLevelSelect.options).map(opt => opt.value);
+            crazinessLevelSelect.value = crazinessOptions[Math.floor(Math.random() * crazinessOptions.length)];
+
+            debugToScreen("Random ingredients populated: " + ingredientsInput.value);
+            debugToScreen("Random craziness level selected: " + crazinessLevelSelect.value);
+            generateRecipe();
+        });
+
+        shareWhatsappBtn.addEventListener('click', () => {
+            const textToShare = encodeURIComponent(`Coba resep ajaib ini! ##### (jangan dicoba di rumah ya)\n\n"${shareWhatsappBtn.dataset.text}"\n\nBuat resep anehmu sendiri di: ${window.location.href}`);
+            window.open(`https://api.whatsapp.com/send?text=${textToShare}`, '_blank');
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            debugToScreen("DOMContentLoaded fired. Initializing app for Weird Recipe Creator.");
+            apiKeyInput.value = "";
+            apiKeyModal.classList.remove('hidden');
+            mainContainer.classList.add('hidden');
+            showApiKeyModal();
+        });
+    </script>
+</body>
+</html>
+

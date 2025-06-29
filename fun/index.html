@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hanzercopy.cloud - Kategori Fun: Puzzle Interaktif</title>
+    <title>Hanzercopy.cloud - Kategori Fun: Puzzle, Roast & Resep AI</title>
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Hanzercopy.cloud menawarkan berbagai permainan dan teka-teki yang menyenangkan. Jelajahi Sliding Puzzle dan Jigsaw Puzzle interaktif kami, cocok untuk semua usia dan tidak memerlukan API Key. Nikmati hiburan tanpa batas!">
-    <meta name="keywords" content="puzzle, game, fun, teka-teki, sliding puzzle, jigsaw puzzle, permainan interaktif, hanzercopy, hiburan, tanpa api key, gratis">
+    <meta name="description" content="Hanzercopy.cloud menawarkan berbagai permainan dan teka-teki yang menyenangkan. Jelajahi Sliding Puzzle dan Jigsaw Puzzle interaktif kami (tanpa API Key). Coba juga 'Roast Namamu!' untuk humor pedas dan 'Resep Aneh Ajaib!' untuk kreasi kuliner absurd yang membutuhkan API Key. Nikmati hiburan tanpa batas!">
+    <meta name="keywords" content="puzzle, game, fun, teka-teki, sliding puzzle, jigsaw puzzle, permainan interaktif, hanzercopy, hiburan, tanpa api key, gratis, roast nama, resep aneh, humor AI, AI generator, resep kuliner absurd">
     <meta name="author" content="Hanzercopy">
-    <meta property="og:title" content="Hanzercopy.cloud - Kategori Fun: Puzzle Interaktif">
-    <meta property="og:description" content="Hanzercopy.cloud menawarkan berbagai permainan dan teka-teki yang menyenangkan. Jelajahi Sliding Puzzle dan Jigsaw Puzzle interaktif kami, cocok untuk semua usia dan tidak memerlukan API Key. Nikmati hiburan tanpa batas!">
+    <meta property="og:title" content="Hanzercopy.cloud - Kategori Fun: Puzzle, Roast & Resep AI">
+    <meta property="og:description" content="Hanzercopy.cloud menawarkan berbagai permainan dan teka-teki yang menyenangkan. Jelajahi Sliding Puzzle dan Jigsaw Puzzle interaktif kami (tanpa API Key). Coba juga 'Roast Namamu!' untuk humor pedas dan 'Resep Aneh Ajaib!' untuk kreasi kuliner absurd yang membutuhkan API Key. Nikmati hiburan tanpa batas!">
     <meta property="og:url" content="https://hanzercopy.cloud/fun/">
     <meta property="og:type" content="website">
 
@@ -129,7 +129,7 @@
         /* --- CARD GRID STYLES --- */
         .card-grid-container {
             width: 100%;
-            max-width: 800px; /* Lebar maksimum untuk 2 kartu */
+            max-width: 1000px; /* Increased max-width to accommodate 4 cards better (2x2 on wider screens) */
             display: grid;
             grid-template-columns: 1fr; /* Satu kolom di layar kecil */
             gap: 2rem; /* Jarak antar kartu */
@@ -137,11 +137,15 @@
             margin-bottom: 30px;
         }
 
-        @media (min-width: 768px) { /* Dua kolom di layar sedang dan besar */
+        @media (min-width: 640px) { /* Two columns on small tablets and up */
             .card-grid-container {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
+        @media (min-width: 1024px) { /* Optimal for 4 cards, still 2x2. Can be 3 cols if content adjusted. */
+             /* No change, keeping 2 columns for better readability or adjusting to 3 if needed */
+        }
+
 
         .card {
             background-color: rgba(51, 51, 51, 0.95); /* Warna latar belakang default */
@@ -429,7 +433,7 @@
         </p>
     </div>
 
-    <!-- Grid container for the two puzzle cards -->
+    <!-- Grid container for the puzzle cards -->
     <div class="card-grid-container">
         <!-- Card 1: Sliding Puzzle -->
         <div class="card card-fun-page">
@@ -450,6 +454,30 @@
             </p>
             <a href="jigsaw-puzzle/" class="card-button">
                 Mainkan Jigsaw Puzzle
+            </a>
+        </div>
+
+        <!-- Card 3: Roast Namamu! -->
+        <div class="card card-fun-page">
+            <h2 class="card-title">Roast Namamu!</h2>
+            <p class="card-description">
+                Siap-siap mendengarkan kebenaran pahit yang lucu tentang namamu? AI akan 'me-roast' namamu dengan humor pedas.
+                <em class="text-black italic">(API Key dibutuhkan)</em>
+            </p>
+            <a href="roastyourname/" class="card-button">
+                Roast Namaku!
+            </a>
+        </div>
+
+        <!-- Card 4: Resep Aneh Ajaib! -->
+        <div class="card card-fun-page">
+            <h2 class="card-title">Resep Aneh Ajaib!</h2>
+            <p class="card-description">
+                Masukkan beberapa bahan makanan aneh, dan AI akan membuat resep yang... unik dan di luar nalar!
+                <em class="text-black italic">(API Key dibutuhkan)</em>
+            </p>
+            <a href="recipe-for-you/" class="card-button">
+                Buat Resep!
             </a>
         </div>
     </div>

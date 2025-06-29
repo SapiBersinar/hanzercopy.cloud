@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hanzercopy.cloud - Platform Kreatif & Hiburan</title>
+    <title>Hanzercopy.cloud - Platform Kreatif & Hiburan AI</title>
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Hanzercopy.cloud adalah platform inovatif untuk penulis dan penggemar cerita. Jelajahi generator karakter, ide judul & slogan, nama lokasi, arsip data dunia, perancang artefak legendaris, generator peta dunia, generator makhluk/monster, generator plot & garis besar cerita, generator konsep peralatan, generator tantangan/quest, serta berbagai permainan dan teka-teki interaktif. Mulai petualangan kreatif dan hiburan Anda hari ini!">
-    <meta name="keywords" content="visual novel, komik interaktif, cerita pilihan, game cerita, fantasi, misteri, romansa, game visual novel, hanzercopy, game komik, cerita digital, petualangan naratif, generator karakter, generator judul cerita, generator lokasi, arsip dunia, perancang artefak, item legendaris, dunia fiksi, generator peta, peta fantasi, world map generator, generator makhluk, monster fiksi, creature generator, generator plot, garis besar cerita, story outline generator, generator peralatan, gear generator, challenge generator, quest generator, teka-teki, game, hiburan, alat penulis, sumber daya kreatif">
+    <meta name="description" content="Hanzercopy.cloud adalah platform inovatif untuk penulis dan penggemar cerita. Jelajahi generator karakter, ide judul & slogan, nama lokasi, arsip data dunia, perancang artefak legendaris, generator peta dunia, generator makhluk/monster, generator plot & garis besar cerita, generator konsep peralatan, generator tantangan/quest. Nikmati juga permainan interaktif seperti Sliding Puzzle, Jigsaw Puzzle, Roast Namamu!, dan Resep Aneh Ajaib! Mulai petualangan kreatif dan hiburan Anda hari ini dengan bantuan AI!">
+    <meta name="keywords" content="visual novel, komik interaktif, cerita pilihan, game cerita, fantasi, misteri, romansa, game visual novel, hanzercopy, game komik, cerita digital, petualangan naratif, generator karakter, generator judul cerita, generator lokasi, arsip dunia, perancang artefak, item legendaris, dunia fiksi, generator peta, peta fantasi, world map generator, generator makhluk, monster fiksi, creature generator, generator plot, garis besar cerita, story outline generator, generator peralatan, gear generator, challenge generator, quest generator, teka-teki, game, hiburan, alat penulis, sumber daya kreatif, roast nama, resep aneh, humor AI, AI generator">
     <meta name="author" content="Hanzercopy">
-    <meta property="og:title" content="Hanzercopy.cloud - Platform Kreatif & Hiburan">
-    <meta property="og:description" content="Hanzercopy.cloud adalah platform inovatif untuk penulis dan penggemar cerita. Jelajahi generator karakter, ide judul & slogan, nama lokasi, arsip data dunia, perancang artefak legendaris, generator peta dunia, generator makhluk/monster, generator plot & garis besar cerita, generator konsep peralatan, generator tantangan/quest, serta berbagai permainan dan teka-teki interaktif. Mulai petualangan kreatif dan hiburan Anda hari ini!">
+    <meta property="og:title" content="Hanzercopy.cloud - Platform Kreatif & Hiburan AI">
+    <meta property="og:description" content="Hanzercopy.cloud adalah platform inovatif untuk penulis dan penggemar cerita. Jelajahi generator karakter, ide judul & slogan, nama lokasi, arsip data dunia, perancang artefak legendaris, generator peta dunia, generator makhluk/monster, generator plot & garis besar cerita, generator konsep peralatan, generator tantangan/quest. Nikmati juga permainan interaktif seperti Sliding Puzzle, Jigsaw Puzzle, Roast Namamu!, dan Resep Aneh Ajaib! Mulai petualangan kreatif dan hiburan Anda hari ini dengan bantuan AI!">
     <meta property="og:url" content="https://hanzercopy.cloud/">
     <meta property="og:type" content="website">
 
@@ -215,17 +215,20 @@
         }
 
         .card-fun .card-title,
-        .card-fun .card-description {
+        .card-fun .card-description,
+        .card-fun .feature-list li,
+        .card-fun .feature-list li em { /* Ensure text color applies to em too */
             color: #1a1a1a; /* Ensure dark text */
             text-shadow: none; /* Remove text shadow for clarity */
         }
 
         /* Styles for the Writer card (grayscale comic gradient) */
         .card-writer {
-            background: linear-gradient(135deg, #f0f0f0, #d0d0d0, #b0b0b0, #909090); /* Grayscale gradient */
+            /* Changed to a darker, more somber grayscale gradient */
+            background: linear-gradient(135deg, #222222, #444444, #222222);
             background-size: 400% 400%;
             animation: grayscaleGradientFlow 12s ease infinite;
-            color: #1a1a1a; /* Black text */
+            color: #cccccc; /* Lighter text for contrast on dark background */
             border: 3px solid #000000; /* Black border */
             box-shadow: 7px 7px 0px 0px rgba(0, 0, 0, 0.7); /* Shadow */
         }
@@ -238,8 +241,9 @@
 
         .card-writer .card-title,
         .card-writer .card-description,
-        .card-writer .feature-list li {
-            color: #1a1a1a; /* Ensure black text */
+        .card-writer .feature-list li,
+        .card-writer .feature-list li em { /* Ensure text color applies to em too */
+            color: #cccccc; /* Ensure light text */
             text-shadow: none; /* Remove text shadow for clarity */
         }
 
@@ -257,7 +261,7 @@
             margin-bottom: 5px;
             padding-left: 10px; /* Indentation */
             position: relative;
-            color: #4a4a4a; /* Darker text color for features */
+            color: #4a4a4a; /* Darker text color for features (will be overridden by .card-writer li) */
         }
 
         .feature-list li:last-child {
@@ -510,7 +514,7 @@
     <!-- API Key Information Section -->
     <div class="api-key-info">
         <p>Sangat direkomendasikan untuk membuat API Key Anda sendiri agar tidak ada batasan. Dapatkan di: <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a></p>
-        <p>Atau, Anda bisa menyalin API Key terbatas dari sini: <a href="https://anotepad.com/notes/7itw6738" target="_blank">Coba API Key Terbatas</a></p>
+        <p>Atau, Anda bisa <a href="https://anotepad.com/notes/fdxactcr" target="_blank">Coba API Key untuk uji coba di sini</a></p>
     </div>
 
     <div class="container">
@@ -533,7 +537,9 @@
             <p class="feature-label mb-2">Available:</p>
             <ul class="feature-list text-left w-full px-4">
                 <li><span class="font-bold">Sliding-Puzzle</span> <em class="text-black italic">(No apikey required)</em> ❌</li>
-		<li><span class="font-bold">Jigsaw-Puzzle</span> <em class="text-black italic">(No apikey required)</em> ❌</li>
+		        <li><span class="font-bold">Jigsaw-Puzzle</span> <em class="text-black italic">(No apikey required)</em> ❌</li>
+                <li><span class="font-bold">Roast Namamu!</span> <em class="text-black italic">(API Key dibutuhkan)</em> ✅</li>
+                <li><span class="font-bold">Resep Aneh Ajaib!</span> <em class="text-black italic">(API Key dibutuhkan)</em> ✅</li>
             </ul>
             <a href="https://hanzercopy.cloud/fun/" class="card-button">
                 Kunjungi Halaman Fun
@@ -548,13 +554,13 @@
             </p>
             <p class="feature-label mb-2">Available:</p>
             <ul class="feature-list">
-		<li><span class="font-bold">Panduan Pemula</span></li>
+		        <li><span class="font-bold">Panduan Pemula</span></li>
                 <li><span class="font-bold">Dossier Karakter</span> <em class="italic">(apikey is required)</em> ✅</li>
                 <li><span class="font-bold">Judul & Slogan Cerita</span> <em class="italic">(apikey is required)</em> ✅</li>
                 <li><span class="font-bold">Generator Nama Lokasi</span> <em class="italic">(apikey is required)</em> ✅</li>
                 <li><span class="font-bold">Perancang Item & Artefak Legendaris</span> <em class="italic">(apikey is required)</em> ✅</li>
                 <li><span class="font-bold">Arsip Data Cerita</span> <em class="italic">(apikey is required)</em> ✅</li>
-	        <li><span class="font-bold">Mode Cerita Cepat<span> <em class="italic">(apikey is required)</em> ✅</li>                     
+	            <li><span class="font-bold">Mode Cerita Cepat</span> <em class="italic">(apikey is required)</em> ✅</li>                     
                 <li><span class="font-bold">Generator Peta Dunia Fiksi</span> <em class="italic">(apikey is required)</em> ✅</li>
                 <li><span class="font-bold">Ide Konsep Makhluk (Acak)</span> <em class="italic">(apikey is required)</em> ✅</li>
                 <li><span class="font-bold">Generator Konsep Peralatan</span> <em class="italic">(apikey is required)</em> ✅</li>
