@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kolom Nasihat Hewan Peliharaan Bijak</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); /* Default Purple to Blue */
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
+            transition: background 1.5s ease-in-out; /* Smooth transition for background change */
+        }
+        .hidden {
+            display: none !important;
+        }
+        .container {
+            background-color: #2d3748; /* Darker background for content */
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            padding: 2.5rem;
+            max-width: 700px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+            z-index: 1;
+            flex-shrink: 0;
+            margin-top: auto;
+            margin-bottom: auto;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .container.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        @media (max-width: 640px) {
+            .container {
+                padding: 1.5rem;
+            }
+            .btn {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.95rem;
+            }
+            .input-field {
+                padding: 0.65rem 1rem;
+            }
+            .api-key-card {
+                padding: 1.5rem;
+            }
+            .api-key-card h2 {
+                font-size: 1.75rem;
+            }
+            .output-area p {
+                font-size: 1rem;
+            }
+            #historyModalContent div {
+                font-size: 0.9rem;
+                padding: 0.75rem;
+            }
+        }
+        .btn {
+            background-color: #6366f1; /* Indigo for a calm, wise theme */
+            color: white;
+            padding: 0.85rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        }
+        .btn:hover {
+            background-color: #4f46e5;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+        .btn:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(99, 102, 241, 0.2);
+        }
+        .input-field, .select-field {
+            background-color: #4a5568;
+            color: #e2e8f0;
+            border: 1px solid #718096;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="#e2e8f0" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1.5em;
+            padding-right: 2.5rem;
+        }
+        .input-field:focus, .select-field:focus {
+            outline: none;
+            border-color: #6366f1; /* Indigo focus border */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+        .input-field::placeholder {
+            color: #a0aec0;
+        }
+        /* Shake animation for empty input */
+        .input-field.shake {
+            animation: shake 0.5s;
+            border-color: #ef4444; /* Red border on shake */
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .output-area {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: left;
+            min-height: 120px;
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            white-space: pre-wrap;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .output-area.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        /* Loading animation */
+        .loading-animation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem auto;
+            font-size: 1.2rem;
+            color: #a0aec0;
+            display: none; /* Hidden by default */
+            animation: bounce-up-down 1.5s infinite ease-in-out; /* Apply bounce to the whole div */
+            /* Ensure it wraps and stays within bounds */
+            max-width: 90%; /* Adjust as needed */
+            text-align: center;
+        }
+        .loading-animation .emoji {
+            font-size: 2.5rem;
+            margin-right: 0.5rem;
+            flex-shrink: 0; /* Prevent emoji from shrinking */
+        }
+        .loading-animation p {
+            white-space: normal; /* Allow text to wrap */
+            word-break: break-word; /* Break long words */
+        }
+        @keyframes bounce-up-down {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* API Key Modal Styling */
+        #apiKeyModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .api-key-card {
+            background-color: #1f2937; border-radius: 1.5rem; padding: 2.5rem; max-width: 500px; width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); text-align: center; border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .api-key-card h2 { font-size: 2.25rem; font-weight: 800; color: #ef4444; margin-bottom: 1.5rem; }
+        .api-key-card p { color: #cbd5e1; margin-bottom: 1.5rem; line-height: 1.6; }
+        .api-key-card a { color: #60a5fa; text-decoration: underline; }
+        .api-key-card input {
+            background-color: #3e4451; color: #e2e8f0; border: 1.5px solid #5a6270; padding: 0.75rem 1.25rem;
+            border-radius: 0.75rem; width: 100%; margin-bottom: 1.5rem; font-family: 'monospace';
+        }
+        .api-key-card input:focus { outline: none; border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.3); }
+        /* Debugger styling - now inside the modal */
+        #onScreenDebugger {
+            background-color: #333; color: #0f0; padding: 10px; margin-top: 15px; border-radius: 8px;
+            font-family: 'monospace'; font-size: 0.85rem; text-align: left; word-wrap: break-word; white-space: pre-wrap;
+            max-height: 150px; overflow-y: auto; border: 1px solid #0a0;
+            width: calc(100% - 20px); /* Adjust width to fit modal padding */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #apiValidationMessage { color: #ef4444; font-size: 0.9rem; margin-top: -1rem; margin-bottom: 1rem; }
+        #apiValidationSuccess {
+            color: #22c55e; /* Green for success */
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        #apiValidationSuccess.fade-in {
+            opacity: 1;
+        }
+
+        /* Result area text: no typing animation */
+        #resultArea p {
+            animation: none !important;
+            border-right: none !important;
+        }
+
+        /* History Modal */
+        #historyModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.9); display: flex; justify-content: center; align-items: center; z-index: 1001;
+        }
+        .history-card {
+            background-color: #1f2937; border-radius: 1.5rem; padding: 2.5rem; max-width: 600px; width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); text-align: left; border: 1px solid rgba(255, 255, 255, 0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .history-card h2 { font-size: 2rem; font-weight: 700; color: #6366f1; margin-bottom: 1.5rem; text-align: center; }
+        #historyModalContent {
+            margin-bottom: 1.5rem;
+        }
+        #historyModalContent div {
+            background-color: #2d3748;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        #historyModalContent div p {
+            color: #cbd5e1;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        #historyModalContent div .history-meta {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-top: 0.5rem;
+            border-top: 1px solid #4a5568;
+            padding-top: 0.5rem;
+        }
+        .history-card .button-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen flex flex-col items-center p-4">
+
+    <!-- API Key Input Modal -->
+    <div id="apiKeyModal">
+        <div class="api-key-card">
+            <h2>Butuh API Key! 🔑</h2>
+            <p>
+                Untuk menggunakan aplikasi ini, Anda perlu memasukkan Google Gemini API Key Anda.
+                Dapatkan API Key gratis Anda di
+                <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a>.
+            </p>
+            <p>
+                Atau, Anda bisa menyalin API Key yang sudah disediakan di sini:
+                <a href="https://anotepad.com/notes/fdxactcr" target="_blank" rel="noopener noreferrer">anotepad.com/notes/fdxactcr</a>
+            </p>
+            <input type="text" id="apiKeyInput" placeholder="Tempel API Key Anda di sini (mis: AIzaSy...)" />
+            <p id="apiValidationMessage" class="hidden"></p>
+            <p id="apiValidationSuccess" class="hidden">Verifikasi Berhasil! Memuat konten...</p>
+            <button id="submitApiKeyBtn" class="btn w-full">
+                Gunakan API Key Ini
+            </button>
+            <!-- On-Screen Debugger - now inside the modal -->
+            <div id="onScreenDebugger" class="hidden"></div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="hidden">
+        <div class="history-card">
+            <h2>Riwayat Nasihat Anda 📚</h2>
+            <div id="historyModalContent">
+                <p class="text-gray-400 text-center">Belum ada nasihat di riwayat Anda.</p>
+            </div>
+            <div class="button-group">
+                <button id="clearHistoryBtn" class="btn bg-red-500 hover:bg-red-600">
+                    Bersihkan Riwayat
+                </button>
+                <button id="closeHistoryBtn" class="btn bg-gray-500 hover:bg-gray-600">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainContainer" class="container hidden">
+        <h1 class="text-4xl font-extrabold text-indigo-400 mb-4">
+            Kolom Nasihat Hewan Peliharaan Bijak <span id="personaEmojiDisplay">🐾</span>
+        </h1>
+        <p class="text-gray-400 mb-7 text-lg">
+            Curhat masalahmu, dan biarkan hewan peliharaan memberimu pencerahan (yang aneh)!
+        </p>
+
+        <div id="apiKeyInfo" class="hidden">
+            <p>API Key Aktif: <span id="currentApiKey" class="font-bold text-green-400"></span></p>
+            <p class="text-xs mt-1 text-gray-500">Informasi nama/Gmail tidak dapat diakses untuk privasi Anda.</p>
+        </div>
+
+        <div class="space-y-4 mb-6">
+            <label for="problemInput" class="block text-left text-gray-300 text-sm font-medium mb-1">
+                Masalah atau Dilema Anda:
+            </label>
+            <textarea
+                id="problemInput"
+                class="input-field w-full h-32 resize-none"
+                placeholder="Saya bingung pilih makan siang... atau bagaimana cara menghadapi bos yang menyebalkan?"
+            ></textarea>
+
+            <label for="petPersonaSelect" class="block text-left text-gray-300 text-sm font-medium mb-1">
+                Pilih Hewan Penasihat:
+            </label>
+            <div class="relative">
+                <select id="petPersonaSelect" class="select-field w-full mb-2">
+                    <option value="kucing_filosofis">Kucing Malas tapi Filosofis 😼</option>
+                    <option value="anjing_optimis">Anjing Terlalu Optimis 🐶</option>
+                    <option value="hamster_obsesif">Hamster Terobsesi Roda Putar 🐹</option>
+                    <option value="burung_cerewet">Burung Beo Cerewet 🦜</option>
+                    <option value="ikan_zen">Ikan Emas Zen 🐠</option>
+                    <option value="kura_kura_bijaksana">Kura-kura Tua yang Bijaksana 🐢</option>
+                    <option value="ular_misterius">Ular Misterius yang Tenang 🐍</option>
+                    <option value="bunglon_adaptif">Bunglon Adaptif 🦎</option>
+                    <option value="monyet_nakal">Monyet Nakal tapi Cerdas 🐒</option>
+                    <option value="beruang_bijaksana">Beruang Bijaksana yang Tenang 🐻</option>
+                    <option value="rubah_licik">Rubah Licik yang Cerdik 🦊</option>
+                    <option value="burung_hantu_misterius">Burung Hantu Misterius 🦉</option>
+                    <option value="panda_santai">Panda Santai yang Bijak 🐼</option>
+                    <option value="penguin_petualang">Penguin Petualang yang Berani 🐧</option>
+                    <option value="koala_pemalas">Koala Pemalas yang Penuh Damai 🐨</option>
+                    <option value="singa_berwibawa">Singa Berwibawa yang Adil 🦁</option>
+                    <option value="gajah_pemikir">Gajah Pemikir yang Ingat Segalanya 🐘</option>
+                    <option value="serigala_soliter">Serigala Soliter yang Mandiri 🐺</option>
+                    <option value="kambing_keras_kepala">Kambing Keras Kepala yang Gigih 🐐</option>
+                    <option value="bebek_santai">Bebek Santai yang Tenang 🦆</option>
+                    <option value="kangguru_enerjik">Kangguru Enerjik yang Penuh Semangat 🦘</option>
+                    <option value="landak_pemalu">Landak Pemalu tapi Penuh Kejutan 🦔</option>
+                    <option value="gurita_kreatif">Gurita Kreatif yang Cerdas 🐙</option>
+                    <option value="burung_kolibri_lincah">Burung Kolibri Lincah yang Penuh Semangat 🐦</option>
+                    <option value="kupu_kupu_transformasi">Kupu-kupu Transformasi yang Penuh Harapan 🦋</option>
+                    <option value="semut_pekerja_keras">Semut Pekerja Keras yang Disiplin 🐜</option>
+                    <option value="ikan_paus_tenang">Ikan Paus Tenang yang Bijaksana 🐳</option>
+                    <option value="kucing_hitam_misterius">Kucing Hitam Misterius yang Penuh Rahasia 🐈‍⬛</option>
+                    <option value="anjing_pemburu_fokus">Anjing Pemburu yang Fokus 🐕</option>
+                    <option value="bunglon_bijaksana">Bunglon Bijaksana yang Berubah Warna 🌈</option>
+                    <option value="kelinci_penakut">Kelinci Penakut tapi Cepat 🐇</option>
+                    <option value="berang_berang_pembangun">Berang-berang Pembangun yang Teliti 🦦</option>
+                    <option value="burung_elang_tajam">Burung Elang Tajam yang Melihat Segalanya 🦅</option>
+                    <option value="kuda_liar_bebas">Kuda Liar Bebas yang Penuh Kebebasan 🐎</option>
+                    <option value="hiu_pemangsa_strategis">Hiu Pemangsa yang Strategis 🦈</option>
+                    <option value="lebah_rajin">Lebah Rajin yang Terorganisir 🐝</option>
+                    <option value="jerapah_pengamat">Jerapah Pengamat yang Melihat Jauh 🦒</option>
+                    <option value="burung_hantu_bijaksana">Burung Hantu Bijaksana 🦉</option>
+                    <option value="beruang_madu_santai">Beruang Madu Santai 🍯</option>
+                    <option value="kura_kura_tua">Kura-kura Tua yang Penuh Cerita 🐢</option>
+                    <option value="serigala_bijaksana">Serigala Bijaksana yang Memimpin 🐺</option>
+                    <option value="lumba_lumba_ceria">Lumba-lumba Ceria yang Cerdas 🐬</option>
+                </select>
+            </div>
+
+            <label for="wisdomWeirdnessLevelSelect" class="block text-left text-gray-300 text-sm font-medium mb-1">
+                Tingkat Kebijaksanaan/Keanehan Nasihat:
+            </label>
+            <div class="relative">
+                <select id="wisdomWeirdnessLevelSelect" class="select-field w-full">
+                    <option value="normal">Normal 😌</option>
+                    <option value="bijak">Bijak 🧠</option>
+                    <option value="aneh">Aneh 🤪</option>
+                    <option value="sangat_bijak">Sangat Bijak ✨</option>
+                    <option value="sangat_aneh">Sangat Aneh 🤯</option>
+                    <option value="filosofis_mendalam">Filosofis Mendalam 🧐</option>
+                    <option value="absurd_total">Absurd Total 😵‍💫</option>
+                    <option value="humor_gelap">Humor Gelap 😈</option>
+                    <option value="inspiratif">Inspiratif ✨</option>
+                    <option value="sarkastik">Sarkastik 😒</option>
+                    <option value="pragmatis">Pragmatis 🛠️</option>
+                    <option value="puitis">Puitis 📜</option>
+                    <option value="motivasi_keras">Motivasi Keras 💪</option>
+                    <option value="minimalis">Minimalis 🧘</option>
+                    <option value="eksentrik">Eksentrik 🎩</option>
+                    <option value="sinis">Sinis 🙄</option>
+                    <option value="optimis_berlebihan">Optimis Berlebihan 😄</option>
+                    <option value="pesimis_realistis">Pesimis Realistis 😔</option>
+                    <option value="metaforis">Metaforis 💭</option>
+                    <option value="langsung_to_the_point">Langsung ke Inti 🎯</option>
+                    <option value="penuh_teka_teki">Penuh Teka-teki 🤫</option>
+                    <option value="analitis">Analitis 📊</option>
+                    <option value="emosional">Emosional 💖</option>
+                    <option value="humor_ringan">Humor Ringan 😂</option>
+                    <option value="ironis">Ironis 🙃</option>
+                    <option value="kreatif">Kreatif 🎨</option>
+                    <option value="pedas">Pedas 🌶️</option>
+                    <option value="menenangkan">Menenangkan 🕊️</option>
+                    <option value="misterius">Misterius 👻</option>
+                </select>
+            </div>
+        </div>
+
+        <button id="getAdviceBtn" class="btn w-full">
+            Dapatkan Nasihat Hewan!
+        </button>
+        <button id="getRandomAdviceBtn" class="btn bg-gray-600 hover:bg-gray-700 w-full mt-4">
+            Nasihat Acak! 🎲
+        </button>
+
+        <div id="loadingAnimation" class="loading-animation">
+            <span class="emoji">🧠</span>
+            <p id="loadingText" class="ml-2"></p>
+        </div>
+
+        <div id="resultArea" class="output-area mt-8">
+            <p class="text-gray-500">Nasihat bijak dari teman berbulu/bersisik/berkaki empat Anda akan muncul di sini.</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row justify-center gap-4 w-full mt-6">
+            <button id="copyAdviceBtn" class="btn bg-purple-500 hover:bg-purple-600 hidden">
+                Salin Nasihat 📋
+            </button>
+            <button id="shareWhatsappBtn" class="btn bg-green-500 hover:bg-green-600 hidden">
+                Bagikan Nasihat ke WhatsApp 💬
+            </button>
+            <button id="showHistoryBtn" class="btn bg-blue-500 hover:bg-blue-600">
+                Riwayat Nasihat 📜
+            </button>
+        </div>
+
+        <p class="text-gray-600 text-sm mt-8">
+            <span class="text-indigo-400">Disclaimer:</span> Nasihat ini murni untuk hiburan dan tidak dimaksudkan sebagai pengganti saran profesional.
+        </p>
+    </div>
+
+    <script type="module">
+        let API_KEY = "";
+        let currentAdviceText = "";
+
+        // Get DOM elements
+        const bodyElement = document.body;
+        const apiKeyModal = document.getElementById('apiKeyModal');
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        const submitApiKeyBtn = document.getElementById('submitApiKeyBtn');
+        const onScreenDebugger = document.getElementById('onScreenDebugger');
+        const apiValidationMessage = document.getElementById('apiValidationMessage');
+        const apiValidationSuccess = document.getElementById('apiValidationSuccess');
+        const mainContainer = document.getElementById('mainContainer');
+        const currentApiKeyDisplay = document.getElementById('currentApiKey');
+        const apiKeyInfoDiv = document.getElementById('apiKeyInfo');
+        const personaEmojiDisplay = document.getElementById('personaEmojiDisplay'); // New element for persona emoji in title
+
+        const problemInput = document.getElementById('problemInput');
+        const petPersonaSelect = document.getElementById('petPersonaSelect');
+        const wisdomWeirdnessLevelSelect = document.getElementById('wisdomWeirdnessLevelSelect');
+        const getAdviceBtn = document.getElementById('getAdviceBtn');
+        const getRandomAdviceBtn = document.getElementById('getRandomAdviceBtn');
+        const loadingAnimation = document.getElementById('loadingAnimation');
+        const loadingTextElement = document.getElementById('loadingText');
+        const resultArea = document.getElementById('resultArea');
+        const shareWhatsappBtn = document.getElementById('shareWhatsappBtn');
+        const copyAdviceBtn = document.getElementById('copyAdviceBtn');
+
+        const showHistoryBtn = document.getElementById('showHistoryBtn');
+        const historyModal = document.getElementById('historyModal');
+        const historyModalContent = document.getElementById('historyModalContent');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const closeHistoryBtn = document.getElementById('closeHistoryBtn');
+
+        const commonProblems = [
+            "Saya bingung pilih makan siang.",
+            "Bagaimana cara menghadapi bos yang menyebalkan?",
+            "Saya merasa kesepian akhir-akhir ini.",
+            "Saya punya banyak tugas tapi malas mengerjakannya.",
+            "Bagaimana cara menabung lebih banyak uang?",
+            "Saya bertengkar dengan teman baik saya.",
+            "Saya tidak tahu harus melakukan apa dengan hidup saya.",
+            "Saya sering menunda-nunda pekerjaan.",
+            "Bagaimana cara mengatasi stres?",
+            "Saya ingin memulai hobi baru tapi tidak tahu harus mulai dari mana.",
+            "Saya bosan dengan rutinitas harian.",
+            "Bagaimana cara meningkatkan kepercayaan diri?",
+            "Saya merasa tidak dihargai di tempat kerja.",
+            "Saya ingin belajar hal baru tapi tidak punya waktu.",
+            "Bagaimana cara menjaga motivasi tetap tinggi?",
+            "Saya merasa terjebak dalam rutinitas.",
+            "Bagaimana cara mengatasi rasa takut gagal?",
+            "Saya sulit tidur nyenyat.",
+            "Bagaimana cara menjadi lebih produktif?",
+            "Saya ingin mengubah kebiasaan buruk."
+        ];
+
+        const loadingMessages = [
+            "Hewan peliharaan sedang merenung...",
+            "Hewan sedang berpikir keras...",
+            "Mencari kebijaksanaan hewan...",
+            "Menyusun kata-kata bijak...",
+            "Menyelami masalah Anda...",
+            "Menimbang-nimbang jawaban...",
+            "Menghirup inspirasi...",
+            "Mengasah cakar kebijaksanaan...",
+            "Mengepakkan sayap pencerahan...",
+            "Menggali ide-ide aneh...",
+            "Menyelaraskan chakra hewan...",
+            "Membaca daun teh kebijaksanaan...",
+            "Mengurai benang takdir...",
+            "Mendengarkan bisikan alam..."
+        ];
+
+        const problemPlaceholders = [
+            "Bagaimana cara menghadapi hari Senin?",
+            "Saya selalu menunda-nunda, ada tips?",
+            "Apa yang harus saya lakukan saat bosan?",
+            "Saya ingin memulai hobi baru, saran?",
+            "Bagaimana cara mengatasi rasa takut ketinggalan (FOMO)?",
+            "Saya merasa terjebak dalam rutinitas, bagaimana cara keluar?",
+            "Bagaimana cara menjadi lebih produktif tanpa stres?",
+            "Saya sulit tidur nyenyak, ada nasihat?",
+            "Bagaimana cara menjaga motivasi tetap tinggi?",
+            "Saya ingin belajar hal baru tapi tidak punya waktu.",
+            "Saya merasa tidak dihargai, apa yang harus saya lakukan?",
+            "Bagaimana cara mengelola keuangan dengan lebih baik?",
+            "Saya bertengkar dengan teman, bagaimana cara memperbaikinya?",
+            "Saya merasa kesepian, bagaimana cara mendapatkan teman baru?",
+            "Bagaimana cara tetap positif di tengah kesulitan?",
+            "Saya bingung memilih karir, ada pencerahan?",
+            "Bagaimana cara mengatasi kebiasaan buruk?",
+            "Saya merasa terlalu banyak tekanan, bagaimana cara rileks?",
+            "Saya ingin bepergian tapi budget terbatas, tips?",
+            "Bagaimana cara meningkatkan fokus dan konsentrasi?"
+        ];
+
+
+        // Map of persona to possible names, emojis, and background gradients
+        const personaData = {
+            'kucing_filosofis': { emoji: '😼', names: ['Miko', 'Luna', 'Oreo', 'Ciko', 'Kitty', 'Shadow', 'Whiskers'], gradient: 'linear-gradient(135deg, #4a5568, #2d3748)' },
+            'anjing_optimis': { emoji: '🐶', names: ['Buddy', 'Max', 'Bella', 'Rocky', 'Daisy', 'Charlie', 'Lucy'], gradient: 'linear-gradient(135deg, #fcd34d, #f97316)' },
+            'hamster_obsesif': { emoji: '🐹', names: ['Pip', 'Squeak', 'Mochi', 'Nutmeg', 'Gizmo', 'Fuzzy', 'Nibbler'], gradient: 'linear-gradient(135deg, #9ca3af, #6b7280)' },
+            'burung_cerewet': { emoji: '🦜', names: ['Rio', 'Coco', 'Skylar', 'Chirpy', 'Polly', 'Sunny', 'Squawk'], gradient: 'linear-gradient(135deg, #6ee7b7, #34d399)' },
+            'ikan_zen': { emoji: '🐠', names: ['Finny', 'Bubbles', 'Zenith', 'Aqua', 'Nemo', 'Coral', 'Glimmer'], gradient: 'linear-gradient(135deg, #67e8f9, #0ea5e9)' },
+            'kura_kura_bijaksana': { emoji: '🐢', names: ['Sheldon', 'Myrtle', 'Franklin', 'Leo', 'Terra', 'Crush', 'Master Oogway'], gradient: 'linear-gradient(135deg, #10b981, #059669)' },
+            'ular_misterius': { emoji: '🐍', names: ['Naga', 'Viper', 'Serpent', 'Kaa', 'Sly', 'Basilisk', 'Medusa'], gradient: 'linear-gradient(135deg, #374151, #1f2937)' },
+            'bunglon_adaptif': { emoji: '🦎', names: ['Rango', 'Chameleon', 'Verde', 'Ziggy', 'Pixel', 'Morph', 'Echo'], gradient: 'linear-gradient(135deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6)' },
+            'monyet_nakal': { emoji: '🐒', names: ['Chico', 'Abu', 'Curious', 'Milo', 'Bandit', 'Rafiki', 'King Louie'], gradient: 'linear-gradient(135deg, #fde047, #fbbf24)' },
+            'beruang_bijaksana': { emoji: '🐻', names: ['Baloo', 'Smokey', 'Yogi', 'Grizzly', 'Honey', 'Paddington', 'Winnie'], gradient: 'linear-gradient(135deg, #78350f, #a16207)' },
+            'rubah_licik': { emoji: '🦊', names: ['Foxy', 'Renard', 'Sly', 'Vixen', 'Crimson', 'Tod', 'Robin'], gradient: 'linear-gradient(135deg, #f97316, #ea580c)' },
+            'burung_hantu_misterius': { emoji: '🦉', names: ['Hedwig', 'Athena', 'Owly', 'Shadow', 'Nocturne', 'Professor', 'Minerva'], gradient: 'linear-gradient(135deg, #1e293b, #0f172a)' },
+            'panda_santai': { emoji: '🐼', names: ['Po', 'Bamboo', 'Zen', 'Cloud', 'Mao', 'Yin', 'Yang'], gradient: 'linear-gradient(135deg, #e2e8f0, #cbd5e1)' },
+            'penguin_petualang': { emoji: '🐧', names: ['Skipper', 'Kowalski', 'Rico', 'Private', 'Pingu', 'Happy Feet', 'Chilly'], gradient: 'linear-gradient(135deg, #60a5fa, #3b82f6)' },
+            'koala_pemalas': { emoji: '🐨', names: ['Blinky', 'Eucalyptus', 'Dreamy', 'Sleepy', 'Gumdrop', 'Kiki', 'Ozzy'], gradient: 'linear-gradient(135deg, #a78bfa, #8b5cf6)' },
+            'singa_berwibawa': { emoji: '🦁', names: ['Simba', 'Mufasa', 'Aslan', 'Leo', 'Nala', 'King', 'Roar'], gradient: 'linear-gradient(135deg, #facc15, #eab308)' },
+            'gajah_pemikir': { emoji: '🐘', names: ['Dumbo', 'Horton', 'Jumbo', 'Ellie', 'Trunk', 'Biggie', 'Mammoth'], gradient: 'linear-gradient(135deg, #94a3b8, #64748b)' },
+            'serigala_soliter': { emoji: '🐺', names: ['Fang', 'Lobo', 'Spirit', 'Ghost', 'Luna', 'Blaze', 'Shadowmane'], gradient: 'linear-gradient(135deg, #4b5563, #1f2937)' },
+            'kambing_keras_kepala': { emoji: '🐐', names: ['Billy', 'Gruff', 'Baa', 'Capricorn', 'Rocky', 'Mountain'], gradient: 'linear-gradient(135deg, #d4d4d8, #a1a1aa)' },
+            'bebek_santai': { emoji: '🦆', names: ['Donald', 'Daffy', 'Quackers', 'Puddle', 'Waddles', 'Daisy', 'Plucky'], gradient: 'linear-gradient(135deg, #38bdf8, #0ea5e9)' },
+            'kangguru_enerjik': { emoji: '🦘', names: ['Skippy', 'Joey', 'Boomer', 'Roo', 'Kanga'], gradient: 'linear-gradient(135deg, #f0abfc, #d946ef)' },
+            'landak_pemalu': { emoji: '🦔', names: ['Sonic', 'Spike', 'Quill', 'Hedgey', 'Prickle'], gradient: 'linear-gradient(135deg, #78716c, #44403c)' },
+            'gurita_kreatif': { emoji: '🐙', names: ['Ollie', 'Squid', 'Inky', 'Ceph', 'Eight'], gradient: 'linear-gradient(135deg, #a855f7, #7c3aed)' },
+            'burung_kolibri_lincah': { emoji: '🐦', names: ['Hummer', 'Pipit', 'Sparkle', 'Zippy', 'Flutter'], gradient: 'linear-gradient(135deg, #a7f3d0, #5eead4)' },
+            'kupu_kupu_transformasi': { emoji: '🦋', names: ['Morpho', 'Luna', 'Papilio', 'Chrysalis', 'Aura'], gradient: 'linear-gradient(135deg, #a5b4fc, #818cf8)' },
+            'semut_pekerja_keras': { emoji: '🐜', names: ['Antony', 'Ferdinand', 'Worker', 'Tiny', 'Queen'], gradient: 'linear-gradient(135deg, #4b5563, #111827)' },
+            'ikan_paus_tenang': { emoji: '🐳', names: ['Moby', 'Willy', 'Echo', 'Blue', 'Oceanus'], gradient: 'linear-gradient(135deg, #1d4ed8, #1e3a8a)' },
+            'kucing_hitam_misterius': { emoji: '🐈‍⬛', names: ['Salem', 'Midnight', 'Luna', 'Shadow', 'Onyx'], gradient: 'linear-gradient(135deg, #000000, #1a202c)' },
+            'anjing_pemburu_fokus': { emoji: '🐕', names: ['Hunter', 'Tracker', 'Bolt', 'Scout', 'Chase'], gradient: 'linear-gradient(135deg, #b45309, #7c2d12)' },
+            'bunglon_bijaksana': { emoji: '🌈', names: ['Rainbow', 'Prism', 'Kaleido', 'Spectra', 'Vivid'], gradient: 'linear-gradient(135deg, #f9a8d4, #f472b6)' },
+            'kelinci_penakut': { emoji: '🐇', names: ['Thumper', 'Cotton', 'Fluffy', 'Bunny', 'Hopper'], gradient: 'linear-gradient(135deg, #fef2f2, #fee2e2)' },
+            'berang_berang_pembangun': { emoji: '🦦', names: ['Bucky', 'Damian', 'River', 'Otter', 'Builder'], gradient: 'linear-gradient(135deg, #84cc16, #65a30d)' },
+            'burung_elang_tajam': { emoji: '🦅', names: ['Hawk', 'Eagle', 'Sky', 'Hunter', 'Claw'], gradient: 'linear-gradient(135deg, #6b7280, #374151)' },
+            'kuda_liar_bebas': { emoji: '🐎', names: ['Spirit', 'Mustang', 'Blaze', 'Wildfire', 'Gallop'], gradient: 'linear-gradient(135deg, #a0522d, #8b4513)' },
+            'hiu_pemangsa_strategis': { emoji: '🦈', names: ['Jaws', 'Finley', 'Sharky', 'Mako', 'Hammer'], gradient: 'linear-gradient(135deg, #1f2937, #000000)' },
+            'lebah_rajin': { emoji: '🐝', names: ['Buzz', 'Honey', 'Worker', 'Queen', 'Stinger'], gradient: 'linear-gradient(135deg, #fde047, #eab308)' },
+            'jerapah_pengamat': { emoji: '🦒', names: ['Longneck', 'Spot', 'Tallulah', 'Giraffey', 'Watcher'], gradient: 'linear-gradient(135deg, #fcd34d, #d97706)' },
+            'burung_hantu_bijaksana': { emoji: '🦉', names: ['Sage', 'Noctua', 'Wisdom', 'Hoot', 'Professor'], gradient: 'linear-gradient(135deg, #4a5568, #1a202c)' },
+            'beruang_madu_santai': { emoji: '🍯', names: ['Pooh', 'Baloo', 'Honeybear', 'Grizzly', 'Sweetie'], gradient: 'linear-gradient(135deg, #f6e05e, #ecc94b)' },
+            'kura_kura_tua': { emoji: '🐢', names: ['Grandpa', 'Ancient', 'Shellby', 'Timeless', 'Slowpoke'], gradient: 'linear-gradient(135deg, #2f855a, #276749)' },
+            'serigala_bijaksana': { emoji: '🐺', names: ['Alpha', 'Spirit', 'Lupus', 'Shadow', 'Leader'], gradient: 'linear-gradient(135deg, #718096, #4a5568)' },
+            'lumba_lumba_ceria': { emoji: '🐬', names: ['Flipper', 'Splash', 'Joy', 'Echo', 'Aqua'], gradient: 'linear-gradient(135deg, #63b3ed, #4299e1)' }
+        };
+
+        // --- On-screen Debugger Function ---
+        function debugToScreen(message) {
+            if (onScreenDebugger && !apiKeyModal.classList.contains('hidden')) {
+                onScreenDebugger.classList.remove('hidden');
+                const messageElement = document.createElement('div');
+                messageElement.textContent = message;
+                onScreenDebugger.appendChild(messageElement);
+                onScreenDebugger.scrollTop = onScreenDebugger.scrollHeight;
+            }
+            console.log("DEBUGGER:", message);
+        }
+
+        // --- Utility Functions ---
+        function showMessageBox(message) {
+            debugToScreen("Showing message box: " + message);
+            if (!mainContainer.classList.contains('hidden')) {
+                 resultArea.innerHTML = `<p class="text-red-400">${message}</p>`;
+                 resultArea.classList.add('fade-in');
+            } else {
+                apiValidationMessage.textContent = message;
+                apiValidationMessage.classList.remove('hidden');
+            }
+        }
+
+        function showApiKeyModal() {
+            debugToScreen("showApiKeyModal called. Displaying modal.");
+            apiKeyModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            apiKeyInput.focus();
+            onScreenDebugger.innerHTML = '';
+            onScreenDebugger.classList.remove('hidden');
+            apiValidationMessage.classList.add('hidden');
+            apiValidationMessage.textContent = '';
+            apiValidationSuccess.classList.add('hidden');
+        }
+
+        async function validateApiKey(key) {
+            debugToScreen("Validating API Key: " + key.substring(0, 5) + "...");
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`, {
+                    method: 'GET'
+                });
+                if (response.ok) {
+                    debugToScreen("API Key VALID. Status: " + response.status);
+                    return true;
+                } else {
+                    const errorData = await response.json();
+                    debugToScreen(`API Key INVALID. Status: ${response.status}. Error: ${errorData.error.message || 'Unknown error'}`);
+                    return false;
+                }
+            } catch (error) {
+                debugToScreen("API Key validation fetch error: " + error.message);
+                return false;
+            }
+        }
+
+        // --- Event Listener for API Key Submission ---
+        if (submitApiKeyBtn) {
+            submitApiKeyBtn.addEventListener('click', async (event) => {
+                event.preventDefault();
+                const enteredKey = apiKeyInput.value.trim();
+                debugToScreen("API Key entered: " + enteredKey);
+
+                if (!enteredKey) {
+                    apiValidationMessage.textContent = "Harap masukkan API Key Anda!";
+                    apiValidationMessage.classList.remove('hidden');
+                    debugToScreen("API Key input is empty.");
+                    return;
+                }
+
+                apiValidationMessage.textContent = "Memverifikasi API Key...";
+                apiValidationMessage.classList.remove('hidden');
+                submitApiKeyBtn.disabled = true;
+
+                const isValid = await validateApiKey(enteredKey);
+
+                if (isValid) {
+                    API_KEY = enteredKey;
+                    debugToScreen("API_KEY global variable set to: " + API_KEY);
+                    apiValidationMessage.classList.add('hidden');
+                    apiValidationSuccess.classList.remove('hidden');
+                    apiValidationSuccess.classList.add('fade-in');
+
+                    setTimeout(() => {
+                        apiKeyModal.classList.add('hidden');
+                        document.body.style.overflow = '';
+                        mainContainer.classList.remove('hidden');
+                        mainContainer.classList.add('fade-in');
+                        currentApiKeyDisplay.textContent = API_KEY;
+                        apiKeyInfoDiv.classList.remove('hidden');
+                        onScreenDebugger.classList.add('hidden');
+                        updatePersonaEmojiInTitle(); // Update emoji on initial load
+                        setRandomProblemPlaceholder(); // Set initial random placeholder
+                    }, 4400);
+                } else {
+                    apiValidationMessage.textContent = "API Key tidak valid. Harap masukkan API Key yang benar.";
+                    apiValidationMessage.classList.remove('hidden');
+                    apiValidationSuccess.classList.add('hidden');
+                    debugToScreen("API Key is invalid. Modal remains visible.");
+                }
+                submitApiKeyBtn.disabled = false;
+            });
+            debugToScreen("Event listener for submitApiKeyBtn ATTACHED successfully.");
+        } else {
+            debugToScreen("ERROR: Element with ID 'submitApiKeyBtn' NOT FOUND during script execution!");
+        }
+
+        // --- Display Result Text Function (No Typing Effect) ---
+        function displayResultText(element, text) {
+            element.innerHTML = `<p>${text}</p>`;
+            element.classList.add('fade-in');
+        }
+
+        // --- Loading Text Animation (Bounce with changing static text) ---
+        function startLoadingAnimation() {
+            loadingAnimation.style.display = 'flex';
+            const randomMessage = loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+            loadingTextElement.textContent = randomMessage;
+        }
+
+        function stopLoadingAnimation() {
+            loadingAnimation.style.display = 'none';
+            loadingTextElement.textContent = '';
+        }
+
+        // --- Local Storage for History ---
+        const HISTORY_KEY = 'petAdviceHistory';
+
+        function saveAdviceToHistory(adviceEntry) {
+            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            history.unshift(adviceEntry); // Add to the beginning
+            if (history.length > 10) { // Keep only the last 10 entries
+                history = history.slice(0, 10);
+            }
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            debugToScreen("Advice saved to local history.");
+        }
+
+        function loadHistoryAndDisplay() {
+            let history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            historyModalContent.innerHTML = ''; // Clear previous content
+
+            if (history.length === 0) {
+                historyModalContent.innerHTML = '<p class="text-gray-400 text-center">Belum ada nasihat di riwayat Anda.</p>';
+            } else {
+                history.forEach((entry, index) => {
+                    const adviceDiv = document.createElement('div');
+                    adviceDiv.innerHTML = `
+                        <p>${entry.advice}</p>
+                        <p class="history-meta">Dari: ${entry.petName} si ${petPersonaDescription(entry.petPersona)} (${entry.wisdomWeirdnessLevel})</p>
+                        <p class="history-meta">Masalah: ${entry.problem}</p>
+                        <p class="history-meta">Waktu: ${new Date(entry.timestamp).toLocaleString('id-ID')}</p>
+                    `;
+                    historyModalContent.appendChild(adviceDiv);
+                });
+            }
+            historyModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            debugToScreen("History modal displayed.");
+        }
+
+        // --- Update Persona Emoji in Title ---
+        function updatePersonaEmojiInTitle() {
+            const selectedPersona = petPersonaSelect.value;
+            const selectedPersonaData = personaData[selectedPersona];
+            if (selectedPersonaData && selectedPersonaData.emoji) {
+                personaEmojiDisplay.textContent = selectedPersonaData.emoji;
+                debugToScreen(`Persona emoji in title updated to: ${selectedPersonaData.emoji}`);
+            }
+        }
+
+        // --- Set Random Problem Placeholder ---
+        function setRandomProblemPlaceholder() {
+            const randomPlaceholder = problemPlaceholders[Math.floor(Math.random() * problemPlaceholders.length)];
+            problemInput.placeholder = randomPlaceholder;
+            debugToScreen(`Problem input placeholder set to: "${randomPlaceholder}"`);
+        }
+
+
+        // --- Main Advice Generation Logic ---
+        async function getPetAdvice() {
+            debugToScreen("getPetAdvice function started.");
+            if (!API_KEY) {
+                showMessageBox("API Key belum dimasukkan. Harap masukkan API Key Anda terlebih dahulu!");
+                showApiKeyModal();
+                debugToScreen("API Key is missing, showing modal and returning.");
+                return;
+            }
+
+            const problem = problemInput.value.trim();
+            const petPersona = petPersonaSelect.value;
+            const wisdomWeirdnessLevel = wisdomWeirdnessLevelSelect.value;
+
+            if (!problem) {
+                problemInput.classList.add('shake');
+                setTimeout(() => {
+                    problemInput.classList.remove('shake');
+                }, 500);
+                showMessageBox("Harap ceritakan masalah Anda terlebih dahulu!");
+                return;
+            }
+
+            // Update background based on selected persona
+            const selectedPersonaData = personaData[petPersona];
+            if (selectedPersonaData && selectedPersonaData.gradient) {
+                bodyElement.style.background = selectedPersonaData.gradient;
+                debugToScreen(`Background updated to: ${selectedPersonaData.gradient}`);
+            } else {
+                bodyElement.style.background = 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)'; // Default
+                debugToScreen("Using default background gradient.");
+            }
+
+            // Reset UI for loading state
+            resultArea.innerHTML = '';
+            resultArea.classList.remove('fade-in');
+            startLoadingAnimation(); // Start the new loading animation
+            getAdviceBtn.disabled = true;
+            getRandomAdviceBtn.disabled = true;
+            shareWhatsappBtn.classList.add('hidden');
+            copyAdviceBtn.classList.add('hidden');
+            debugToScreen("UI updated for loading state. Building prompt...");
+
+            try {
+                let chatHistory = [];
+                const randomPetName = selectedPersonaData.names[Math.floor(Math.random() * selectedPersonaData.names.length)];
+                const petEmoji = selectedPersonaData.emoji;
+
+                let prompt = `Sebagai seekor ${petPersonaDescription(petPersona)} bernama ${randomPetName} ${petEmoji}, berikan nasihat yang lucu dan bijak untuk masalah berikut: "${problem}".\n`;
+                prompt += `Nasihat harus mencerminkan kepribadian dan stereotip hewan tersebut. Gunakan gaya bahasa yang konsisten dengan persona hewan. Sertakan nama hewan "${randomPetName}" di dalam nasihat.`;
+
+                switch (wisdomWeirdnessLevel) {
+                    case 'normal': prompt += `Berikan nasihat yang cenderung realistis dan sedikit humoris, seperti nasihat pada umumnya.`; break;
+                    case 'bijak': prompt += `Fokus pada nasihat yang dalam, filosofis, dan penuh makna, namun tetap dari sudut pandang hewan.`; break;
+                    case 'aneh': prompt += `Berikan nasihat yang sangat tidak terduga, absurd, dan konyol, namun tetap relevan dengan masalah.`; break;
+                    case 'sangat_bijak': prompt += `Nasihat harus sangat mendalam, puitis, dan penuh kebijaksanaan universal, seolah-olah dari guru spiritual hewan.`; break;
+                    case 'sangat_aneh': prompt += `Nasihat harus benar-benar di luar nalar, sangat aneh, dan bisa membuat orang bingung sekaligus tertawa.`; break;
+                    case 'filosofis_mendalam': prompt += `Nasihat harus sangat kontemplatif, mempertanyakan esensi keberadaan, dan penuh pemikiran mendalam ala filsuf.`; break;
+                    case 'absurd_total': prompt += `Nasihat harus sepenuhnya tidak masuk akal, acak, dan tanpa logika, hanya untuk tujuan hiburan murni.`; break;
+                    case 'humor_gelap': prompt += `Berikan nasihat dengan sentuhan humor gelap, sindiran, atau ironi, tetap dari sudut pandang hewan.`; break;
+                    case 'inspiratif': prompt += `Berikan nasihat yang membangkitkan semangat, memotivasi, dan memberikan harapan, dengan gaya yang positif.`; break;
+                    case 'sarkastik': prompt += `Berikan nasihat dengan nada sarkastik dan sinis, namun tetap lucu dan cerdas.`; break;
+                    case 'pragmatis': prompt += `Berikan nasihat yang sangat praktis, lugas, dan berorientasi pada solusi, tanpa basa-basi.`; break;
+                    case 'puitis': prompt += `Berikan nasihat dalam bentuk puitis atau liris, dengan metafora dan gaya bahasa yang indah.`; break;
+                    case 'motivasi_keras': prompt += `Berikan nasihat motivasi yang sangat langsung, tegas, dan mungkin sedikit menantang.`; break;
+                    case 'minimalis': prompt += `Berikan nasihat yang singkat, padat, dan hanya mengandung esensi paling penting.`; break;
+                    case 'eksentrik': prompt += `Berikan nasihat dengan gaya yang sangat tidak konvensional, unik, dan mungkin sedikit aneh.`; break;
+                    case 'sinis': prompt += `Berikan nasihat dengan pandangan sinis dan skeptis terhadap dunia, namun tetap dengan sentuhan humor.`; break;
+                    case 'optimis_berlebihan': prompt += `Berikan nasihat yang sangat ceria, positif, dan optimis, bahkan dalam situasi sulit, mungkin sedikit berlebihan.`; break;
+                    case 'pesimis_realistis': prompt += `Berikan nasihat dengan pandangan realistis dan sedikit pesimis, menyoroti tantangan namun tetap menawarkan jalan keluar yang masuk akal.`; break;
+                    case 'metaforis': prompt += `Berikan nasihat yang kaya akan metafora dan perumpamaan, mendorong pemikiran mendalam.`; break;
+                    case 'langsung_to_the_point': prompt += `Berikan nasihat yang sangat ringkas, langsung, dan tanpa basa-basi, fokus pada inti masalah.`; break;
+                    case 'penuh_teka_teki': prompt += `Berikan nasihat yang samar, penuh teka-teki, dan membutuhkan interpretasi, seperti dari oracle kuno.`; break;
+                    case 'analitis': prompt += `Berikan nasihat dengan pendekatan logis, memecah masalah menjadi bagian-bagian kecil dan menawarkan solusi rasional.`; break;
+                    case 'emosional': prompt += `Berikan nasihat yang berfokus pada perasaan, empati, dan dukungan emosional.`; break;
+                    case 'humor_ringan': prompt += `Berikan nasihat yang lucu dan menghibur, menggunakan humor yang ringan dan mudah dicerna.`; break;
+                    case 'ironis': prompt += `Berikan nasihat dengan sentuhan ironi, mengatakan satu hal tetapi menyiratkan yang sebaliknya dengan cara yang cerdas.`; break;
+                    case 'kreatif': prompt += `Berikan nasihat yang sangat orisinal, imajinatif, dan mungkin melibatkan skenario atau konsep yang tidak biasa.`; break;
+                    case 'pedas': prompt += `Berikan nasihat yang blak-blakan, tajam, dan mungkin sedikit menyengat, tetapi dimaksudkan untuk kebaikan.`; break;
+                    case 'menenangkan': prompt += `Berikan nasihat yang menenangkan, penuh kedamaian, dan membantu mengurangi kecemasan atau stres.`; break;
+                    case 'misterius': prompt += `Berikan nasihat yang samar, sulit diuraikan, dan meninggalkan banyak pertanyaan, seolah dari entitas yang tidak dikenal.`; break;
+                }
+
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+                debugToScreen("Sending API request with prompt length: " + prompt.length);
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    debugToScreen(`API response NOT OK. Status: ${response.status}. Error: ${errorData.error.message || 'Unknown'}`);
+                    throw new Error(`Kesalahan API: ${response.status} - ${errorData.error.message || 'Respons tidak OK'}`);
+                }
+
+                const result = await response.json();
+                debugToScreen("Gemini API raw response received.");
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    currentAdviceText = result.candidates[0].content.parts[0].text;
+                    displayResultText(resultArea, currentAdviceText);
+                    shareWhatsappBtn.classList.remove('hidden');
+                    copyAdviceBtn.classList.remove('hidden');
+                    shareWhatsappBtn.dataset.text = currentAdviceText;
+
+                    saveAdviceToHistory({
+                        problem: problem,
+                        petPersona: petPersona,
+                        petName: randomPetName,
+                        wisdomWeirdnessLevel: wisdomWeirdnessLevel,
+                        advice: currentAdviceText,
+                        timestamp: new Date().toISOString()
+                    });
+                    debugToScreen("Advice generated and saved to history successfully.");
+                } else {
+                    resultArea.innerHTML = '<p class="text-red-400">Hewan peliharaan sedang tidur. Coba lagi nanti!</p>';
+                    debugToScreen("Gemini API response structure unexpected or empty content.");
+                }
+            } catch (error) {
+                debugToScreen('Error during advice generation: ' + error.message);
+                resultArea.innerHTML = `<p class="text-red-400">Ups, ada yang tidak beres! ${error.message}. Mungkin hewan peliharaan sedang sibuk.</p>`;
+            } finally {
+                stopLoadingAnimation();
+                getAdviceBtn.disabled = false;
+                getRandomAdviceBtn.disabled = false;
+                debugToScreen("Advice generation finished.");
+            }
+        }
+
+        // Helper function for pet persona descriptions
+        function petPersonaDescription(persona) {
+            switch (persona) {
+                case 'kucing_filosofis': return 'kucing yang malas tapi filosofis';
+                case 'anjing_optimis': return 'anjing yang terlalu optimis';
+                case 'hamster_obsesif': return 'hamster yang terobsesi dengan roda putar';
+                case 'burung_cerewet': return 'burung beo yang sangat cerewet';
+                case 'ikan_zen': return 'ikan emas yang tenang dan zen';
+                case 'kura_kura_bijaksana': return 'kura-kura tua yang bijaksana dan lambat';
+                case 'ular_misterius': return 'ular misterius yang tenang dan penuh teka-teki';
+                case 'bunglon_adaptif': return 'bunglon adaptif yang selalu berubah dan melihat dari berbagai sudut';
+                case 'monyet_nakal': return 'monyet nakal tapi cerdas dan suka mengolok-olok';
+                case 'beruang_bijaksana': return 'beruang bijaksana yang tenang dan penuh pengalaman';
+                case 'rubah_licik': return 'rubah licik yang cerdik dan penuh strategi';
+                case 'burung_hantu_misterius': return 'burung hantu misterius yang bijaksana dan penuh rahasia malam';
+                case 'panda_santai': return 'panda santai yang bijak';
+                case 'penguin_petualang': return 'penguin petualang yang berani';
+                case 'koala_pemalas': return 'koala pemalas yang penuh damai';
+                case 'singa_berwibawa': return 'singa berwibawa yang adil';
+                case 'gajah_pemikir': return 'gajah pemikir yang ingat Segalanya';
+                case 'serigala_soliter': return 'serigala soliter yang mandiri';
+                case 'kambing_keras_kepala': return 'kambing keras kepala yang gigih';
+                case 'bebek_santai': return 'bebek santai yang tenang';
+                case 'kangguru_enerjik': return 'kangguru enerjik yang penuh semangat';
+                case 'landak_pemalu': return 'landak pemalu tapi penuh kejutan';
+                case 'gurita_kreatif': return 'gurita kreatif yang cerdas';
+                case 'burung_kolibri_lincah': return 'burung kolibri lincah yang penuh semangat';
+                case 'kupu_kupu_transformasi': return 'kupu-kupu transformasi yang penuh harapan';
+                case 'semut_pekerja_keras': return 'semut pekerja keras yang disiplin';
+                case 'ikan_paus_tenang': return 'ikan paus tenang yang bijaksana';
+                case 'kucing_hitam_misterius': return 'kucing hitam misterius yang penuh rahasia';
+                case 'anjing_pemburu_fokus': return 'anjing pemburu yang fokus';
+                case 'bunglon_bijaksana': return 'bunglon bijaksana yang berubah warna';
+                case 'kelinci_penakut': return 'kelinci penakut tapi cepat';
+                case 'berang_berang_pembangun': return 'berang-berang pembangun yang teliti';
+                case 'burung_elang_tajam': return 'burung elang tajam yang melihat segalanya';
+                case 'kuda_liar_bebas': return 'kuda liar bebas yang penuh kebebasan';
+                case 'hiu_pemangsa_strategis': return 'hiu pemangsa yang strategis';
+                case 'lebah_rajin': return 'lebah rajin yang terorganisir';
+                case 'jerapah_pengamat': return 'jerapah pengamat yang melihat jauh';
+                case 'burung_hantu_bijaksana': return 'burung hantu bijaksana';
+                case 'beruang_madu_santai': return 'beruang madu santai';
+                case 'kura_kura_tua': return 'kura-kura tua yang penuh cerita';
+                case 'serigala_bijaksana': return 'serigala bijaksana yang memimpin';
+                case 'lumba_lumba_ceria': return 'lumba-lumba ceria yang cerdas';
+                default: return 'hewan peliharaan bijak';
+            }
+        }
+
+        // --- Event Listeners ---
+        getAdviceBtn.addEventListener('click', getPetAdvice);
+
+        getRandomAdviceBtn.addEventListener('click', () => {
+            debugToScreen("Random Advice button clicked. Populating random problem, persona, and level.");
+            setRandomProblemPlaceholder(); // Set a new random placeholder
+            problemInput.value = ""; // Clear the actual input value
+            const petPersonaOptions = Object.keys(personaData);
+            petPersonaSelect.value = petPersonaOptions[Math.floor(Math.random() * petPersonaOptions.length)];
+            const wisdomWeirdnessOptions = Array.from(wisdomWeirdnessLevelSelect.options).map(opt => opt.value);
+            wisdomWeirdnessLevelSelect.value = wisdomWeirdnessOptions[Math.floor(Math.random() * wisdomWeirdnessOptions.length)];
+            debugToScreen("Random persona: " + petPersonaSelect.value);
+            debugToScreen("Random level: " + wisdomWeirdnessLevelSelect.value);
+            updatePersonaEmojiInTitle(); // Update emoji when randomizing
+            getPetAdvice();
+        });
+
+        // Event listener for persona select change to update background and emoji immediately
+        petPersonaSelect.addEventListener('change', () => {
+            const selectedPersona = petPersonaSelect.value;
+            const selectedPersonaData = personaData[selectedPersona];
+            if (selectedPersonaData && selectedPersonaData.gradient) {
+                bodyElement.style.background = selectedPersonaData.gradient;
+                debugToScreen(`Background updated on persona change to: ${selectedPersonaData.gradient}`);
+            } else {
+                bodyElement.style.background = 'linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)'; // Default
+                debugToScreen("Using default background gradient on persona change.");
+            }
+            updatePersonaEmojiInTitle(); // Update emoji on persona change
+        });
+
+        shareWhatsappBtn.addEventListener('click', () => {
+            const textToShare = encodeURIComponent(`Dapatkan nasihat bijak dari hewan peliharaan! 🐾\n\n"${shareWhatsappBtn.dataset.text}"\n\nBuat nasihat anehmu sendiri di: ${window.location.href}`);
+            window.open(`https://api.whatsapp.com/send?text=${textToShare}`, '_blank');
+        });
+
+        copyAdviceBtn.addEventListener('click', () => {
+            if (currentAdviceText) {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = currentAdviceText;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                try {
+                    document.execCommand('copy');
+                    showMessageBox("Nasihat berhasil disalin ke clipboard!");
+                    debugToScreen("Advice copied to clipboard.");
+                } catch (err) {
+                    showMessageBox("Gagal menyalin nasihat.");
+                    debugToScreen("Failed to copy advice: " + err);
+                }
+                document.body.removeChild(tempTextArea);
+            } else {
+                showMessageBox("Tidak ada nasihat untuk disalin.");
+            }
+        });
+
+        // History Modal Event Listeners
+        showHistoryBtn.addEventListener('click', loadHistoryAndDisplay);
+        closeHistoryBtn.addEventListener('click', () => {
+            historyModal.classList.add('hidden');
+            document.body.style.overflow = '';
+            debugToScreen("History modal closed.");
+        });
+        clearHistoryBtn.addEventListener('click', () => {
+            localStorage.removeItem(HISTORY_KEY);
+            loadHistoryAndDisplay();
+            showMessageBox("Riwayat nasihat telah dibersihkan.");
+            debugToScreen("History cleared.");
+        });
+
+
+        // --- Initial App Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            debugToScreen("DOMContentLoaded fired. Initializing app for Wise Pet Advice Column.");
+            apiKeyInput.value = "";
+            showApiKeyModal();
+        });
+    </script>
+</body>
+</html>
+
