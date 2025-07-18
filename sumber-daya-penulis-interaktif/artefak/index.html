@@ -6,6 +6,9 @@
     <title>Perancang Item & Artefak Legendaris - Hanzercopy</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF and html2canvas for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* Fallback font Inter for general text */
         body {
@@ -113,6 +116,8 @@
             width: 400px;
             transform: translateY(-20px);
             transition: transform 0.3s ease;
+            max-height: 90vh; /* Limit height for scrollability */
+            overflow-y: auto; /* Enable scrolling for content */
         }
         .modal.active .modal-content {
             transform: translateY(0);
@@ -166,6 +171,109 @@
             font-family: 'Comic Neue', cursive;
             font-size: 1.1rem;
         }
+
+        /* Stat Block Styling */
+        .stat-block {
+            background-color: #f0f0f0;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-family: 'Share Tech Mono', monospace;
+            box-shadow: 2px 2px 0px #333;
+        }
+        .stat-block h4 {
+            font-family: 'Comic Neue', cursive;
+            font-size: 1.4rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #aaa;
+            padding-bottom: 5px;
+        }
+        .stat-block table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .stat-block th, .stat-block td {
+            padding: 8px;
+            border: 1px solid #ccc;
+            text-align: left;
+            vertical-align: top;
+        }
+        .stat-block th {
+            background-color: #e0e0e0;
+            font-weight: bold;
+            width: 30%; /* Adjust as needed */
+        }
+        .stat-block td {
+            background-color: #fff;
+        }
+        .stat-block ul {
+            list-style-type: disc;
+            margin-left: 20px;
+        }
+        .stat-block li {
+            margin-bottom: 5px;
+        }
+
+        /* Vault Modal Specific Styles */
+        #vault-modal .modal-content {
+            width: 95%;
+            max-width: 800px;
+            text-align: left;
+        }
+        #vault-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .vault-item {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+        .vault-item-name {
+            font-weight: bold;
+            flex-grow: 1;
+            min-width: 150px;
+        }
+        .vault-item-tags {
+            font-style: italic;
+            color: #555;
+            flex-grow: 1;
+            min-width: 100px;
+        }
+        .vault-item-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .vault-item-actions button {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            border-radius: 5px;
+            border: 1px solid black;
+            box-shadow: 2px 2px 0px black;
+            transition: all 0.1s ease-in-out;
+        }
+        .vault-item-actions button:hover {
+            box-shadow: 1px 1px 0px black;
+            transform: translate(1px, 1px);
+        }
+        .vault-item-actions .bg-blue-500 { background-color: #3b82f6; color: white; }
+        .vault-item-actions .bg-green-500 { background-color: #22c55e; color: white; }
+        .vault-item-actions .bg-red-500 { background-color: #ef4444; color: white; }
+
     </style>
 </head>
 <body class="bg-black text-white flex flex-col items-center p-4 min-h-screen">
@@ -278,6 +386,9 @@
                         <span id="button-text">Rancang Artefak!</span>
                         <div id="loading-spinner" class="loader ease-linear rounded-full border-4 border-t-4 border-white h-6 w-6 ml-3 hidden"></div>
                     </button>
+                    <button id="show-vault-btn" class="comic-button bg-purple-600 text-white px-8 py-3 rounded-full text-lg font-bold w-full default-font">
+                        My Vault
+                    </button>
                 </div>
             </div>
 
@@ -285,7 +396,7 @@
                 <p class="text-center text-gray-600 default-font text-lg pt-20" id="initial-message">
                     Pilih jenis item dan efek, lalu klik "Rancang Artefak!"
                 </p>
-                <!-- Generated artifact details will appear here -->
+                <!-- Generated artifact details and stat block will appear here -->
             </div>
 
             <!-- New section for Image Prompt -->
@@ -326,6 +437,25 @@
         </div>
     </div>
 
+    <!-- My Vault Modal -->
+    <div id="vault-modal" class="modal">
+        <div class="modal-content">
+            <h3 class="comic-font">My Vault</h3>
+            <div class="flex flex-col sm:flex-row gap-2 mb-4">
+                <input type="text" id="vault-search-input" placeholder="Cari berdasarkan nama atau tag..." class="flex-grow p-2 border-2 border-black rounded-lg default-font text-black">
+                <input type="text" id="vault-tag-input" placeholder="Filter berdasarkan tag (pisahkan koma)" class="flex-grow p-2 border-2 border-black rounded-lg default-font text-black">
+            </div>
+            <div id="vault-list" class="mb-4">
+                <!-- Vault items will be loaded here -->
+                <p class="text-center text-gray-600 default-font">Vault Anda kosong.</p>
+            </div>
+            <div class="modal-buttons">
+                <button id="export-all-json-btn" class="comic-button bg-gray-500 text-white px-4 py-2 rounded-full text-sm font-bold">Ekspor Semua (JSON)</button>
+                <button id="close-vault-btn" class="comic-button bg-red-500 text-white px-6 py-2 rounded-full text-lg font-bold">Tutup</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // API Key will be loaded from localStorage, default is blank.
         let API_KEY = localStorage.getItem('geminiApiKeyArtifact') || ""; 
@@ -348,6 +478,7 @@
         const artifactImagePromptSection = document.getElementById('artifact-image-prompt-section'); // New section
         const artifactImagePromptText = document.getElementById('artifact-image-prompt-text'); // New text element
         const copyArtifactImagePromptBtn = document.getElementById('copy-artifact-image-prompt-btn'); // New button
+        const showVaultBtn = document.getElementById('show-vault-btn'); // New vault button
         
         const buttonText = document.getElementById('button-text');
         const loadingSpinner = document.getElementById('loading-spinner');
@@ -356,12 +487,20 @@
         const fullLoadingOverlay = document.getElementById('full-loading-overlay');
         const overlayMessage = document.getElementById('overlay-message');
 
-        // Modal elements
+        // Custom Modal elements
         const customModal = document.getElementById('custom-modal');
         const modalTitle = document.getElementById('modal-title');
         const modalMessage = document.getElementById('modal-message');
         const modalConfirmBtn = document.getElementById('modal-confirm-btn');
         const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+        // Vault Modal elements
+        const vaultModal = document.getElementById('vault-modal');
+        const closeVaultBtn = document.getElementById('close-vault-btn');
+        const vaultList = document.getElementById('vault-list');
+        const vaultSearchInput = document.getElementById('vault-search-input');
+        const vaultTagInput = document.getElementById('vault-tag-input');
+        const exportAllJsonBtn = document.getElementById('export-all-json-btn');
 
         const loadingMessages = [
             "Memahat detail artefak...",
@@ -574,7 +713,27 @@
 
         // Function to render the artifact output from JSON
         function renderArtifact(artifactData) {
-            let htmlContent = `<h2 class="text-3xl font-bold mb-4 text-center comic-font">${artifactData.itemNameEnglish} (${artifactData.itemNameIndonesian})</h2>`; // Combined name for display
+            let htmlContent = '';
+
+            // Render Stat Block
+            if (artifactData.statBlock) {
+                htmlContent += `
+                    <div class="stat-block mb-6">
+                        <h4 class="text-center">Statistik Artefak</h4>
+                        <table>
+                            <tr><th>Nama</th><td>${artifactData.statBlock.name || 'N/A'}</td></tr>
+                            <tr><th>Jenis / Rarity</th><td>${artifactData.statBlock.typeRarity || 'N/A'}</td></tr>
+                            <tr><th>Berat</th><td>${artifactData.statBlock.weight || 'N/A'}</td></tr>
+                            ${artifactData.statBlock.value ? `<tr><th>Nilai</th><td>${artifactData.statBlock.value}</td></tr>` : ''}
+                            ${artifactData.statBlock.stats && artifactData.statBlock.stats.length > 0 ? 
+                                artifactData.statBlock.stats.map(s => `<tr><th>${s.label}</th><td>${s.description}</td></tr>`).join('') : ''}
+                        </table>
+                    </div>
+                `;
+            }
+
+            // Render detailed description
+            htmlContent += `<h2 class="text-3xl font-bold mb-4 text-center comic-font">${artifactData.itemNameEnglish} (${artifactData.itemNameIndonesian})</h2>`; // Combined name for display
 
             if (artifactData.rank) {
                 htmlContent += `<div class="detail-section"><strong>Rank:</strong><p class="default-font">${artifactData.rank}</p></div>`;
@@ -610,8 +769,24 @@
 
         // Function to get raw text for copying
         function getRawArtifactContent(artifactData) {
+            let rawText = '';
+            // Add Stat Block to raw text
+            if (artifactData.statBlock) {
+                rawText += `--- STAT BLOCK ---\n`;
+                rawText += `Nama: ${artifactData.statBlock.name || 'N/A'}\n`;
+                rawText += `Jenis / Rarity: ${artifactData.statBlock.typeRarity || 'N/A'}\n`;
+                rawText += `Berat: ${artifactData.statBlock.weight || 'N/A'}\n`;
+                if (artifactData.statBlock.value) rawText += `Nilai: ${artifactData.statBlock.value}\n`;
+                if (artifactData.statBlock.stats && artifactData.statBlock.stats.length > 0) {
+                    artifactData.statBlock.stats.forEach(s => {
+                        rawText += `${s.label}: ${s.description}\n`;
+                    });
+                }
+                rawText += `-------------------\n\n`;
+            }
+
             // Use combined name for copying
-            let rawText = `Nama Item: ${artifactData.itemNameEnglish} (${artifactData.itemNameIndonesian})\n\n`;
+            rawText += `Nama Item: ${artifactData.itemNameEnglish} (${artifactData.itemNameIndonesian})\n\n`;
             if (artifactData.rank) rawText += `Rank: ${artifactData.rank}\n\n`;
             if (artifactData.physicalDescription) rawText += `Penampilan Fisik: ${artifactData.physicalDescription}\n\n`;
             if (artifactData.originStory) rawText += `Kisah Asal-Usul: ${artifactData.originStory}\n\n`;
@@ -737,9 +912,15 @@
                 -   Kekuatan/Kutukan/Efek: Jelaskan apa yang artefak ini lakukan atau berikan kepada penggunanya, dengan mempertimbangkan rank-nya dan **harus sangat sesuai dengan Jenis Item**.
                 -   Kelemahan/Keterbatasan: Sebutkan jika ada kelemahan artefak atau hal yang membatasi karakter.
                 -   Implikasi dalam Cerita: Bagaimana artefak ini bisa memengaruhi plot, konflik, atau perkembangan karakter dalam cerita.
-                -   Prompt Gambar AI: Berikan satu prompt gambar AI yang sangat mendeskripsikan artefak ini secara visual, tanpa menyebutkan gaya anime. Prompt harus berdasarkan "Penampilan Fisik" dari artefak ini.
+                -   Prompt Gambar AI: Berikan satu prompt gambar AI yang sangat mendeskripsikan artefak ini secara visual, tanpa menyebutkan gaya anime. Prompt harus berdasarkan "Penampilan Fisik" dari artefak ini. (Output dalam Bahasa Inggris)
+                -   Blok Statistik: Buat blok statistik terpisah yang ringkas untuk artefak ini, cocok untuk format seperti formulir. Sertakan:
+                    -   Nama (sama dengan Nama Item English)
+                    -   Jenis / Rarity (contoh: 'Dagger Legendary (requires attunement by a spellcaster)')
+                    -   Berat (contoh: '1 lb.')
+                    -   Nilai (opsional, contoh: '50,000 gp')
+                    -   Daftar Properti/Fitur (contoh: 'Damage: 1d4 piercing + 3', 'Bonus: +3 to spell attack rolls', 'Meteoric Strike (1/Day): As an action, you may cast Meteor Swarm', 'Sentience: The kris is a sentient chaotic-evil weapon', 'Curse (Hidden): If you roll a 1 on any spell attack', 'Aging Curse: Each time Meteoric Strike is used'). Properti ini harus dinamis dan hanya muncul jika relevan dengan artefak.
 
-                Format respons Anda sebagai JSON dengan properti berikut, semua dalam Bahasa Indonesia kecuali jika ditandai (English):
+                Format respons Anda sebagai JSON dengan properti berikut, semua dalam Bahasa Indonesia kecuali prompt gambar (imagePrompt):
                 {
                   "itemNameEnglish": "STRING",
                   "itemNameIndonesian": "STRING",
@@ -749,7 +930,16 @@
                   "powersCursesEffects": "STRING",
                   "weaknesses": "STRING",
                   "storyImplications": "STRING",
-                  "imagePrompt": "STRING" // New property for image prompt
+                  "imagePrompt": "STRING",
+                  "statBlock": {
+                    "name": "STRING",
+                    "typeRarity": "STRING",
+                    "weight": "STRING",
+                    "value": "STRING_OPTIONAL",
+                    "stats": [
+                      { "label": "STRING", "description": "STRING" }
+                    ]
+                  }
                 }
                 `;
                 console.log("DEBUG: generateArtifact prompt:", prompt);
@@ -773,9 +963,30 @@
                                 "powersCursesEffects": { "type": "STRING" },
                                 "weaknesses": { "type": "STRING" },
                                 "storyImplications": { "type": "STRING" },
-                                "imagePrompt": { "type": "STRING" } // New property
+                                "imagePrompt": { "type": "STRING" },
+                                "statBlock": {
+                                    "type": "OBJECT",
+                                    "properties": {
+                                        "name": { "type": "STRING" },
+                                        "typeRarity": { "type": "STRING" },
+                                        "weight": { "type": "STRING" },
+                                        "value": { "type": "STRING" }, // Optional value
+                                        "stats": {
+                                            "type": "ARRAY",
+                                            "items": {
+                                                "type": "OBJECT",
+                                                "properties": {
+                                                    "label": { "type": "STRING" },
+                                                    "description": { "type": "STRING" }
+                                                },
+                                                "required": ["label", "description"]
+                                            }
+                                        }
+                                    },
+                                    "required": ["name", "typeRarity", "weight", "stats"] // Value is optional
+                                }
                             },
-                            "required": ["itemNameEnglish", "itemNameIndonesian", "rank", "physicalDescription", "originStory", "powersCursesEffects", "storyImplications", "imagePrompt"] // Make imagePrompt required
+                            "required": ["itemNameEnglish", "itemNameIndonesian", "rank", "physicalDescription", "originStory", "powersCursesEffects", "storyImplications", "imagePrompt", "statBlock"]
                         }
                     }
                 };
@@ -792,12 +1003,12 @@
                     const errorBody = await response.json();
                     console.error("API Response not OK for Artifact Generation:", response.status, errorBody);
                     try {
-                        const errorJson = JSON.parse(errorBody);
-                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorJson.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                        const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorMessage}. Pastikan API Key valid.`);
                     } catch (parseError) {
-                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${errorBody.substring(0, 100)}...`);
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${JSON.stringify(errorBody).substring(0, 100)}...`);
                     }
-                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${errorBody}`);
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${JSON.stringify(errorBody)}`);
                 }
 
                 const result = await response.json();
@@ -810,6 +1021,7 @@
                     console.log("DEBUG: Parsed Artifact Data:", artifactData);
                     renderArtifact(artifactData);
                     artifactOutputSection.currentArtifactData = artifactData;
+                    saveArtifactToVault(artifactData); // Save to vault after successful generation
                 } else {
                     artifactOutputSection.innerHTML = `
                         <p class="text-center text-red-700 default-font text-lg pt-10">
@@ -888,12 +1100,12 @@
                     const errorBody = await response.json();
                     console.error("API Response not OK for Random Effect:", response.status, errorBody);
                      try {
-                        const errorJson = JSON.parse(errorBody);
-                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorJson.error.message || 'Unknown error'}. Pastikan API Key valid.`);
+                        const errorMessage = errorBody.error ? errorBody.error.message : 'Unknown error';
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${errorMessage}. Pastikan API Key valid.`);
                     } catch (parseError) {
-                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${errorBody.substring(0, 100)}...`);
+                        await showModal('Kesalahan API!', `API Error (${response.status}): ${response.statusText}. Response: ${JSON.stringify(errorBody).substring(0, 100)}...`);
                     }
-                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${errorBody}`);
+                    throw new Error(`API response was not ok: ${response.status} ${response.statusText} - ${JSON.stringify(errorBody)}`);
                 }
 
                 const result = await response.json();
@@ -916,6 +1128,252 @@
                 generateEffectBtn.disabled = false;
                 generateEffectBtn.textContent = "Acak Efek";
             }
+        }
+
+        // --- My Vault Functions ---
+        function getArtifactsFromVault() {
+            try {
+                const artifactsJson = localStorage.getItem('myArtifactsVault');
+                return artifactsJson ? JSON.parse(artifactsJson) : [];
+            } catch (e) {
+                console.error("Error parsing artifacts from localStorage:", e);
+                return [];
+            }
+        }
+
+        function saveArtifactsToVault(artifacts) {
+            localStorage.setItem('myArtifactsVault', JSON.stringify(artifacts));
+        }
+
+        function saveArtifactToVault(artifactData) {
+            const artifacts = getArtifactsFromVault();
+            // Assign a unique ID and timestamp
+            artifactData.id = Date.now().toString() + Math.random().toString(36).substring(2, 9);
+            artifactData.timestamp = new Date().toISOString();
+            artifactData.tags = []; // Initialize with empty tags
+            artifacts.unshift(artifactData); // Add to the beginning
+            saveArtifactsToVault(artifacts);
+            console.log("Artifact saved to vault:", artifactData);
+            showModal('Berhasil!', `Artefak "${artifactData.itemNameIndonesian}" telah disimpan ke My Vault!`);
+        }
+
+        function renderVaultList(filterName = '', filterTags = []) {
+            const artifacts = getArtifactsFromVault();
+            vaultList.innerHTML = ''; // Clear current list
+
+            if (artifacts.length === 0) {
+                vaultList.innerHTML = '<p class="text-center text-gray-600 default-font">Vault Anda kosong.</p>';
+                return;
+            }
+
+            const filteredArtifacts = artifacts.filter(artifact => {
+                const matchesName = artifact.itemNameIndonesian.toLowerCase().includes(filterName.toLowerCase()) ||
+                                    artifact.itemNameEnglish.toLowerCase().includes(filterName.toLowerCase());
+                
+                const artifactTags = artifact.tags ? artifact.tags.map(tag => tag.toLowerCase()) : [];
+                const matchesTags = filterTags.length === 0 || filterTags.every(tag => artifactTags.includes(tag.toLowerCase()));
+                
+                return matchesName && matchesTags;
+            });
+
+            if (filteredArtifacts.length === 0) {
+                vaultList.innerHTML = '<p class="text-center text-gray-600 default-font">Tidak ada artefak yang cocok dengan filter Anda.</p>';
+                return;
+            }
+
+            filteredArtifacts.forEach(artifact => {
+                const vaultItemDiv = document.createElement('div');
+                vaultItemDiv.className = 'vault-item';
+                vaultItemDiv.innerHTML = `
+                    <span class="vault-item-name">${artifact.itemNameIndonesian}</span>
+                    <span class="vault-item-tags" id="tags-${artifact.id}">${artifact.tags.join(', ') || 'Tidak ada tag'}</span>
+                    <input type="text" id="tag-input-${artifact.id}" placeholder="Tambah tag (koma)" class="p-1 border border-gray-300 rounded-md text-xs default-font text-black flex-grow min-w-[100px]">
+                    <div class="vault-item-actions">
+                        <button class="view-artifact-btn bg-blue-500 text-white" data-id="${artifact.id}">Lihat</button>
+                        <button class="edit-tags-btn bg-green-500 text-white" data-id="${artifact.id}">Simpan Tag</button>
+                        <button class="export-json-btn bg-gray-500 text-white" data-id="${artifact.id}">JSON</button>
+                        <button class="export-pdf-btn bg-gray-500 text-white" data-id="${artifact.id}">PDF</button>
+                        <button class="delete-artifact-btn bg-red-500 text-white" data-id="${artifact.id}">Hapus</button>
+                    </div>
+                `;
+                vaultList.appendChild(vaultItemDiv);
+            });
+
+            // Add event listeners to newly created buttons
+            vaultList.querySelectorAll('.view-artifact-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => viewArtifactFromVault(e.target.dataset.id));
+            });
+            vaultList.querySelectorAll('.edit-tags-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => saveTagsForArtifact(e.target.dataset.id));
+            });
+            vaultList.querySelectorAll('.export-json-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => exportArtifactToJson(e.target.dataset.id));
+            });
+            vaultList.querySelectorAll('.export-pdf-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => exportArtifactToPdf(e.target.dataset.id));
+            });
+            vaultList.querySelectorAll('.delete-artifact-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => deleteArtifactFromVault(e.target.dataset.id));
+            });
+        }
+
+        function viewArtifactFromVault(id) {
+            const artifacts = getArtifactsFromVault();
+            const artifact = artifacts.find(a => a.id === id);
+            if (artifact) {
+                renderArtifact(artifact);
+                artifactOutputSection.currentArtifactData = artifact; // Set current data for copy button
+                vaultModal.classList.remove('active'); // Close vault modal
+            } else {
+                showModal('Kesalahan!', 'Artefak tidak ditemukan.');
+            }
+        }
+
+        async function saveTagsForArtifact(id) {
+            const tagInput = document.getElementById(`tag-input-${id}`);
+            const tagsSpan = document.getElementById(`tags-${id}`);
+            if (!tagInput || !tagsSpan) return;
+
+            let newTags = tagInput.value.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+            
+            const artifacts = getArtifactsFromVault();
+            const artifactIndex = artifacts.findIndex(a => a.id === id);
+
+            if (artifactIndex !== -1) {
+                artifacts[artifactIndex].tags = newTags;
+                saveArtifactsToVault(artifacts);
+                tagsSpan.textContent = newTags.join(', ') || 'Tidak ada tag';
+                tagInput.value = ''; // Clear input after saving
+                await showModal('Berhasil!', 'Tag berhasil diperbarui!');
+            } else {
+                await showModal('Kesalahan!', 'Artefak tidak ditemukan.');
+            }
+        }
+
+        async function deleteArtifactFromVault(id) {
+            const confirmed = await showModal('Konfirmasi', 'Anda yakin ingin menghapus artefak ini dari vault?', 'confirm');
+            if (!confirmed) return;
+
+            let artifacts = getArtifactsFromVault();
+            const initialLength = artifacts.length;
+            artifacts = artifacts.filter(a => a.id !== id);
+            if (artifacts.length < initialLength) {
+                saveArtifactsToVault(artifacts);
+                renderVaultList(vaultSearchInput.value, vaultTagInput.value.split(',').map(t => t.trim()).filter(t => t !== '')); // Re-render with current filters
+                await showModal('Berhasil!', 'Artefak berhasil dihapus.');
+            } else {
+                await showModal('Kesalahan!', 'Artefak tidak ditemukan.');
+            }
+        }
+
+        function exportArtifactToJson(id) {
+            const artifacts = getArtifactsFromVault();
+            const artifact = artifacts.find(a => a.id === id);
+            if (artifact) {
+                const filename = `${artifact.itemNameEnglish.replace(/[^a-zA-Z0-9]/g, '_')}.json`;
+                const jsonStr = JSON.stringify(artifact, null, 2);
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showModal('Berhasil!', 'Artefak berhasil diekspor sebagai JSON.');
+            } else {
+                showModal('Kesalahan!', 'Artefak tidak ditemukan.');
+            }
+        }
+
+        async function exportArtifactToPdf(id) {
+            const artifacts = getArtifactsFromVault();
+            const artifact = artifacts.find(a => a.id === id);
+            if (!artifact) {
+                await showModal('Kesalahan!', 'Artefak tidak ditemukan.');
+                return;
+            }
+
+            // Temporarily render the artifact to a hidden div to capture its HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.width = '794px'; // A4 width in pixels at 96 DPI
+            tempDiv.style.padding = '20px';
+            tempDiv.style.backgroundColor = 'white';
+            tempDiv.style.color = 'black';
+            tempDiv.style.fontFamily = 'Inter, sans-serif';
+            tempDiv.style.fontSize = '12px';
+            document.body.appendChild(tempDiv);
+
+            // Use renderArtifact to populate the tempDiv
+            const originalOutput = artifactOutputSection.innerHTML; // Save original content
+            const originalCurrentArtifactData = artifactOutputSection.currentArtifactData;
+
+            renderArtifact(artifact); // Render to the visible section first to get the HTML
+            tempDiv.innerHTML = artifactOutputSection.innerHTML; // Copy the rendered HTML
+
+            // Restore original content
+            artifactOutputSection.innerHTML = originalOutput;
+            artifactOutputSection.currentArtifactData = originalCurrentArtifactData;
+
+
+            await showModal('Membuat PDF...', 'Harap tunggu, PDF sedang dibuat.');
+            try {
+                const canvas = await html2canvas(tempDiv, {
+                    scale: 2, // Increase scale for better resolution
+                    useCORS: true, // If you have external images (though we avoid them)
+                    logging: false // Disable logging for cleaner console
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new window.jspdf.jsPDF('p', 'mm', 'a4'); // 'p' for portrait, 'mm' for millimeters, 'a4' size
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 297; // A4 height in mm
+                const imgHeight = canvas.height * imgWidth / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                const filename = `${artifact.itemNameEnglish.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+                pdf.save(filename);
+                showModal('Berhasil!', 'Artefak berhasil diekspor sebagai PDF.');
+            } catch (error) {
+                console.error("Error generating PDF:", error);
+                showModal('Gagal!', `Gagal membuat PDF: ${error.message}.`);
+            } finally {
+                document.body.removeChild(tempDiv);
+            }
+        }
+
+        function exportAllArtifactsToJson() {
+            const artifacts = getArtifactsFromVault();
+            if (artifacts.length === 0) {
+                showModal('Peringatan!', 'Vault Anda kosong, tidak ada yang bisa diekspor.');
+                return;
+            }
+            const filename = `my_artifacts_vault_${Date.now()}.json`;
+            const jsonStr = JSON.stringify(artifacts, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showModal('Berhasil!', 'Semua artefak berhasil diekspor sebagai JSON.');
         }
 
         // --- Event Listeners ---
@@ -966,6 +1424,28 @@
             }
         });
 
+        // Vault button listeners
+        showVaultBtn.addEventListener('click', () => {
+            vaultModal.classList.add('active');
+            renderVaultList(vaultSearchInput.value, vaultTagInput.value.split(',').map(t => t.trim()).filter(t => t !== '')); // Render with current filters
+        });
+
+        closeVaultBtn.addEventListener('click', () => {
+            vaultModal.classList.remove('active');
+        });
+
+        vaultSearchInput.addEventListener('input', () => {
+            const tags = vaultTagInput.value.split(',').map(t => t.trim()).filter(t => t !== '');
+            renderVaultList(vaultSearchInput.value, tags);
+        });
+
+        vaultTagInput.addEventListener('input', () => {
+            const tags = vaultTagInput.value.split(',').map(t => t.trim()).filter(t => t !== '');
+            renderVaultList(vaultSearchInput.value, tags);
+        });
+
+        exportAllJsonBtn.addEventListener('click', exportAllArtifactsToJson);
+
         // Initial setup on page load
         window.onload = () => {
             loadAndDisplayApiKey();
@@ -977,4 +1457,3 @@
     </script>
 </body>
 </html>
-
